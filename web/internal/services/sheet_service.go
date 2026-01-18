@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
+	"gsheetbase/shared/repository"
 	"gsheetbase/web/internal/config"
-	"gsheetbase/web/internal/repository"
 	"github.com/google/uuid"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"

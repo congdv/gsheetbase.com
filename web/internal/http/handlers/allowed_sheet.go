@@ -3,8 +3,8 @@ package handlers
 import (
 	"net/http"
 
+	"gsheetbase/shared/repository"
 	"gsheetbase/web/internal/http/middleware"
-	"gsheetbase/web/internal/repository"
 	"github.com/gin-gonic/gin"
 )
 
@@ -82,4 +82,90 @@ func (h *AllowedSheetHandler) Delete(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "sheet removed from allowed list"})
+}
+
+type publishSheetRequest struct {
+	DefaultRange           string `json:"default_range"`
+	UseFirstRowAsHeader    bool   `json:"use_first_row_as_header"`
+}
+
+// Publish generates an API key and makes the sheet publicly accessible
+func (h *AllowedSheetHandler) Publish(c *gin.Context) {
+	userID, ok := middleware.GetUserID(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	sheetID := c.Param("id")
+	if sheetID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "sheet id is required"})
+		return
+	}
+
+	var req publishSheetRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		// Use defaults if not provided
+		req.DefaultRange = "Sheet1"
+		req.UseFirstRowAsHeader = true
+	}
+
+	// Verify the sheet belongs to the user
+	sheet, err := h.repo.FindByID(c.Request.Context(), middleware.MustParseUUID(sheetID))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "sheet not found"})
+		return
+	}
+
+	if sheet.UserID != userID {
+		c.JSON(http.StatusForbidden, gin.H{"error": "access denied"})
+		return
+	}
+
+	// Generate API key and publish
+	apiKey, err := h.repo.Publish(c.Request.Context(), sheet.ID, req.DefaultRange, req.UseFirstRowAsHeader)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to publish sheet", "details": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "sheet published successfully",
+		"api_key": apiKey,
+	})
+}
+
+// Unpublish revokes the API key and makes the sheet private
+func (h *AllowedSheetHandler) Unpublish(c *gin.Context) {
+	userID, ok := middleware.GetUserID(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	sheetID := c.Param("id")
+	if sheetID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "sheet id is required"})
+		return
+	}
+
+	// Verify the sheet belongs to the user
+	sheet, err := h.repo.FindByID(c.Request.Context(), middleware.MustParseUUID(sheetID))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "sheet not found"})
+		return
+	}
+
+	if sheet.UserID != userID {
+		c.JSON(http.StatusForbidden, gin.H{"error": "access denied"})
+		return
+	}
+
+	// Unpublish the sheet
+	if err := h.repo.Unpublish(c.Request.Context(), sheet.ID); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to unpublish sheet"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "sheet unpublished successfully"})
 }

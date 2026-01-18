@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"strings"
 
+	"gsheetbase/shared/models"
 	"gsheetbase/web/internal/config"
-	"gsheetbase/web/internal/models"
 	"gsheetbase/web/internal/services"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
@@ -93,4 +93,13 @@ func GetUserFromContext(ctx *gin.Context) (models.User, bool) {
 	}
 	user, ok := val.(models.User)
 	return user, ok
+}
+
+// MustParseUUID parses a UUID string, panics on error (use with caution)
+func MustParseUUID(s string) uuid.UUID {
+	id, err := uuid.Parse(s)
+	if err != nil {
+		panic(err)
+	}
+	return id
 }

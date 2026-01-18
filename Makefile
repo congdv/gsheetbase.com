@@ -1,5 +1,11 @@
 .PHONY: help run build migrate-up migrate-down migrate-status migrate-create test clean
 
+# Load .env file if it exists
+ifneq (,$(wildcard ./.env))
+    include .env
+    export
+endif
+
 help: ## Show this help message
 	@echo 'Usage: make [target]'
 	@echo ''
@@ -9,8 +15,18 @@ help: ## Show this help message
 run: ## Run the application
 	go run web/cmd/api/main.go
 
+run-worker: ## Run the worker service
+	go run worker/cmd/api/main.go
+
 build: ## Build the application
 	go build -o bin/api web/cmd/api/main.go
+
+build-worker: ## Build the worker service
+	go build -o bin/worker worker/cmd/api/main.go
+
+build-all: ## Build both services
+	go build -o bin/api web/cmd/api/main.go
+	go build -o bin/worker worker/cmd/api/main.go
 
 migrate-up: ## Run database migrations
 	dbmate --migrations-dir ./migrations up

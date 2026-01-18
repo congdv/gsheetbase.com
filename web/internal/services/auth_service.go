@@ -6,9 +6,9 @@ import (
 	"errors"
 	"time"
 
+	"gsheetbase/shared/models"
+	"gsheetbase/shared/repository"
 	"gsheetbase/web/internal/config"
-	"gsheetbase/web/internal/models"
-	"gsheetbase/web/internal/repository"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 )

@@ -5,11 +5,11 @@ import (
 	"net/http"
 	"time"
 
+	"gsheetbase/shared/database"
+	"gsheetbase/shared/repository"
 	"gsheetbase/web/internal/config"
-	"gsheetbase/web/internal/database"
 	"gsheetbase/web/internal/http/handlers"
 	"gsheetbase/web/internal/http/middleware"
-	"gsheetbase/web/internal/repository"
 	"gsheetbase/web/internal/services"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -66,6 +66,8 @@ func main() {
 	api.POST("/sheets/register", middleware.Authenticate(cfg, authService), allowedSheetHandler.Register)
 	api.GET("/sheets/registered", middleware.Authenticate(cfg, authService), allowedSheetHandler.List)
 	api.DELETE("/sheets/registered/:sheet_id", middleware.Authenticate(cfg, authService), allowedSheetHandler.Delete)
+	api.POST("/sheets/:id/publish", middleware.Authenticate(cfg, authService), allowedSheetHandler.Publish)
+	api.DELETE("/sheets/:id/unpublish", middleware.Authenticate(cfg, authService), allowedSheetHandler.Unpublish)
 
 	// Sheet access (requires JWT auth + sheet must be registered)
 	sheetHandler := handlers.NewSheetHandler(sheetService)
