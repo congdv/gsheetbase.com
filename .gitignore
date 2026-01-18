@@ -20,6 +20,12 @@ go.work
 # Environment variables
 .env
 
+# Frontend (React/Vite)
+web/ui/node_modules/
+web/ui/dist/
+web/ui/.env
+web/ui/.env.local
+
 # IDE
 .vscode/
 .idea/

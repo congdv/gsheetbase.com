@@ -59,6 +59,7 @@ func main() {
 	// Authenticated routes (JWT from Google OAuth)
 	authHandler := handlers.NewAuthHandler(authService, cfg)
 	api.GET("/auth/me", middleware.Authenticate(cfg, authService), authHandler.Me)
+	api.POST("/auth/logout", authHandler.Logout)
 
 	// Sheet registration (must register sheets before accessing them)
 	allowedSheetHandler := handlers.NewAllowedSheetHandler(allowedSheetRepo)

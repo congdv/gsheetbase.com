@@ -1,141 +1,85 @@
-# Google Sheets API Backend
+# GSheetBase
 
-A Go backend service that authenticates with Google OAuth and provides secure, application-level access control to Google Sheets.
+A platform that allows users to connect their Google Sheets via OAuth and generate REST API endpoints that return sheet data as clean JSON.
 
 ## Features
 
-- ✅ Google OAuth authentication with `spreadsheets.readonly` scope
-- ✅ Application-level per-sheet access control
-- ✅ JWT tokens for authenticated user sessions
-- ✅ Direct Google Sheets API access (no data storage)
-- ✅ Cleaner OAuth consent screen (read-only, no scary warnings)
+- ✅ **Google OAuth Authentication** - Simple, secure sign-in with Google
+- ✅ **Sheet Registration** - Whitelist specific sheets for API access
+- ✅ **Read-Only Access** - Uses `spreadsheets.readonly` OAuth scope
+- ✅ **JWT Sessions** - Secure token-based authentication
+- ✅ **No Data Storage** - Direct Google Sheets API access (sheets data not stored)
+- ✅ **Clean OAuth Consent** - No scary "edit/delete" warnings
 
-## Security Model
+## Tech Stack
 
-### OAuth Scope: `spreadsheets.readonly`
-
-This app uses the `spreadsheets.readonly` OAuth scope with **application-level access control**:
-
-- ✅ Clean OAuth consent: "View your Google Spreadsheets" (no edit/delete warnings)
-- ✅ Users explicitly register specific sheets they want to access
-- ✅ Only registered sheets can be accessed via the API
-- ✅ Database tracks which sheets each user has authorized
-- ✅ Read-only access enforced by OAuth scope
-
-### How It Works
-
-1. User authenticates with Google OAuth (`spreadsheets.readonly` scope)
-2. User registers specific sheets they want to use:
-   ```bash
-   POST /api/sheets/register
-   { "sheet_id": "1BxiMVs...", "sheet_name": "My Data", "description": "Sales data" }
-   ```
-3. App stores sheet registration in database
-4. User can now access registered sheets via `/api/sheets/data`
-5. Attempting to access non-registered sheets returns 403 error
-
-## Architecture
-
-### Tech Stack
+### Backend
+- **Language**: Go (Golang)
 - **Framework**: Gin
-- **Database**: PostgreSQL (minimal - only stores users)
-- **Authentication**: Google OAuth 2.0
+- **Database**: PostgreSQL (user metadata only)
+- **Authentication**: Google OAuth 2.0 + JWT
 
-### Database Schema
+### Frontend
+- **Framework**: React with Vite (TypeScript)
+- **UI Library**: Ant Design
+- **Styling**: Styled Components + Tailwind CSS
+- **State Management**: TanStack Query
 
-#### Users
-- OAuth-only authentication (no passwords)
-- Stores Google provider info
+## Project Structure
 
-## API Endpoints
-
-### Authentication (Google OAuth)
-
-#### `GET /api/auth/google/start`
-Initiates Google OAuth flow
-
-#### `GET /api/auth/google/callback`
-OAuth callback handler, returns JWT token
-
-#### `GET /api/auth/me`
-Get current user info (requires JWT)
-
-### Sheet Registration (Requires JWT)
-
-#### `POST /api/sheets/register`
-Register a new sheet for access
-```json
-{
-  "sheet_id": "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms",
-  "sheet_name": "Sales Data 2026",
-  "description": "Monthly sales tracking"
-}
+```
+/web
+├── /cmd/api          # Backend entry point
+├── /internal         # Backend business logic
+│   ├── /config       # Configuration
+│   ├── /database     # Database connection
+│   ├── /http         # HTTP handlers & middleware
+│   ├── /models       # Data models
+│   ├── /repository   # Database queries
+│   └── /services     # Business logic
+└── /ui               # React frontend
+    └── /src
+        ├── /components
+        ├── /context     # Auth context
+        ├── /lib         # Axios, React Query
+        └── /pages       # Login, Dashboard
 ```
 
-Returns:
-```json
-{
-  "sheet": {
-    "id": "...",
-    "user_id": "...",
-    "sheet_id": "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms",
-    "sheet_name": "Sales Data 2026",
-    "description": "Monthly sales tracking",
-    "created_at": "2026-01-17T..."
-  }
-}
-```
-
-#### `GET /api/sheets/registered`
-List all sheets registered by the user
-
-#### `DELETE /api/sheets/registered/:sheet_id`
-Remove a sheet from registered list
-
-### Sheet Data Access (Requires JWT + Registration)
-
-#### `POST /api/sheets/data`
-Read data from a registered sheet
-```json
-{
-  "sheet_id": "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms",
-  "range": "Sheet1!A1:Z100"
-}
-```
-
-Returns:
-```json
-{
-  "data": [
-    ["Header1", "Header2", "Header3"],
-    ["Value1", "Value2", "Value3"]
-  ]
-}
-```
-
-**Note**: Sheet must be registered first via `/api/sheets/register`
-
-## Setup
+## Getting Started
 
 ### Prerequisites
-- Go 1.23+
-- PostgreSQL
-- Google Cloud Console project with OAuth credentials
 
-### Environment Variables
+- Go 1.21+
+- Node.js 18+
+- PostgreSQL 14+
+- Google OAuth credentials
 
-Create a `.env` file:
+### 1. Setup Google OAuth
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project or select an existing one
+3. Enable Google Sheets API
+4. Create OAuth 2.0 credentials
+5. Add authorized redirect URI: `http://localhost:8080/api/auth/google/callback`
+6. Download credentials or copy Client ID and Secret
+
+### 2. Setup Environment Variables
+
+Create `.env` in the project root:
 
 ```env
+# Server
 PORT=8080
+
+# Database
 DATABASE_URL=postgres://user:password@localhost:5432/gsheetbase?sslmode=disable
 
-# JWT for session management
-JWT_ACCESS_SECRET=your-secret-key
+# JWT
+JWT_ACCESS_SECRET=your-random-secret-key-change-this
 JWT_ACCESS_TTL_MINUTES=60
 
 # CORS
-FRONTEND_ORIGIN=http://localhost:3000
+FRONTEND_ORIGIN=http://localhost:5173
 COOKIE_DOMAIN=localhost
 COOKIE_SECURE=false
 
@@ -145,106 +89,187 @@ GOOGLE_CLIENT_SECRET=your-client-secret
 GOOGLE_REDIRECT_URL=http://localhost:8080/api/auth/google/callback
 ```
 
-### Google Cloud Console Setup
+Create `web/ui/.env`:
 
-1. Create a project in [Google Cloud Console](https://console.cloud.google.com)
-2. Enable **Google Sheets API**
-3. Create OAuth 2.0 credentials
-4. Add authorized redirect URIs:
-   - `http://localhost:8080/api/auth/google/callback`
-5. Set OAuth consent screen:
-   - Scopes: `spreadsheets.readonly` ("View your Google Spreadsheets")
-
-### Database Setup
-
-Install dbmate:
-```bash
-# macOS
-brew install dbmate
-
-# Linux
-curl -fsSL -o /usr/local/bin/dbmate https://github.com/amacneil/dbmate/releases/latest/download/dbmate-linux-amd64
-chmod +x /usr/local/bin/dbmate
+```env
+VITE_API_BASE_URL=http://localhost:8080/api
 ```
 
-Run migrations:
+### 3. Database Setup
+
 ```bash
+# Run migrations
 make migrate-up
-# or
-dbmate up
 ```
 
-Rollback:
-```bash
-make migrate-down
-# or
-dbmate down
-```
-
-### Run
+### 4. Run Backend
 
 ```bash
-go run cmd/api/main.go
+# Install dependencies
+go mod download
+
+# Run server
+make run
+
+# Or directly
+go run web/cmd/api/main.go
 ```
 
-## Usage Flow
+Backend will run on `http://localhost:8080`
 
-1. **Authenticate with Google**
-   ```bash
-   # Visit in browser
-   http://localhost:8080/api/auth/google/start
-   # Complete OAuth, receive JWT token
-   ```
+### 5. Run Frontend
 
-2. **Register Sheets You Want to Access**
-   ```bash
-   # Extract Sheet ID from URL: https://docs.google.com/spreadsheets/d/SHEET_ID_HERE/edit
-   
-   curl -X POST http://localhost:8080/api/sheets/register \
-     -H "Authorization: Bearer YOUR_JWT_TOKEN" \
-     -H "Content-Type: application/json" \
-     -d '{
-       "sheet_id": "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms",
-       "sheet_name": "Sales Data",
-       "description": "Q1 2026 sales tracking"
-     }'
-   ```
+```bash
+cd web/ui
 
-3. **Access Registered Sheet Data**
-   ```bash
-   curl -X POST http://localhost:8080/api/sheets/data \
-     -H "Authorization: Bearer YOUR_JWT_TOKEN" \
-     -H "Content-Type: application/json" \
-     -d '{
-       "sheet_id": "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms",
-       "range": "Sheet1!A1:Z100"
-     }'
-   ```
+# Install dependencies
+npm install
 
-4. **List Your Registered Sheets**
-   ```bash
-   curl -X GET http://localhost:8080/api/sheets/registered \
-     -H "Authorization: Bearer YOUR_JWT_TOKEN"
-   ```
+# Run dev server
+npm run dev
+```
 
-5. **Remove Sheet from Allowed List**
-   ```bash
-   curl -X DELETE http://localhost:8080/api/sheets/registered/SHEET_ID_HERE \
-     -H "Authorization: Bearer YOUR_JWT_TOKEN"
-   ```
+Frontend will run on `http://localhost:5173`
 
-## Security
+## How to Use
 
-- **JWT tokens**: Used for user session management and authenticated operations
-- **OAuth scope**: `spreadsheets.readonly` (read-only, clean consent screen)
-- **Application-level access control**: Database tracks which sheets each user has registered
-- **No password authentication**: Only Google OAuth
-- **HTTPS recommended**: Use HTTPS in production
+### 1. Sign In with Google
 
-## Removed Features
+- Navigate to `http://localhost:5173`
+- Click "Continue with Google"
+- Grant permissions to view your Google Sheets
+- You'll be redirected to the dashboard
 
-This project has been simplified from the original template:
-- ❌ No password authentication
-- ❌ No refresh tokens
-- ❌ No role-based access control
-- ❌ No data caching (reads directly from Google Sheets)
+### 2. Register a Sheet
+
+1. Click "Register Sheet" button
+2. Paste your Google Sheets URL or Sheet ID
+   - Example URL: `https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit`
+   - Sheet ID: `1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms`
+3. Optionally add a name and description
+4. Click OK
+
+### 3. Access Sheet Data via API
+
+Once registered, you can access sheet data:
+
+```bash
+# Get sheet data (requires authentication cookie)
+curl -X POST http://localhost:8080/api/sheets/data \
+  -H "Content-Type: application/json" \
+  -d '{
+    "sheet_id": "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms",
+    "range": "Sheet1!A1:E10"
+  }'
+```
+
+## API Endpoints
+
+### Authentication
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/auth/google/start` | Start Google OAuth flow |
+| GET | `/api/auth/google/callback` | OAuth callback (redirects to frontend) |
+| GET | `/api/auth/me` | Get current user info (requires auth) |
+| POST | `/api/auth/logout` | Clear session cookie |
+
+### Sheet Management
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/sheets/register` | Register a new sheet |
+| GET | `/api/sheets/registered` | List registered sheets |
+| DELETE | `/api/sheets/registered/:sheet_id` | Remove a registered sheet |
+| POST | `/api/sheets/data` | Get data from a registered sheet |
+
+### Example: Get Sheet Data
+
+```bash
+POST /api/sheets/data
+Content-Type: application/json
+
+{
+  "sheet_id": "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms",
+  "range": "Sheet1!A1:E10"
+}
+```
+
+Response:
+```json
+{
+  "data": [
+    ["Name", "Email", "Status", "Date", "Amount"],
+    ["John Doe", "john@example.com", "Active", "2026-01-15", "100"],
+    ["Jane Smith", "jane@example.com", "Pending", "2026-01-16", "200"]
+  ]
+}
+```
+
+## Security Model
+
+### Application-Level Access Control
+
+This app uses **application-level per-sheet access control** with the `spreadsheets.readonly` OAuth scope:
+
+1. ✅ Users authenticate with Google OAuth
+2. ✅ Users explicitly register specific sheets they want to access
+3. ✅ Only registered sheets can be accessed via the API
+4. ✅ Database tracks which sheets each user has authorized
+5. ✅ Read-only access enforced by OAuth scope
+
+### Why This Approach?
+
+- **Clean OAuth Consent**: Users see "View your Google Spreadsheets" instead of scary "edit and delete" warnings
+- **Explicit Control**: Users choose exactly which sheets to expose
+- **Audit Trail**: Database records all registered sheets
+- **Security**: Can't accidentally access or modify wrong sheets
+
+## Development
+
+### Available Make Commands
+
+```bash
+make run          # Run the backend server
+make migrate-up   # Run database migrations
+make migrate-down # Rollback migrations
+make build        # Build the application
+```
+
+### Frontend Scripts
+
+```bash
+npm run dev       # Start dev server
+npm run build     # Build for production
+npm run preview   # Preview production build
+```
+
+## Deployment
+
+### Backend (Railway/Render/Fly.io)
+
+1. Set environment variables
+2. Run migrations
+3. Deploy Go application
+
+### Frontend (Vercel/Netlify)
+
+1. Set `VITE_API_BASE_URL` to your production API URL
+2. Build and deploy
+
+## Future Enhancements
+
+- [ ] API key generation for programmatic access
+- [ ] Rate limiting per user
+- [ ] Webhook support for sheet changes
+- [ ] Public/private sheet endpoints
+- [ ] Caching with Redis
+- [ ] Sheet data transformation (JSON, CSV, etc.)
+
+## License
+
+MIT
+
+## Contributing
+
+Contributions are welcome! Please open an issue or submit a pull request.

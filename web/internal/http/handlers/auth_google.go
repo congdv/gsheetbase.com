@@ -117,15 +117,13 @@ func (h *GoogleAuthHandler) Callback(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"token":      accessToken,
-		"expires_at": exp,
-		"user":       user,
-	})
+	// Set access token as HTTP-only cookie
+	c.SetSameSite(http.SameSiteLaxMode)
+	c.SetCookie("access_token", accessToken, int(time.Until(exp).Seconds()), "/", h.cfg.CookieDomain, h.cfg.CookieSecure, true)
 
-	// when we have front end code
-	// url := h.cfg.FrontendOrigin + "/oauth/callback?token=" + accessToken
-	// c.Redirect(http.StatusFound, url)
+	// Redirect to frontend callback
+	url := h.cfg.FrontendOrigin + "/oauth/callback"
+	c.Redirect(http.StatusFound, url)
 }
 
 func randomState(n int) string {

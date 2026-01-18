@@ -27,13 +27,21 @@ type accessClaims struct {
 // Authenticate validates JWT access tokens (used for Google OAuth sessions)
 func Authenticate(cfg *config.Config, authService services.AuthService) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
+		// Try to get token from Authorization header first, then from cookie
+		var tokenStr string
 		authHeader := ctx.GetHeader("Authorization")
-		if !strings.HasPrefix(authHeader, "Bearer ") {
+		if strings.HasPrefix(authHeader, "Bearer ") {
+			tokenStr = strings.TrimPrefix(authHeader, "Bearer ")
+		} else {
+			// Try to get from cookie
+			tokenStr, _ = ctx.Cookie("access_token")
+		}
+
+		if tokenStr == "" {
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "missing token"})
 			return
 		}
 
-		tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
 		token, err := jwt.ParseWithClaims(tokenStr, &accessClaims{}, func(t *jwt.Token) (interface{}, error) {
 			return []byte(cfg.JWTAccessSecret), nil
 		})

@@ -1,4 +1,4 @@
-Act as a Senior Full-Stack Engineer and Architect. I want to build a "Sheets-to-API" platform. 
+Act as a Senior Full-Stack Engineer and Architect. I want to build GSheetBase, a platform that converts Google Sheets to REST APIs. 
 
 # Tech Stack:
 - Backend: Go (Golang) using a "Light BFF" pattern.

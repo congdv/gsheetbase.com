@@ -33,3 +33,9 @@ func (h *AuthHandler) Me(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"user": user})
 }
+
+func (h *AuthHandler) Logout(c *gin.Context) {
+	// Clear the access token cookie
+	c.SetCookie("access_token", "", -1, "/", h.cfg.CookieDomain, h.cfg.CookieSecure, true)
+	c.JSON(http.StatusOK, gin.H{"message": "logged out"})
+}
