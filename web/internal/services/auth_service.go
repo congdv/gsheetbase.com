@@ -6,9 +6,9 @@ import (
 	"errors"
 	"time"
 
-	"github.com/congdv/go-auth/api/internal/config"
-	"github.com/congdv/go-auth/api/internal/models"
-	"github.com/congdv/go-auth/api/internal/repository"
+	"gsheetbase/web/internal/config"
+	"gsheetbase/web/internal/models"
+	"gsheetbase/web/internal/repository"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 )

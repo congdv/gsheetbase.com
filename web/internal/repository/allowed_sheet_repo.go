@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/congdv/go-auth/api/internal/models"
+	"gsheetbase/web/internal/models"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 )

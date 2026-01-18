@@ -7,10 +7,10 @@ help: ## Show this help message
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-15s %s\n", $$1, $$2}'
 
 run: ## Run the application
-	go run cmd/api/main.go
+	go run web/cmd/api/main.go
 
 build: ## Build the application
-	go build -o bin/api cmd/api/main.go
+	go build -o bin/api web/cmd/api/main.go
 
 migrate-up: ## Run database migrations
 	dbmate --migrations-dir ./migrations up

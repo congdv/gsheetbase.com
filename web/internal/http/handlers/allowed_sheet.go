@@ -3,8 +3,8 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/congdv/go-auth/api/internal/http/middleware"
-	"github.com/congdv/go-auth/api/internal/repository"
+	"gsheetbase/web/internal/http/middleware"
+	"gsheetbase/web/internal/repository"
 	"github.com/gin-gonic/gin"
 )
 

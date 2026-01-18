@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/congdv/go-auth/api/internal/config"
-	"github.com/congdv/go-auth/api/internal/models"
-	"github.com/congdv/go-auth/api/internal/services"
+	"gsheetbase/web/internal/config"
+	"gsheetbase/web/internal/models"
+	"gsheetbase/web/internal/services"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"

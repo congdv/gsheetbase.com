@@ -5,12 +5,12 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/congdv/go-auth/api/internal/config"
-	"github.com/congdv/go-auth/api/internal/database"
-	"github.com/congdv/go-auth/api/internal/http/handlers"
-	"github.com/congdv/go-auth/api/internal/http/middleware"
-	"github.com/congdv/go-auth/api/internal/repository"
-	"github.com/congdv/go-auth/api/internal/services"
+	"gsheetbase/web/internal/config"
+	"gsheetbase/web/internal/database"
+	"gsheetbase/web/internal/http/handlers"
+	"gsheetbase/web/internal/http/middleware"
+	"gsheetbase/web/internal/repository"
+	"gsheetbase/web/internal/services"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )

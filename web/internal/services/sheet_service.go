@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/congdv/go-auth/api/internal/config"
-	"github.com/congdv/go-auth/api/internal/repository"
+	"gsheetbase/web/internal/config"
+	"gsheetbase/web/internal/repository"
 	"github.com/google/uuid"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
