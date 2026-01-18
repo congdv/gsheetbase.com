@@ -2,7 +2,7 @@ Act as a Senior Full-Stack Engineer and Architect. I want to build a "Sheets-to-
 
 # Tech Stack:
 - Backend: Go (Golang) using a "Light BFF" pattern.
-- Frontend: React with Vite (TypeScript), Tailwind CSS.
+- Frontend: React with Vite (TypeScript), Tailwind CSS, Shadcn.
 - Infrastructure: Monorepo structured for Railway deployment (separate /ui and /api folders).
 - Database: PostgreSQL (for user metadata) and Redis (for API caching).
 
