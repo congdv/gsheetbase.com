@@ -12,6 +12,7 @@ export const ROUTES = {
   // Protected routes
   HOME: '/home',
   BILLING: '/billing',
+  SHEET_DETAIL: '/sheets/:id',
 } as const;
 
 // Type for route values

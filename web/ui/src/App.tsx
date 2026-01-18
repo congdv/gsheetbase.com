@@ -7,6 +7,7 @@ import { useAuth } from './context/AuthContext'
 import OAuthCallbackPage from './pages/OAuthCallbackPage'
 import HomePage from './pages/home'
 import BillingPage from './pages/billing'
+import SheetDetailPage from './pages/sheet-detail'
 import { ROUTES } from './constants/routes'
 
 const { Content } = Layout
@@ -38,6 +39,7 @@ export default function App() {
         }>
           <Route path={ROUTES.HOME} element={<HomePage />} />
           <Route path={ROUTES.BILLING} element={<BillingPage />} />
+          <Route path={ROUTES.SHEET_DETAIL} element={<SheetDetailPage />} />
         </Route>
       </Routes>
     </ConfigProvider>

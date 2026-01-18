@@ -16,7 +16,7 @@ export default function OAuthCallbackPage() {
       try {
         // Backend set the access token cookie; check the session
         await checkSession()
-        navigate('/dashboard', { replace: true })
+        navigate('/home', { replace: true })
       } catch {
         navigate('/login', { replace: true })
       }
