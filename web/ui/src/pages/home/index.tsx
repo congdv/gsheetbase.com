@@ -6,6 +6,7 @@ import { useSheets, Sheet } from '../../hooks/useSheets'
 import { SheetsTable } from '../../components/sheets/SheetsTable'
 import { RegisterSheetModal } from '../../components/sheets/RegisterSheetModal'
 import { ApiSettingsModal } from '../../components/sheets/ApiSettingsModal'
+import SEO from '../../components/SEO'
 
 const { Title, Paragraph } = Typography
 
@@ -70,6 +71,11 @@ export default function HomePage() {
 
   return (
     <PageContainer>
+      <SEO
+        title="Dashboard"
+        description="Manage your Google Sheets API connections. View, register, and configure REST API endpoints for your spreadsheets."
+        noIndex={true}
+      />
       <PageHeader>
         <div>
           <Title level={2}>My Sheets</Title>

@@ -1,4 +1,4 @@
-# GSheetBase Worker API
+# Gsheetbase Worker API
 
 Public API service for accessing Google Sheets data via API keys.
 

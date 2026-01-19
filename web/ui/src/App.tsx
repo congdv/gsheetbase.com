@@ -9,6 +9,7 @@ import HomePage from './pages/home'
 import BillingPage from './pages/billing'
 import SheetDetailPage from './pages/sheet-detail'
 import { ROUTES } from './constants/routes'
+import StructuredData from './components/StructuredData'
 
 const { Content } = Layout
 
@@ -27,6 +28,7 @@ export default function App() {
 
   return (
     <ConfigProvider>
+      <StructuredData />
       <Routes>
         <Route path={ROUTES.ROOT} element={!user ? <Navigate to={ROUTES.LOGIN} replace /> : <Navigate to={ROUTES.HOME} replace />} />
         <Route path={ROUTES.LOGIN} element={!user ? <LoginPage /> : <Navigate to={ROUTES.HOME} replace />} />

@@ -26,21 +26,22 @@ const StyledHeader = styled(Header)`
   }
 `
 
-const Logo = styled.div`
+const LogoContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  cursor: pointer;
+  
+  img {
+    height: 32px;
+    width: auto;
+  }
+`
+
+const LogoText = styled.div`
   font-size: 20px;
   font-weight: 600;
   color: #333;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  
-  &::before {
-    content: '';
-    width: 32px;
-    height: 32px;
-    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-    border-radius: 6px;
-  }
 `
 
 const UserSection = styled.div`
@@ -128,7 +129,10 @@ export default function DashboardLayout() {
   return (
     <StyledLayout>
       <StyledHeader>
-        <Logo>GSheetBase</Logo>
+        <LogoContainer onClick={() => navigate(ROUTES.HOME)}>
+          <img src="/gsheetbase.svg" alt="Gsheetbase Logo" />
+          <LogoText>Gsheetbase</LogoText>
+        </LogoContainer>
         <UserSection>
           <UserEmail>{user?.email}</UserEmail>
           <Dropdown menu={{ items: userMenuItems }} trigger={['click']} placement="bottomRight">

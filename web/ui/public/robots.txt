@@ -1,0 +1,9 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+
+# Disallow private/authenticated routes
+Disallow: /api/
+Disallow: /admin/
+
+Sitemap: https://gsheetbase.com/sitemap.xml
