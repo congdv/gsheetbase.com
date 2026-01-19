@@ -22,6 +22,8 @@ export const ApiSettingsModal = ({
   onPublish,
 }: ApiSettingsModalProps) => {
   const [form] = Form.useForm()
+  const workerBaseUrl = import.meta.env.VITE_WORKER_BASE_URL || 'https://api.gsheetbase.com'
+  const apiUrl = sheet?.api_key ? `${workerBaseUrl}/v1/${sheet.api_key}` : ''
 
   useEffect(() => {
     if (open && sheet) {
@@ -72,14 +74,12 @@ export const ApiSettingsModal = ({
         <div style={{ marginBottom: 24 }}>
           <Typography.Title level={5}>API Endpoint</Typography.Title>
           <Input
-            value={`https://api.gsheetbase.com/v1/${sheet.api_key}`}
+            value={apiUrl}
             readOnly
             addonAfter={
               <Tooltip title="Copy">
                 <CopyOutlined
-                  onClick={() =>
-                    copyToClipboard(`https://api.gsheetbase.com/v1/${sheet.api_key}`)
-                  }
+                  onClick={() => copyToClipboard(apiUrl)}
                   style={{ cursor: 'pointer' }}
                 />
               </Tooltip>
@@ -97,12 +97,12 @@ export const ApiSettingsModal = ({
             style={{ background: '#f5f5f5', padding: 12, borderRadius: 4, overflow: 'auto' }}
           >
             {`// JavaScript
-fetch('https://api.gsheetbase.com/v1/${sheet.api_key}')
+fetch('${apiUrl}')
   .then(res => res.json())
   .then(data => console.log(data))
 
 // cURL
-curl https://api.gsheetbase.com/v1/${sheet.api_key}`}
+curl ${apiUrl}`}
           </pre>
 
           <Typography.Title level={5} style={{ marginTop: 16 }}>

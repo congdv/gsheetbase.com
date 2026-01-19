@@ -17,9 +17,13 @@ interface Sheet {
 interface OverviewTabProps {
   sheet: Sheet
   onCopy: (text: string) => void
+  onNavigateToApiSettings?: () => void
 }
 
-export function OverviewTab({ sheet, onCopy }: OverviewTabProps) {
+export function OverviewTab({ sheet, onCopy, onNavigateToApiSettings }: OverviewTabProps) {
+  const workerBaseUrl = import.meta.env.VITE_WORKER_BASE_URL || 'https://api.gsheetbase.com'
+  const apiUrl = sheet.api_key ? `${workerBaseUrl}/v1/${sheet.api_key}` : null
+
   return (
     <Card title="Sheet Information">
       <Descriptions bordered column={1}>
@@ -39,6 +43,31 @@ export function OverviewTab({ sheet, onCopy }: OverviewTabProps) {
             >
               Copy
             </Button>
+          </Space>
+        </Descriptions.Item>
+        <Descriptions.Item label="API URL">
+          <Space>
+            <span
+              style={{
+                fontFamily: 'monospace',
+                fontSize: '12px',
+                cursor: apiUrl && onNavigateToApiSettings ? 'pointer' : 'default',
+                color: apiUrl && onNavigateToApiSettings ? '#1890ff' : 'inherit',
+                textDecoration: apiUrl && onNavigateToApiSettings ? 'underline' : 'none',
+              }}
+              onClick={() => apiUrl && onNavigateToApiSettings?.()}
+            >
+              {apiUrl || '—'}
+            </span>
+            {apiUrl && (
+              <Button
+                size="small"
+                icon={<CopyOutlined />}
+                onClick={() => onCopy(apiUrl)}
+              >
+                Copy
+              </Button>
+            )}
           </Space>
         </Descriptions.Item>
         <Descriptions.Item label="Status">

@@ -1,5 +1,7 @@
-import { Card, Space, Typography, Input, Tooltip, Descriptions, Result, Button } from 'antd'
-import { CopyOutlined, RocketOutlined } from '@ant-design/icons'
+import { Card, Space, Typography, Input, Tooltip, Descriptions, Result, Button, Select, Spin, Alert } from 'antd'
+import { CopyOutlined, RocketOutlined, SendOutlined } from '@ant-design/icons'
+import { useState } from 'react'
+import axios from 'axios'
 
 const { Paragraph, Text } = Typography
 
@@ -23,6 +25,51 @@ interface ApiSettingsTabProps {
 }
 
 export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps) {
+  const workerBaseUrl = import.meta.env.VITE_WORKER_BASE_URL || 'https://api.gsheetbase.com'
+  const apiUrl = `${workerBaseUrl}/v1/${sheet.api_key}`
+
+  const [testUrl, setTestUrl] = useState(apiUrl)
+  const [httpMethod, setHttpMethod] = useState<'GET' | 'POST'>('GET')
+  const [loading, setLoading] = useState(false)
+  const [response, setResponse] = useState<{
+    status: number
+    data: any
+    headers?: Record<string, string>
+    error?: string
+  } | null>(null)
+
+  const handleSendRequest = async () => {
+    setLoading(true)
+    setResponse(null)
+
+    try {
+      const startTime = Date.now()
+      const res = await axios({
+        method: httpMethod,
+        url: testUrl,
+        validateStatus: () => true, // Don't throw on any status
+      })
+      const endTime = Date.now()
+
+      setResponse({
+        status: res.status,
+        data: res.data,
+        headers: {
+          'content-type': res.headers['content-type'] || '',
+          'x-response-time': `${endTime - startTime}ms`,
+        },
+      })
+    } catch (error: any) {
+      setResponse({
+        status: 0,
+        data: null,
+        error: error.message || 'Request failed',
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
   if (!sheet.is_public || !sheet.api_key) {
     return (
       <Card>
@@ -46,14 +93,12 @@ export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps
         <div>
           <Text strong>API Endpoint</Text>
           <Input
-            value={`https://api.gsheetbase.com/v1/${sheet.api_key}`}
+            value={apiUrl}
             readOnly
             addonAfter={
               <Tooltip title="Copy">
                 <CopyOutlined
-                  onClick={() =>
-                    onCopy(`https://api.gsheetbase.com/v1/${sheet.api_key}`)
-                  }
+                  onClick={() => onCopy(apiUrl)}
                   style={{ cursor: 'pointer' }}
                 />
               </Tooltip>
@@ -74,6 +119,76 @@ export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps
           </Descriptions.Item>
         </Descriptions>
 
+        <Card title="API Tester" size="small">
+          <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+            <div>
+              <Text strong style={{ display: 'block', marginBottom: 8 }}>Test Your API</Text>
+              <Space.Compact style={{ width: '100%' }}>
+                <Select
+                  value={httpMethod}
+                  onChange={setHttpMethod}
+                  style={{ width: 100 }}
+                  options={[
+                    { label: 'GET', value: 'GET' },
+                    { label: 'POST', value: 'POST' },
+                  ]}
+                />
+                <Input
+                  value={testUrl}
+                  onChange={(e) => setTestUrl(e.target.value)}
+                  placeholder="API URL"
+                />
+                <Button
+                  type="primary"
+                  icon={<SendOutlined />}
+                  onClick={handleSendRequest}
+                  loading={loading}
+                >
+                  Send
+                </Button>
+              </Space.Compact>
+            </div>
+
+            {response && (
+              <div>
+                <Space style={{ marginBottom: 8 }}>
+                  <Text strong>Response:</Text>
+                  <Text
+                    type={response.status >= 200 && response.status < 300 ? 'success' : 'danger'}
+                  >
+                    Status {response.status}
+                  </Text>
+                  {response.headers?.['x-response-time'] && (
+                    <Text type="secondary">{response.headers['x-response-time']}</Text>
+                  )}
+                </Space>
+
+                {response.error ? (
+                  <Alert
+                    message="Request Failed"
+                    description={response.error}
+                    type="error"
+                    showIcon
+                  />
+                ) : (
+                  <pre
+                    style={{
+                      background: '#f5f5f5',
+                      padding: 12,
+                      borderRadius: 4,
+                      overflow: 'auto',
+                      maxHeight: 400,
+                      border: '1px solid #d9d9d9',
+                    }}
+                  >
+                    {JSON.stringify(response.data, null, 2)}
+                  </pre>
+                )}
+              </div>
+            )}
+          </Space>
+        </Card>
+
         <div>
           <Text strong>Example Usage</Text>
           <pre
@@ -86,12 +201,12 @@ export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps
             }}
           >
             {`// JavaScript
-fetch('https://api.gsheetbase.com/v1/${sheet.api_key}')
+fetch('${apiUrl}')
   .then(res => res.json())
   .then(data => console.log(data))
 
 // cURL
-curl https://api.gsheetbase.com/v1/${sheet.api_key}`}
+curl ${apiUrl}`}
           </pre>
         </div>
       </Space>

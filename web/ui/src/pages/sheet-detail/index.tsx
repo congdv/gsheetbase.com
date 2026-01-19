@@ -134,7 +134,7 @@ export default function SheetDetailPage() {
                 Overview
               </span>
             ),
-            children: <OverviewTab sheet={sheet} onCopy={copyToClipboard} />,
+            children: <OverviewTab sheet={sheet} onCopy={copyToClipboard} onNavigateToApiSettings={() => handleTabChange('api-settings')} />,
           },
           {
             key: 'api-settings',
