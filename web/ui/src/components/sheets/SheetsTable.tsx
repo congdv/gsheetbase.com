@@ -1,5 +1,5 @@
 import { Table, Button, Space, Tag, Popconfirm, Typography } from 'antd'
-import { LinkOutlined, ApiOutlined, DeleteOutlined } from '@ant-design/icons'
+import { LinkOutlined, DeleteOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import type { ColumnsType } from 'antd/es/table'
 import { Sheet } from '../../hooks/useSheets'
@@ -20,16 +20,12 @@ const ClickableRow = styled.tr`
 interface SheetsTableProps {
   sheets: Sheet[]
   isLoading: boolean
-  onOpenApiSettings: (sheet: Sheet) => void
-  onUnpublish: (sheetId: string) => void
   onDelete: (sheetId: string) => void
 }
 
 export const SheetsTable = ({
   sheets,
   isLoading,
-  onOpenApiSettings,
-  onUnpublish,
   onDelete,
 }: SheetsTableProps) => {
   const navigate = useNavigate()
@@ -81,36 +77,6 @@ export const SheetsTable = ({
           >
             Open
           </Button>
-          {record.is_public ? (
-            <>
-              <Button
-                type="link"
-                icon={<ApiOutlined />}
-                onClick={() => onOpenApiSettings(record)}
-              >
-                API Settings
-              </Button>
-              <Popconfirm
-                title="Unpublish this sheet?"
-                description="This will revoke the API key and make the sheet private."
-                onConfirm={() => onUnpublish(record.id)}
-                okText="Yes"
-                cancelText="No"
-              >
-                <Button type="link" danger>
-                  Unpublish
-                </Button>
-              </Popconfirm>
-            </>
-          ) : (
-            <Button
-              type="link"
-              icon={<ApiOutlined />}
-              onClick={() => onOpenApiSettings(record)}
-            >
-              Publish
-            </Button>
-          )}
           <Popconfirm
             title="Remove this sheet?"
             description="This will remove the sheet from your allowed list."

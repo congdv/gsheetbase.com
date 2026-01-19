@@ -7,6 +7,7 @@ import styled from 'styled-components'
 import api from '../../lib/axios'
 import { ROUTES } from '../../constants/routes'
 import { message } from 'antd'
+import { useSheets } from '../../hooks/useSheets'
 import { OverviewTab } from './OverviewTab'
 import { ApiSettingsTab } from './ApiSettingsTab'
 import { DataPreviewTab } from './DataPreviewTab'
@@ -45,6 +46,8 @@ export default function SheetDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState<string>('overview')
+  
+  const { publishSheet, isPublishing, unpublishSheet, isUnpublishing } = useSheets()
 
   // Sync tab with URL hash
   useEffect(() => {
@@ -76,10 +79,14 @@ export default function SheetDetailPage() {
     message.success('Copied to clipboard!')
   }
 
-  const handlePublish = () => {
-    // Navigate to home where publish modal can be opened
-    navigate(ROUTES.HOME)
-    message.info('Please use the Publish action from the sheets table')
+  const handlePublish = (values: { default_range?: string; use_first_row_as_header: boolean }) => {
+    if (!sheet) return
+    publishSheet({ sheetId: sheet.id, values })
+  }
+
+  const handleUnpublish = () => {
+    if (!sheet) return
+    unpublishSheet(sheet.id)
   }
 
   if (isLoading) {
@@ -134,7 +141,15 @@ export default function SheetDetailPage() {
                 Overview
               </span>
             ),
-            children: <OverviewTab sheet={sheet} onCopy={copyToClipboard} onNavigateToApiSettings={() => handleTabChange('api-settings')} />,
+            children: <OverviewTab 
+              sheet={sheet} 
+              onCopy={copyToClipboard} 
+              onNavigateToApiSettings={() => handleTabChange('api-settings')}
+              onPublish={handlePublish}
+              onUnpublish={handleUnpublish}
+              isPublishing={isPublishing}
+              isUnpublishing={isUnpublishing}
+            />,
           },
           {
             key: 'api-settings',
@@ -144,7 +159,7 @@ export default function SheetDetailPage() {
                 API Settings
               </span>
             ),
-            children: <ApiSettingsTab sheet={sheet} onCopy={copyToClipboard} onPublish={handlePublish} />,
+            children: <ApiSettingsTab sheet={sheet} onCopy={copyToClipboard} onPublish={() => handlePublish({ use_first_row_as_header: true })} />,
           },
           {
             key: 'data-preview',

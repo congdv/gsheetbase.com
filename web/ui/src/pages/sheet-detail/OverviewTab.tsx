@@ -1,5 +1,6 @@
-import { Card, Descriptions, Tag, Button, Space } from 'antd'
-import { LinkOutlined, CopyOutlined } from '@ant-design/icons'
+import { Card, Descriptions, Tag, Button, Space, Modal, Form, Input, Switch, Popconfirm } from 'antd'
+import { LinkOutlined, CopyOutlined, CheckCircleOutlined } from '@ant-design/icons'
+import { useState } from 'react'
 
 interface Sheet {
   id: string
@@ -18,11 +19,25 @@ interface OverviewTabProps {
   sheet: Sheet
   onCopy: (text: string) => void
   onNavigateToApiSettings?: () => void
+  onPublish?: (values: { default_range?: string; use_first_row_as_header: boolean }) => void
+  onUnpublish?: () => void
+  isPublishing?: boolean
+  isUnpublishing?: boolean
 }
 
-export function OverviewTab({ sheet, onCopy, onNavigateToApiSettings }: OverviewTabProps) {
+export function OverviewTab({ sheet, onCopy, onNavigateToApiSettings, onPublish, onUnpublish, isPublishing, isUnpublishing }: OverviewTabProps) {
+  const [isPublishModalOpen, setIsPublishModalOpen] = useState(false)
+  const [form] = Form.useForm()
   const workerBaseUrl = import.meta.env.VITE_WORKER_BASE_URL || 'https://api.gsheetbase.com'
   const apiUrl = sheet.api_key ? `${workerBaseUrl}/v1/${sheet.api_key}` : null
+
+  const handlePublishSubmit = () => {
+    form.validateFields().then((values) => {
+      onPublish?.(values)
+      setIsPublishModalOpen(false)
+      form.resetFields()
+    })
+  }
 
   return (
     <Card title="Sheet Information">
@@ -71,11 +86,40 @@ export function OverviewTab({ sheet, onCopy, onNavigateToApiSettings }: Overview
           </Space>
         </Descriptions.Item>
         <Descriptions.Item label="Status">
-          {sheet.is_public ? (
-            <Tag color="green">Public</Tag>
-          ) : (
-            <Tag>Private</Tag>
-          )}
+          <Space>
+            {sheet.is_public ? (
+              <Tag color="green">Public</Tag>
+            ) : (
+              <Tag>Private</Tag>
+            )}
+            {!sheet.is_public ? (
+              <Button
+                type="primary"
+                size="small"
+                icon={<CheckCircleOutlined />}
+                onClick={() => setIsPublishModalOpen(true)}
+              >
+                Publish Sheet
+              </Button>
+            ) : (
+              <Popconfirm
+                title="Unpublish this sheet?"
+                description="This will revoke the API key and make the sheet private."
+                onConfirm={onUnpublish}
+                okText="Yes"
+                cancelText="No"
+              >
+                <Button
+                  type="default"
+                  size="small"
+                  danger
+                  loading={isUnpublishing}
+                >
+                  Unpublish
+                </Button>
+              </Popconfirm>
+            )}
+          </Space>
         </Descriptions.Item>
         <Descriptions.Item label="Registered">
           {new Date(sheet.created_at).toLocaleString()}
@@ -92,6 +136,44 @@ export function OverviewTab({ sheet, onCopy, onNavigateToApiSettings }: Overview
           </Button>
         </Descriptions.Item>
       </Descriptions>
+
+      <Modal
+        title="Publish Sheet"
+        open={isPublishModalOpen}
+        onOk={handlePublishSubmit}
+        onCancel={() => {
+          setIsPublishModalOpen(false)
+          form.resetFields()
+        }}
+        okText="Publish"
+        confirmLoading={isPublishing}
+      >
+        <Form
+          form={form}
+          layout="vertical"
+          initialValues={{
+            default_range: 'Sheet1',
+            use_first_row_as_header: true,
+          }}
+        >
+          <Form.Item
+            label="Default Range"
+            name="default_range"
+            tooltip="Specify the default sheet/range to fetch (e.g., Sheet1, Sheet1!A1:Z100)"
+          >
+            <Input placeholder="e.g., Sheet1 or Sheet1!A1:Z100" />
+          </Form.Item>
+
+          <Form.Item
+            label="Transform to JSON Objects"
+            name="use_first_row_as_header"
+            valuePropName="checked"
+            tooltip="If enabled, the first row will be used as keys for JSON objects"
+          >
+            <Switch />
+          </Form.Item>
+        </Form>
+      </Modal>
     </Card>
   )
 }
