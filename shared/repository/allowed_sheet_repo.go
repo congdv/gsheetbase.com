@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"gsheetbase/shared/models"
+
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 )
@@ -20,6 +21,7 @@ type AllowedSheetRepo interface {
 	Delete(ctx context.Context, userID uuid.UUID, sheetID string) error
 	Publish(ctx context.Context, sheetID uuid.UUID, defaultRange string, useFirstRowAsHeader bool) (string, error)
 	Unpublish(ctx context.Context, sheetID uuid.UUID) error
+	UpdateWriteSettings(ctx context.Context, sheetID uuid.UUID, allowWrite bool) error
 }
 
 type allowedSheetRepo struct {
@@ -102,7 +104,7 @@ func (r *allowedSheetRepo) Delete(ctx context.Context, userID uuid.UUID, sheetID
 func (r *allowedSheetRepo) Publish(ctx context.Context, sheetID uuid.UUID, defaultRange string, useFirstRowAsHeader bool) (string, error) {
 	// Generate API key
 	apiKey := generateAPIKey()
-	
+
 	_, err := r.db.ExecContext(ctx, `
 		UPDATE allowed_sheets 
 		SET api_key = $1, 
@@ -112,7 +114,7 @@ func (r *allowedSheetRepo) Publish(ctx context.Context, sheetID uuid.UUID, defau
 		    updated_at = NOW()
 		WHERE id = $4
 	`, apiKey, defaultRange, useFirstRowAsHeader, sheetID)
-	
+
 	return apiKey, err
 }
 
@@ -124,6 +126,16 @@ func (r *allowedSheetRepo) Unpublish(ctx context.Context, sheetID uuid.UUID) err
 		    updated_at = NOW()
 		WHERE id = $1
 	`, sheetID)
+	return err
+}
+
+func (r *allowedSheetRepo) UpdateWriteSettings(ctx context.Context, sheetID uuid.UUID, allowWrite bool) error {
+	_, err := r.db.ExecContext(ctx, `
+		UPDATE allowed_sheets 
+		SET allow_write = $1,
+		    updated_at = NOW()
+		WHERE id = $2
+	`, allowWrite, sheetID)
 	return err
 }
 

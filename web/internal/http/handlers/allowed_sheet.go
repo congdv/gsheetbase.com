@@ -5,6 +5,7 @@ import (
 
 	"gsheetbase/shared/repository"
 	"gsheetbase/web/internal/http/middleware"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -85,8 +86,8 @@ func (h *AllowedSheetHandler) Delete(c *gin.Context) {
 }
 
 type publishSheetRequest struct {
-	DefaultRange           string `json:"default_range"`
-	UseFirstRowAsHeader    bool   `json:"use_first_row_as_header"`
+	DefaultRange        string `json:"default_range"`
+	UseFirstRowAsHeader bool   `json:"use_first_row_as_header"`
 }
 
 // Publish generates an API key and makes the sheet publicly accessible
@@ -168,4 +169,49 @@ func (h *AllowedSheetHandler) Unpublish(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "sheet unpublished successfully"})
+}
+
+type updateWriteSettingsRequest struct {
+	AllowWrite bool `json:"allow_write"`
+}
+
+// UpdateWriteSettings enables/disables write operations for a sheet
+func (h *AllowedSheetHandler) UpdateWriteSettings(c *gin.Context) {
+	userID, ok := middleware.GetUserID(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	sheetID := c.Param("id")
+	if sheetID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "sheet id is required"})
+		return
+	}
+
+	var req updateWriteSettingsRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body"})
+		return
+	}
+
+	// Verify the sheet belongs to the user
+	sheet, err := h.repo.FindByID(c.Request.Context(), middleware.MustParseUUID(sheetID))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "sheet not found"})
+		return
+	}
+
+	if sheet.UserID != userID {
+		c.JSON(http.StatusForbidden, gin.H{"error": "access denied"})
+		return
+	}
+
+	// Update write settings
+	if err := h.repo.UpdateWriteSettings(c.Request.Context(), sheet.ID, req.AllowWrite); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update write settings"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "write settings updated successfully"})
 }

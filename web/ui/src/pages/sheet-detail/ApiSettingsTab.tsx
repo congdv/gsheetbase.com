@@ -1,7 +1,8 @@
-import { Card, Space, Typography, Input, Tooltip, Descriptions, Result, Button, Select, Spin, Alert, Tag, Row, Col } from 'antd'
+import { Card, Space, Typography, Input, Tooltip, Descriptions, Result, Button, Select, Spin, Alert, Tag, Row, Col, Switch, message } from 'antd'
 import { CopyOutlined, RocketOutlined, SendOutlined, LockOutlined } from '@ant-design/icons'
 import { useState } from 'react'
 import axios from 'axios'
+import api from '../../lib/axios'
 import { useAuth } from '../../context/AuthContext'
 import { ScopeConsentPrompt, ScopeInfo } from '../../components/ScopeConsentPrompt'
 
@@ -38,6 +39,7 @@ export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps
   const [requestBody, setRequestBody] = useState('{\n  \n}')
   const [loading, setLoading] = useState(false)
   const [showScopePrompt, setShowScopePrompt] = useState(false)
+  const [updatingWrite, setUpdatingWrite] = useState(false)
   const [response, setResponse] = useState<{
     status: number
     data: any
@@ -106,6 +108,23 @@ export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps
     }
   }
 
+  const handleToggleWrite = async (checked: boolean) => {
+    setUpdatingWrite(true)
+    try {
+      await api.patch(
+        `/sheets/${sheet.id}/write-settings`,
+        { allow_write: checked }
+      )
+      message.success(`Write operations ${checked ? 'enabled' : 'disabled'} successfully`)
+      // Trigger a refresh by updating parent component (if needed)
+      window.location.reload() // Simple refresh for now
+    } catch (error: any) {
+      message.error(`Failed to update write settings: ${error.response?.data?.error || error.message}`)
+    } finally {
+      setUpdatingWrite(false)
+    }
+  }
+
   const scopeInfo: ScopeInfo[] = [
     {
       scope: 'spreadsheets',
@@ -161,6 +180,18 @@ export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps
           <Descriptions.Item label="Transform to JSON Objects">
             {sheet.use_first_row_as_header ? 'Yes' : 'No'}
           </Descriptions.Item>
+          <Descriptions.Item label="Enable Write Operations">
+            <Space>
+              <Switch 
+                checked={sheet.allow_write} 
+                onChange={handleToggleWrite} 
+                loading={updatingWrite}
+              />
+              <Text type="secondary" style={{ fontSize: 12 }}>
+                {sheet.allow_write ? 'POST/PUT/PATCH enabled' : 'Only GET requests allowed'}
+              </Text>
+            </Space>
+          </Descriptions.Item>
         </Descriptions>
 
         <Card title="Supported Methods" size="small">
@@ -185,22 +216,7 @@ export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps
                 <Text><code>POST</code> Add new rows</Text>
               </Col>
               <Col>
-                {canWrite && sheet.allow_write ? (
-                  <Tag color="success">Available</Tag>
-                ) : !canWrite ? (
-                  <Tooltip title="Grant write permission to enable">
-                    <Button
-                      size="small"
-                      type="link"
-                      icon={<LockOutlined />}
-                      onClick={() => setShowScopePrompt(true)}
-                    >
-                      Enable
-                    </Button>
-                  </Tooltip>
-                ) : (
-                  <Tag>Coming Soon</Tag>
-                )}
+                <Tag color="success">Available</Tag>
               </Col>
             </Row>
 
@@ -209,22 +225,7 @@ export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps
                 <Text><code>PUT</code> Update rows</Text>
               </Col>
               <Col>
-                {canWrite && sheet.allow_write ? (
-                  <Tag color="success">Available</Tag>
-                ) : !canWrite ? (
-                  <Tooltip title="Grant write permission to enable">
-                    <Button
-                      size="small"
-                      type="link"
-                      icon={<LockOutlined />}
-                      onClick={() => setShowScopePrompt(true)}
-                    >
-                      Enable
-                    </Button>
-                  </Tooltip>
-                ) : (
-                  <Tag>Coming Soon</Tag>
-                )}
+                <Tag color="success">Available</Tag>
               </Col>
             </Row>
 
@@ -233,22 +234,7 @@ export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps
                 <Text><code>PATCH</code> Partially update rows</Text>
               </Col>
               <Col>
-                {canWrite && sheet.allow_write ? (
-                  <Tag color="success">Available</Tag>
-                ) : !canWrite ? (
-                  <Tooltip title="Grant write permission to enable">
-                    <Button
-                      size="small"
-                      type="link"
-                      icon={<LockOutlined />}
-                      onClick={() => setShowScopePrompt(true)}
-                    >
-                      Enable
-                    </Button>
-                  </Tooltip>
-                ) : (
-                  <Tag>Coming Soon</Tag>
-                )}
+                <Tag color="success">Available</Tag>
               </Col>
             </Row>
           </Space>
@@ -288,7 +274,22 @@ export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps
 
             {['POST', 'PUT', 'PATCH'].includes(httpMethod) && (
               <div>
-                <Text strong style={{ display: 'block', marginBottom: 8 }}>Request Body</Text>
+                <Space direction="horizontal" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                  <Text strong>Request Body</Text>
+                  <Button 
+                    size="small" 
+                    onClick={() => {
+                      const example = httpMethod === 'POST' 
+                        ? '{\n  "data": [\n    ["John", "Doe", "30"],\n    ["Jane", "Smith", "25"]\n  ]\n}'
+                        : httpMethod === 'PUT'
+                        ? '{\n  "data": [\n    ["Updated", "Row", "1"],\n    ["Updated", "Row", "2"]\n  ],\n  "range": "Sheet1!A2:C3"\n}'
+                        : '{\n  "data": [\n    ["Patched", "Value"]\n  ],\n  "range": "Sheet1!A2:B2"\n}'
+                      setRequestBody(example)
+                    }}
+                  >
+                    Load Example
+                  </Button>
+                </Space>
                 <Input.TextArea
                   value={requestBody}
                   onChange={(e) => setRequestBody(e.target.value)}
@@ -296,6 +297,11 @@ export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps
                   rows={6}
                   style={{ fontFamily: 'monospace' }}
                 />
+                <Text type="secondary" style={{ fontSize: 12, display: 'block', marginTop: 4 }}>
+                  {httpMethod === 'POST' && 'POST appends new rows to the sheet. Range is optional.'}
+                  {httpMethod === 'PUT' && 'PUT updates existing rows. Range is required.'}
+                  {httpMethod === 'PATCH' && 'PATCH partially updates rows. Range is required.'}
+                </Text>
               </div>
             )}
 
@@ -350,13 +356,57 @@ export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps
               marginTop: 8,
             }}
           >
-            {`// JavaScript
+            {httpMethod === 'GET' ? `// JavaScript - Fetch data
 fetch('${apiUrl}')
   .then(res => res.json())
   .then(data => console.log(data))
 
-// cURL
-curl ${apiUrl}`}
+// cURL - Fetch data
+curl ${apiUrl}` : 
+httpMethod === 'POST' ? `// JavaScript - Add new rows
+fetch('${apiUrl}', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    data: [
+      ["John", "Doe", "30"],
+      ["Jane", "Smith", "25"]
+    ]
+  })
+})
+
+// cURL - Add new rows
+curl -X POST ${apiUrl} \\
+  -H 'Content-Type: application/json' \\
+  -d '{"data": [["John", "Doe", "30"]]}'` :
+httpMethod === 'PUT' ? `// JavaScript - Update rows
+fetch('${apiUrl}', {
+  method: 'PUT',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    data: [["Updated", "Row"]],
+    range: "Sheet1!A2:B2"
+  })
+})
+
+// cURL - Update rows
+curl -X PUT ${apiUrl} \\
+  -H 'Content-Type: application/json' \\
+  -d '{"data": [["Updated", "Row"]], "range": "Sheet1!A2:B2"}'` :
+`// JavaScript - Partial update
+fetch('${apiUrl}', {
+  method: 'PATCH',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    data: [["Patched"]],
+    range: "Sheet1!A2"
+  })
+})
+
+// cURL - Partial update
+curl -X PATCH ${apiUrl} \\
+  -H 'Content-Type: application/json' \\
+  -d '{"data": [["Patched"]], "range": "Sheet1!A2"}'`}
           </pre>
         </div>
 

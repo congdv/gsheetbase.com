@@ -9,6 +9,7 @@ import (
 	"gsheetbase/shared/repository"
 	"gsheetbase/worker/internal/config"
 	"gsheetbase/worker/internal/http/handlers"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
@@ -38,7 +39,7 @@ func main() {
 	// CORS - permissive for public API
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"*"},
-		AllowMethods:     []string{"GET", "OPTIONS"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Accept"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: false,
@@ -53,6 +54,9 @@ func main() {
 	// Public API routes
 	v1 := r.Group("/v1")
 	v1.GET("/:api_key", sheetHandler.GetPublic)
+	v1.POST("/:api_key", sheetHandler.PostPublic)
+	v1.PUT("/:api_key", sheetHandler.PutPublic)
+	v1.PATCH("/:api_key", sheetHandler.PatchPublic)
 
 	addr := ":" + cfg.Port
 	log.Printf("Worker API listening on %s", addr)

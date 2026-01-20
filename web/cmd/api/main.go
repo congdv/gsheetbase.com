@@ -70,6 +70,7 @@ func main() {
 	api.DELETE("/sheets/registered/:sheet_id", middleware.Authenticate(cfg, authService), allowedSheetHandler.Delete)
 	api.POST("/sheets/:id/publish", middleware.Authenticate(cfg, authService), allowedSheetHandler.Publish)
 	api.DELETE("/sheets/:id/unpublish", middleware.Authenticate(cfg, authService), allowedSheetHandler.Unpublish)
+	api.PATCH("/sheets/:id/write-settings", middleware.Authenticate(cfg, authService), allowedSheetHandler.UpdateWriteSettings)
 
 	// Sheet access (requires JWT auth + sheet must be registered)
 	sheetHandler := handlers.NewSheetHandler(sheetService)

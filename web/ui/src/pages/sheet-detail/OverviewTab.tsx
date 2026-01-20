@@ -1,8 +1,6 @@
-import { Card, Descriptions, Tag, Button, Space, Modal, Form, Input, Switch, Popconfirm, List, Divider, Typography, Tooltip } from 'antd'
-import { LinkOutlined, CopyOutlined, CheckCircleOutlined, LockOutlined } from '@ant-design/icons'
+import { Card, Descriptions, Tag, Button, Space, Modal, Form, Input, Switch, Popconfirm, List, Divider, Typography } from 'antd'
+import { LinkOutlined, CopyOutlined, CheckCircleOutlined } from '@ant-design/icons'
 import { useState } from 'react'
-import { useAuth } from '../../context/AuthContext'
-import { ScopeConsentPrompt, ScopeInfo } from '../../components/ScopeConsentPrompt'
 
 const { Text } = Typography
 
@@ -33,47 +31,22 @@ interface OverviewTabProps {
 
 export function OverviewTab({ sheet, onCopy, onNavigateToApiSettings, onPublish, onUnpublish, isPublishing, isUnpublishing }: OverviewTabProps) {
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false)
-  const [showScopePrompt, setShowScopePrompt] = useState(false)
   const [form] = Form.useForm()
-  const { hasScope, requestScopes } = useAuth()
   const workerBaseUrl = import.meta.env.VITE_WORKER_BASE_URL || 'https://api.gsheetbase.com'
   const apiUrl = sheet.api_key ? `${workerBaseUrl}/v1/${sheet.api_key}` : null
-
-  const canRead = hasScope('https://www.googleapis.com/auth/spreadsheets.readonly')
-  const canWrite = hasScope('https://www.googleapis.com/auth/spreadsheets')
 
   const operations = [
     {
       name: 'Read Data',
-      scope: 'https://www.googleapis.com/auth/spreadsheets.readonly',
-      available: canRead,
       methods: ['GET'],
       description: 'Fetch rows from your sheet',
+      available: true,
     },
     {
       name: 'Write Data',
-      scope: 'https://www.googleapis.com/auth/spreadsheets',
-      available: canWrite,
       methods: ['POST', 'PUT', 'PATCH'],
       description: 'Add, update, or modify sheet rows',
-      comingSoon: true,
-    },
-  ]
-
-  const handleRequestWriteAccess = async () => {
-    try {
-      await requestScopes(['https://www.googleapis.com/auth/spreadsheets'])
-      setShowScopePrompt(false)
-    } catch (error) {
-      console.error('Failed to request write scope:', error)
-    }
-  }
-
-  const scopeInfo: ScopeInfo[] = [
-    {
-      scope: 'spreadsheets',
-      reason: 'Write access to your Google Sheets',
-      example: 'Allows adding, updating, and deleting rows via API',
+      available: true,
     },
   ]
 
@@ -195,16 +168,8 @@ export function OverviewTab({ sheet, onCopy, onNavigateToApiSettings, onPublish,
             actions={[
               op.available ? (
                 <Tag color="green">Active</Tag>
-              ) : op.comingSoon ? (
-                <Tag>Coming Soon</Tag>
               ) : (
-                <Button 
-                  size="small" 
-                  onClick={() => setShowScopePrompt(true)}
-                  icon={<LockOutlined />}
-                >
-                  Enable
-                </Button>
+                <Tag>Coming Soon</Tag>
               )
             ]}
           >
@@ -226,11 +191,6 @@ export function OverviewTab({ sheet, onCopy, onNavigateToApiSettings, onPublish,
                       </code>
                     ))}
                   </div>
-                  {!op.available && !op.comingSoon && (
-                    <Text type="warning" style={{ fontSize: 12 }}>
-                      Requires additional Google permission
-                    </Text>
-                  )}
                 </Space>
               }
             />
@@ -276,13 +236,6 @@ export function OverviewTab({ sheet, onCopy, onNavigateToApiSettings, onPublish,
           </Form.Item>
         </Form>
       </Modal>
-
-      <ScopeConsentPrompt
-        open={showScopePrompt}
-        onConsent={handleRequestWriteAccess}
-        onCancel={() => setShowScopePrompt(false)}
-        scopes={scopeInfo}
-      />
     </>
   )
 }

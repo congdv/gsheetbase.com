@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"gsheetbase/shared/repository"
+
 	"github.com/gin-gonic/gin"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -146,4 +147,179 @@ func transformToJSON(data [][]interface{}) []map[string]interface{} {
 	}
 
 	return result
+}
+
+// PostPublic handles POST /v1/:api_key/rows - Append new rows
+func (h *SheetHandler) PostPublic(c *gin.Context) {
+	apiKey := c.Param("api_key")
+	if apiKey == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "api_key is required"})
+		return
+	}
+
+	var req struct {
+		Data  [][]interface{} `json:"data" binding:"required"`
+		Range string          `json:"range"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body", "details": err.Error()})
+		return
+	}
+
+	// Find the sheet by API key
+	sheet, err := h.sheetRepo.FindByAPIKey(c.Request.Context(), apiKey)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "invalid api key or sheet not found"})
+		return
+	}
+
+	// Check if write operations are allowed
+	if !sheet.AllowWrite {
+		c.JSON(http.StatusForbidden, gin.H{"error": "write operations not enabled for this sheet"})
+		return
+	}
+
+	// Get the user to access their Google tokens
+	user, err := h.userRepo.FindByID(c.Request.Context(), sheet.UserID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch user credentials"})
+		return
+	}
+
+	if user.GoogleAccessToken == nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "sheet owner needs to reconnect Google account"})
+		return
+	}
+
+	// Determine range
+	targetRange := req.Range
+	if targetRange == "" && sheet.DefaultRange != nil {
+		targetRange = *sheet.DefaultRange
+	}
+	if targetRange == "" {
+		targetRange = "Sheet1"
+	}
+
+	// Append data to sheet
+	if err := h.appendSheetData(c.Request.Context(), *user.GoogleAccessToken, sheet.SheetID, targetRange, req.Data); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to append data", "details": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "rows appended successfully"})
+}
+
+// PutPublic handles PUT /v1/:api_key/rows - Update/replace rows
+func (h *SheetHandler) PutPublic(c *gin.Context) {
+	apiKey := c.Param("api_key")
+	if apiKey == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "api_key is required"})
+		return
+	}
+
+	var req struct {
+		Data  [][]interface{} `json:"data" binding:"required"`
+		Range string          `json:"range" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body", "details": err.Error()})
+		return
+	}
+
+	// Find the sheet by API key
+	sheet, err := h.sheetRepo.FindByAPIKey(c.Request.Context(), apiKey)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "invalid api key or sheet not found"})
+		return
+	}
+
+	// Check if write operations are allowed
+	if !sheet.AllowWrite {
+		c.JSON(http.StatusForbidden, gin.H{"error": "write operations not enabled for this sheet"})
+		return
+	}
+
+	// Get the user to access their Google tokens
+	user, err := h.userRepo.FindByID(c.Request.Context(), sheet.UserID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch user credentials"})
+		return
+	}
+
+	if user.GoogleAccessToken == nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "sheet owner needs to reconnect Google account"})
+		return
+	}
+
+	// Update data in sheet
+	if err := h.updateSheetData(c.Request.Context(), *user.GoogleAccessToken, sheet.SheetID, req.Range, req.Data); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update data", "details": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "rows updated successfully"})
+}
+
+// PatchPublic handles PATCH /v1/:api_key/rows - Partial update
+func (h *SheetHandler) PatchPublic(c *gin.Context) {
+	// PATCH uses same logic as PUT for Google Sheets
+	h.PutPublic(c)
+}
+
+func (h *SheetHandler) appendSheetData(ctx context.Context, accessToken, sheetID, rangeStr string, data [][]interface{}) error {
+	token := &oauth2.Token{AccessToken: accessToken}
+	config := &oauth2.Config{
+		ClientID:     "dummy",
+		ClientSecret: "dummy",
+		Endpoint:     google.Endpoint,
+	}
+	client := config.Client(ctx, token)
+
+	srv, err := sheets.NewService(ctx, option.WithHTTPClient(client))
+	if err != nil {
+		return fmt.Errorf("unable to create sheets service: %w", err)
+	}
+
+	valueRange := &sheets.ValueRange{
+		Values: data,
+	}
+
+	_, err = srv.Spreadsheets.Values.Append(sheetID, rangeStr, valueRange).
+		ValueInputOption("USER_ENTERED").
+		Do()
+	if err != nil {
+		return fmt.Errorf("unable to append data to sheet: %w", err)
+	}
+
+	return nil
+}
+
+func (h *SheetHandler) updateSheetData(ctx context.Context, accessToken, sheetID, rangeStr string, data [][]interface{}) error {
+	token := &oauth2.Token{AccessToken: accessToken}
+	config := &oauth2.Config{
+		ClientID:     "dummy",
+		ClientSecret: "dummy",
+		Endpoint:     google.Endpoint,
+	}
+	client := config.Client(ctx, token)
+
+	srv, err := sheets.NewService(ctx, option.WithHTTPClient(client))
+	if err != nil {
+		return fmt.Errorf("unable to create sheets service: %w", err)
+	}
+
+	valueRange := &sheets.ValueRange{
+		Values: data,
+	}
+
+	_, err = srv.Spreadsheets.Values.Update(sheetID, rangeStr, valueRange).
+		ValueInputOption("USER_ENTERED").
+		Do()
+	if err != nil {
+		return fmt.Errorf("unable to update sheet data: %w", err)
+	}
+
+	return nil
 }
