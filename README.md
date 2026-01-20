@@ -1,4 +1,4 @@
-# GSheetBase
+# Gsheetbase
 
 A platform that allows users to connect their Google Sheets via OAuth and generate REST API endpoints that return sheet data as clean JSON.
 

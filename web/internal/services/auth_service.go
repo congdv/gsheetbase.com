@@ -9,6 +9,7 @@ import (
 	"gsheetbase/shared/models"
 	"gsheetbase/shared/repository"
 	"gsheetbase/web/internal/config"
+
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 )
@@ -18,6 +19,8 @@ type AuthService interface {
 	GenerateAccessToken(user models.User) (string, time.Time, error)
 	Me(ctx context.Context, userID uuid.UUID) (models.User, error)
 	UpdateGoogleTokens(ctx context.Context, userID uuid.UUID, accessToken, refreshToken string, expiry time.Time) error
+	UpdateGoogleScopes(ctx context.Context, userID uuid.UUID, scopes []string) error
+	HasScope(ctx context.Context, userID uuid.UUID, scope string) (bool, error)
 }
 
 type authService struct {
@@ -76,4 +79,22 @@ func (a *authService) GenerateAccessToken(user models.User) (string, time.Time, 
 
 func (a *authService) UpdateGoogleTokens(ctx context.Context, userID uuid.UUID, accessToken, refreshToken string, expiry time.Time) error {
 	return a.users.UpdateGoogleTokens(ctx, userID, accessToken, refreshToken, expiry)
+}
+
+func (a *authService) UpdateGoogleScopes(ctx context.Context, userID uuid.UUID, scopes []string) error {
+	return a.users.UpdateGoogleScopes(ctx, userID, scopes)
+}
+
+func (a *authService) HasScope(ctx context.Context, userID uuid.UUID, scope string) (bool, error) {
+	user, err := a.users.FindByID(ctx, userID)
+	if err != nil {
+		return false, err
+	}
+
+	for _, s := range user.GoogleScopes {
+		if s == scope {
+			return true, nil
+		}
+	}
+	return false, nil
 }

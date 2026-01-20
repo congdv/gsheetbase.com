@@ -11,6 +11,7 @@ import (
 	"gsheetbase/web/internal/http/handlers"
 	"gsheetbase/web/internal/http/middleware"
 	"gsheetbase/web/internal/services"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
@@ -55,6 +56,7 @@ func main() {
 	googleHandler := handlers.NewGoogleAuthHandler(authService, cfg)
 	api.GET("/auth/google/start", googleHandler.Start)
 	api.GET("/auth/google/callback", googleHandler.Callback)
+	api.POST("/auth/google/request-scopes", middleware.Authenticate(cfg, authService), googleHandler.RequestAdditionalScopes)
 
 	// Authenticated routes (JWT from Google OAuth)
 	authHandler := handlers.NewAuthHandler(authService, cfg)

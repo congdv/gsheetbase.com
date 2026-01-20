@@ -1,7 +1,9 @@
-import { Card, Space, Typography, Input, Tooltip, Descriptions, Result, Button, Select, Spin, Alert } from 'antd'
-import { CopyOutlined, RocketOutlined, SendOutlined } from '@ant-design/icons'
+import { Card, Space, Typography, Input, Tooltip, Descriptions, Result, Button, Select, Spin, Alert, Tag, Row, Col } from 'antd'
+import { CopyOutlined, RocketOutlined, SendOutlined, LockOutlined } from '@ant-design/icons'
 import { useState } from 'react'
 import axios from 'axios'
+import { useAuth } from '../../context/AuthContext'
+import { ScopeConsentPrompt, ScopeInfo } from '../../components/ScopeConsentPrompt'
 
 const { Paragraph, Text } = Typography
 
@@ -15,6 +17,8 @@ interface Sheet {
   api_key?: string
   default_range?: string
   use_first_row_as_header: boolean
+  allow_write?: boolean
+  allowed_methods?: string[]
   created_at: string
 }
 
@@ -27,10 +31,13 @@ interface ApiSettingsTabProps {
 export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps) {
   const workerBaseUrl = import.meta.env.VITE_WORKER_BASE_URL || 'https://api.gsheetbase.com'
   const apiUrl = `${workerBaseUrl}/v1/${sheet.api_key}`
+  const { hasScope, requestScopes } = useAuth()
 
   const [testUrl, setTestUrl] = useState(apiUrl)
-  const [httpMethod, setHttpMethod] = useState<'GET' | 'POST'>('GET')
+  const [httpMethod, setHttpMethod] = useState<'GET' | 'POST' | 'PUT' | 'PATCH'>('GET')
+  const [requestBody, setRequestBody] = useState('{\n  \n}')
   const [loading, setLoading] = useState(false)
+  const [showScopePrompt, setShowScopePrompt] = useState(false)
   const [response, setResponse] = useState<{
     status: number
     data: any
@@ -38,17 +45,37 @@ export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps
     error?: string
   } | null>(null)
 
+  const canRead = hasScope('https://www.googleapis.com/auth/spreadsheets.readonly')
+  const canWrite = hasScope('https://www.googleapis.com/auth/spreadsheets')
+
   const handleSendRequest = async () => {
     setLoading(true)
     setResponse(null)
 
     try {
       const startTime = Date.now()
-      const res = await axios({
+      const config: any = {
         method: httpMethod,
         url: testUrl,
-        validateStatus: () => true, // Don't throw on any status
-      })
+        validateStatus: () => true,
+      }
+      
+      // Add request body for write methods
+      if (['POST', 'PUT', 'PATCH'].includes(httpMethod)) {
+        try {
+          config.data = JSON.parse(requestBody)
+        } catch (e) {
+          setResponse({
+            status: 0,
+            data: null,
+            error: 'Invalid JSON in request body',
+          })
+          setLoading(false)
+          return
+        }
+      }
+      
+      const res = await axios(config)
       const endTime = Date.now()
 
       setResponse({
@@ -69,6 +96,23 @@ export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps
       setLoading(false)
     }
   }
+
+  const handleRequestWriteScope = async () => {
+    try {
+      await requestScopes(['https://www.googleapis.com/auth/spreadsheets'])
+      setShowScopePrompt(false)
+    } catch (error) {
+      console.error('Failed to request write scope:', error)
+    }
+  }
+
+  const scopeInfo: ScopeInfo[] = [
+    {
+      scope: 'spreadsheets',
+      reason: 'Write access to your Google Sheets',
+      example: 'Allows adding, updating, and deleting rows via API',
+    },
+  ]
 
   if (!sheet.is_public || !sheet.api_key) {
     return (
@@ -119,6 +163,97 @@ export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps
           </Descriptions.Item>
         </Descriptions>
 
+        <Card title="Supported Methods" size="small">
+          <Space direction="vertical" style={{ width: '100%' }}>
+            <Row justify="space-between" align="middle">
+              <Col>
+                <Text><code>GET</code> Fetch sheet data</Text>
+              </Col>
+              <Col>
+                {canRead ? (
+                  <Tag color="success">Available</Tag>
+                ) : (
+                  <Tooltip title="Grant read permission to enable">
+                    <Tag>Locked</Tag>
+                  </Tooltip>
+                )}
+              </Col>
+            </Row>
+            
+            <Row justify="space-between" align="middle">
+              <Col>
+                <Text><code>POST</code> Add new rows</Text>
+              </Col>
+              <Col>
+                {canWrite && sheet.allow_write ? (
+                  <Tag color="success">Available</Tag>
+                ) : !canWrite ? (
+                  <Tooltip title="Grant write permission to enable">
+                    <Button
+                      size="small"
+                      type="link"
+                      icon={<LockOutlined />}
+                      onClick={() => setShowScopePrompt(true)}
+                    >
+                      Enable
+                    </Button>
+                  </Tooltip>
+                ) : (
+                  <Tag>Coming Soon</Tag>
+                )}
+              </Col>
+            </Row>
+
+            <Row justify="space-between" align="middle">
+              <Col>
+                <Text><code>PUT</code> Update rows</Text>
+              </Col>
+              <Col>
+                {canWrite && sheet.allow_write ? (
+                  <Tag color="success">Available</Tag>
+                ) : !canWrite ? (
+                  <Tooltip title="Grant write permission to enable">
+                    <Button
+                      size="small"
+                      type="link"
+                      icon={<LockOutlined />}
+                      onClick={() => setShowScopePrompt(true)}
+                    >
+                      Enable
+                    </Button>
+                  </Tooltip>
+                ) : (
+                  <Tag>Coming Soon</Tag>
+                )}
+              </Col>
+            </Row>
+
+            <Row justify="space-between" align="middle">
+              <Col>
+                <Text><code>PATCH</code> Partially update rows</Text>
+              </Col>
+              <Col>
+                {canWrite && sheet.allow_write ? (
+                  <Tag color="success">Available</Tag>
+                ) : !canWrite ? (
+                  <Tooltip title="Grant write permission to enable">
+                    <Button
+                      size="small"
+                      type="link"
+                      icon={<LockOutlined />}
+                      onClick={() => setShowScopePrompt(true)}
+                    >
+                      Enable
+                    </Button>
+                  </Tooltip>
+                ) : (
+                  <Tag>Coming Soon</Tag>
+                )}
+              </Col>
+            </Row>
+          </Space>
+        </Card>
+
         <Card title="API Tester" size="small">
           <Space direction="vertical" size="middle" style={{ width: '100%' }}>
             <div>
@@ -130,7 +265,9 @@ export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps
                   style={{ width: 100 }}
                   options={[
                     { label: 'GET', value: 'GET' },
-                    { label: 'POST', value: 'POST' },
+                    { label: 'POST', value: 'POST', disabled: !canWrite },
+                    { label: 'PUT', value: 'PUT', disabled: !canWrite },
+                    { label: 'PATCH', value: 'PATCH', disabled: !canWrite },
                   ]}
                 />
                 <Input
@@ -148,6 +285,19 @@ export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps
                 </Button>
               </Space.Compact>
             </div>
+
+            {['POST', 'PUT', 'PATCH'].includes(httpMethod) && (
+              <div>
+                <Text strong style={{ display: 'block', marginBottom: 8 }}>Request Body</Text>
+                <Input.TextArea
+                  value={requestBody}
+                  onChange={(e) => setRequestBody(e.target.value)}
+                  placeholder="JSON request body"
+                  rows={6}
+                  style={{ fontFamily: 'monospace' }}
+                />
+              </div>
+            )}
 
             {response && (
               <div>
@@ -209,6 +359,13 @@ fetch('${apiUrl}')
 curl ${apiUrl}`}
           </pre>
         </div>
+
+        <ScopeConsentPrompt
+          open={showScopePrompt}
+          onConsent={handleRequestWriteScope}
+          onCancel={() => setShowScopePrompt(false)}
+          scopes={scopeInfo}
+        />
       </Space>
     </Card>
   )

@@ -6,8 +6,10 @@ import (
 	"time"
 
 	"gsheetbase/shared/models"
+
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
+	"github.com/lib/pq"
 )
 
 type UserRepo interface {
@@ -15,6 +17,7 @@ type UserRepo interface {
 	FindByEmail(ctx context.Context, email string) (models.User, error)
 	FindByID(ctx context.Context, id uuid.UUID) (models.User, error)
 	UpdateGoogleTokens(ctx context.Context, userID uuid.UUID, accessToken, refreshToken string, expiry time.Time) error
+	UpdateGoogleScopes(ctx context.Context, userID uuid.UUID, scopes []string) error
 }
 
 type userRepo struct {
@@ -65,5 +68,15 @@ func (r *userRepo) UpdateGoogleTokens(ctx context.Context, userID uuid.UUID, acc
 		    updated_at = NOW()
 		WHERE id = $4
 	`, accessToken, refreshToken, expiry, userID)
+	return err
+}
+
+func (r *userRepo) UpdateGoogleScopes(ctx context.Context, userID uuid.UUID, scopes []string) error {
+	_, err := r.db.ExecContext(ctx, `
+		UPDATE users 
+		SET google_scopes = $1,
+		    updated_at = NOW()
+		WHERE id = $2
+	`, pq.Array(scopes), userID)
 	return err
 }

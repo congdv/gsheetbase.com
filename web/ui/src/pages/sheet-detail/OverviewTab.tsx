@@ -1,6 +1,10 @@
-import { Card, Descriptions, Tag, Button, Space, Modal, Form, Input, Switch, Popconfirm } from 'antd'
-import { LinkOutlined, CopyOutlined, CheckCircleOutlined } from '@ant-design/icons'
+import { Card, Descriptions, Tag, Button, Space, Modal, Form, Input, Switch, Popconfirm, List, Divider, Typography, Tooltip } from 'antd'
+import { LinkOutlined, CopyOutlined, CheckCircleOutlined, LockOutlined } from '@ant-design/icons'
 import { useState } from 'react'
+import { useAuth } from '../../context/AuthContext'
+import { ScopeConsentPrompt, ScopeInfo } from '../../components/ScopeConsentPrompt'
+
+const { Text } = Typography
 
 interface Sheet {
   id: string
@@ -12,6 +16,8 @@ interface Sheet {
   api_key?: string
   default_range?: string
   use_first_row_as_header: boolean
+  allow_write?: boolean
+  allowed_methods?: string[]
   created_at: string
 }
 
@@ -27,9 +33,49 @@ interface OverviewTabProps {
 
 export function OverviewTab({ sheet, onCopy, onNavigateToApiSettings, onPublish, onUnpublish, isPublishing, isUnpublishing }: OverviewTabProps) {
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false)
+  const [showScopePrompt, setShowScopePrompt] = useState(false)
   const [form] = Form.useForm()
+  const { hasScope, requestScopes } = useAuth()
   const workerBaseUrl = import.meta.env.VITE_WORKER_BASE_URL || 'https://api.gsheetbase.com'
   const apiUrl = sheet.api_key ? `${workerBaseUrl}/v1/${sheet.api_key}` : null
+
+  const canRead = hasScope('https://www.googleapis.com/auth/spreadsheets.readonly')
+  const canWrite = hasScope('https://www.googleapis.com/auth/spreadsheets')
+
+  const operations = [
+    {
+      name: 'Read Data',
+      scope: 'https://www.googleapis.com/auth/spreadsheets.readonly',
+      available: canRead,
+      methods: ['GET'],
+      description: 'Fetch rows from your sheet',
+    },
+    {
+      name: 'Write Data',
+      scope: 'https://www.googleapis.com/auth/spreadsheets',
+      available: canWrite,
+      methods: ['POST', 'PUT', 'PATCH'],
+      description: 'Add, update, or modify sheet rows',
+      comingSoon: true,
+    },
+  ]
+
+  const handleRequestWriteAccess = async () => {
+    try {
+      await requestScopes(['https://www.googleapis.com/auth/spreadsheets'])
+      setShowScopePrompt(false)
+    } catch (error) {
+      console.error('Failed to request write scope:', error)
+    }
+  }
+
+  const scopeInfo: ScopeInfo[] = [
+    {
+      scope: 'spreadsheets',
+      reason: 'Write access to your Google Sheets',
+      example: 'Allows adding, updating, and deleting rows via API',
+    },
+  ]
 
   const handlePublishSubmit = () => {
     form.validateFields().then((values) => {
@@ -40,38 +86,39 @@ export function OverviewTab({ sheet, onCopy, onNavigateToApiSettings, onPublish,
   }
 
   return (
-    <Card 
-      title="Sheet Information"
-      extra={
-        !sheet.is_public ? (
-          <Button
-            type="primary"
-            size="small"
-            icon={<CheckCircleOutlined />}
-            onClick={() => setIsPublishModalOpen(true)}
-          >
-            Publish Sheet
-          </Button>
-        ) : (
-          <Popconfirm
-            title="Unpublish this sheet?"
-            description="This will revoke the API key and make the sheet private."
-            onConfirm={onUnpublish}
-            okText="Yes"
-            cancelText="No"
-          >
+    <>
+      <Card 
+        title="Sheet Information"
+        extra={
+          !sheet.is_public ? (
             <Button
-              type="default"
+              type="primary"
               size="small"
-              danger
-              loading={isUnpublishing}
+              icon={<CheckCircleOutlined />}
+              onClick={() => setIsPublishModalOpen(true)}
             >
-              Unpublish
+              Publish Sheet
             </Button>
-          </Popconfirm>
-        )
-      }
-    >
+          ) : (
+            <Popconfirm
+              title="Unpublish this sheet?"
+              description="This will revoke the API key and make the sheet private."
+              onConfirm={onUnpublish}
+              okText="Yes"
+              cancelText="No"
+            >
+              <Button
+                type="default"
+                size="small"
+                danger
+                loading={isUnpublishing}
+              >
+                Unpublish
+              </Button>
+            </Popconfirm>
+          )
+        }
+      >
       <Descriptions bordered column={1}>
         <Descriptions.Item label="Sheet Name">
           {sheet.sheet_name || '—'}
@@ -139,6 +186,59 @@ export function OverviewTab({ sheet, onCopy, onNavigateToApiSettings, onPublish,
         </Descriptions.Item>
       </Descriptions>
 
+      <Divider>Available API Operations</Divider>
+
+      <List
+        dataSource={operations}
+        renderItem={(op) => (
+          <List.Item
+            actions={[
+              op.available ? (
+                <Tag color="green">Active</Tag>
+              ) : op.comingSoon ? (
+                <Tag>Coming Soon</Tag>
+              ) : (
+                <Button 
+                  size="small" 
+                  onClick={() => setShowScopePrompt(true)}
+                  icon={<LockOutlined />}
+                >
+                  Enable
+                </Button>
+              )
+            ]}
+          >
+            <List.Item.Meta
+              title={<strong>{op.name}</strong>}
+              description={
+                <Space direction="vertical" size="small" style={{ width: '100%' }}>
+                  <Text type="secondary">{op.description}</Text>
+                  <div>
+                    {op.methods.map(m => (
+                      <code key={m} style={{ 
+                        marginRight: 8,
+                        padding: '2px 6px',
+                        background: '#f5f5f5',
+                        borderRadius: 4,
+                        fontSize: 12
+                      }}>
+                        {m}
+                      </code>
+                    ))}
+                  </div>
+                  {!op.available && !op.comingSoon && (
+                    <Text type="warning" style={{ fontSize: 12 }}>
+                      Requires additional Google permission
+                    </Text>
+                  )}
+                </Space>
+              }
+            />
+          </List.Item>
+        )}
+      />
+    </Card>
+
       <Modal
         title="Publish Sheet"
         open={isPublishModalOpen}
@@ -176,6 +276,13 @@ export function OverviewTab({ sheet, onCopy, onNavigateToApiSettings, onPublish,
           </Form.Item>
         </Form>
       </Modal>
-    </Card>
+
+      <ScopeConsentPrompt
+        open={showScopePrompt}
+        onConsent={handleRequestWriteAccess}
+        onCancel={() => setShowScopePrompt(false)}
+        scopes={scopeInfo}
+      />
+    </>
   )
 }
