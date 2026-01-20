@@ -27,6 +27,16 @@ func NewSheetHandler(sheetRepo repository.AllowedSheetRepo, userRepo repository.
 	}
 }
 
+// isMethodAllowed checks if a specific HTTP method is allowed for the sheet
+func isMethodAllowed(allowedMethods []string, method string) bool {
+	for _, m := range allowedMethods {
+		if m == method {
+			return true
+		}
+	}
+	return false
+}
+
 // GetPublic handles GET /v1/:api_key
 func (h *SheetHandler) GetPublic(c *gin.Context) {
 	apiKey := c.Param("api_key")
@@ -174,9 +184,9 @@ func (h *SheetHandler) PostPublic(c *gin.Context) {
 		return
 	}
 
-	// Check if write operations are allowed
-	if !sheet.AllowWrite {
-		c.JSON(http.StatusForbidden, gin.H{"error": "write operations not enabled for this sheet"})
+	// Check if POST method is allowed
+	if !isMethodAllowed(sheet.AllowedMethods, "POST") {
+		c.JSON(http.StatusForbidden, gin.H{"error": "POST method not enabled for this sheet"})
 		return
 	}
 
@@ -235,9 +245,9 @@ func (h *SheetHandler) PutPublic(c *gin.Context) {
 		return
 	}
 
-	// Check if write operations are allowed
-	if !sheet.AllowWrite {
-		c.JSON(http.StatusForbidden, gin.H{"error": "write operations not enabled for this sheet"})
+	// Check if PUT method is allowed
+	if !isMethodAllowed(sheet.AllowedMethods, "PUT") {
+		c.JSON(http.StatusForbidden, gin.H{"error": "PUT method not enabled for this sheet"})
 		return
 	}
 

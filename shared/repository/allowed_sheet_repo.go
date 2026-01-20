@@ -10,6 +10,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
+	"github.com/lib/pq"
 )
 
 type AllowedSheetRepo interface {
@@ -22,6 +23,7 @@ type AllowedSheetRepo interface {
 	Publish(ctx context.Context, sheetID uuid.UUID, defaultRange string, useFirstRowAsHeader bool) (string, error)
 	Unpublish(ctx context.Context, sheetID uuid.UUID) error
 	UpdateWriteSettings(ctx context.Context, sheetID uuid.UUID, allowWrite bool) error
+	UpdateAllowedMethods(ctx context.Context, sheetID uuid.UUID, allowedMethods []string) error
 }
 
 type allowedSheetRepo struct {
@@ -136,6 +138,16 @@ func (r *allowedSheetRepo) UpdateWriteSettings(ctx context.Context, sheetID uuid
 		    updated_at = NOW()
 		WHERE id = $2
 	`, allowWrite, sheetID)
+	return err
+}
+
+func (r *allowedSheetRepo) UpdateAllowedMethods(ctx context.Context, sheetID uuid.UUID, allowedMethods []string) error {
+	_, err := r.db.ExecContext(ctx, `
+		UPDATE allowed_sheets 
+		SET allowed_methods = $1,
+		    updated_at = NOW()
+		WHERE id = $2
+	`, pq.Array(allowedMethods), sheetID)
 	return err
 }
 

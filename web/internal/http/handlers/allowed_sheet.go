@@ -172,7 +172,8 @@ func (h *AllowedSheetHandler) Unpublish(c *gin.Context) {
 }
 
 type updateWriteSettingsRequest struct {
-	AllowWrite bool `json:"allow_write"`
+	AllowWrite     *bool    `json:"allow_write"`
+	AllowedMethods []string `json:"allowed_methods"`
 }
 
 // UpdateWriteSettings enables/disables write operations for a sheet
@@ -207,10 +208,20 @@ func (h *AllowedSheetHandler) UpdateWriteSettings(c *gin.Context) {
 		return
 	}
 
-	// Update write settings
-	if err := h.repo.UpdateWriteSettings(c.Request.Context(), sheet.ID, req.AllowWrite); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update write settings"})
-		return
+	// Update write settings if provided
+	if req.AllowWrite != nil {
+		if err := h.repo.UpdateWriteSettings(c.Request.Context(), sheet.ID, *req.AllowWrite); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update write settings"})
+			return
+		}
+	}
+
+	// Update allowed methods if provided
+	if req.AllowedMethods != nil {
+		if err := h.repo.UpdateAllowedMethods(c.Request.Context(), sheet.ID, req.AllowedMethods); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update allowed methods"})
+			return
+		}
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "write settings updated successfully"})

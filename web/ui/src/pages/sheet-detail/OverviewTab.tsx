@@ -35,18 +35,34 @@ export function OverviewTab({ sheet, onCopy, onNavigateToApiSettings, onPublish,
   const workerBaseUrl = import.meta.env.VITE_WORKER_BASE_URL || 'https://api.gsheetbase.com'
   const apiUrl = sheet.api_key ? `${workerBaseUrl}/v1/${sheet.api_key}` : null
 
+  const isMethodEnabled = (method: string) => {
+    return sheet.allowed_methods?.includes(method) || false
+  }
+
   const operations = [
     {
       name: 'Read Data',
-      methods: ['GET'],
+      method: 'GET',
       description: 'Fetch rows from your sheet',
       available: true,
     },
     {
-      name: 'Write Data',
-      methods: ['POST', 'PUT', 'PATCH'],
-      description: 'Add, update, or modify sheet rows',
-      available: true,
+      name: 'Add Rows',
+      method: 'POST',
+      description: 'Append new rows to the sheet',
+      available: isMethodEnabled('POST'),
+    },
+    {
+      name: 'Update Rows',
+      method: 'PUT',
+      description: 'Replace/update existing rows',
+      available: isMethodEnabled('PUT'),
+    },
+    {
+      name: 'Partial Update',
+      method: 'PATCH',
+      description: 'Modify specific cells or rows',
+      available: isMethodEnabled('PATCH'),
     },
   ]
 
@@ -167,9 +183,9 @@ export function OverviewTab({ sheet, onCopy, onNavigateToApiSettings, onPublish,
           <List.Item
             actions={[
               op.available ? (
-                <Tag color="green">Active</Tag>
+                <Tag color="green">Enabled</Tag>
               ) : (
-                <Tag>Coming Soon</Tag>
+                <Tag color="default">Disabled</Tag>
               )
             ]}
           >
@@ -178,19 +194,14 @@ export function OverviewTab({ sheet, onCopy, onNavigateToApiSettings, onPublish,
               description={
                 <Space direction="vertical" size="small" style={{ width: '100%' }}>
                   <Text type="secondary">{op.description}</Text>
-                  <div>
-                    {op.methods.map(m => (
-                      <code key={m} style={{ 
-                        marginRight: 8,
-                        padding: '2px 6px',
-                        background: '#f5f5f5',
-                        borderRadius: 4,
-                        fontSize: 12
-                      }}>
-                        {m}
-                      </code>
-                    ))}
-                  </div>
+                  <code style={{ 
+                    padding: '2px 6px',
+                    background: '#f5f5f5',
+                    borderRadius: 4,
+                    fontSize: 12
+                  }}>
+                    {op.method}
+                  </code>
                 </Space>
               }
             />

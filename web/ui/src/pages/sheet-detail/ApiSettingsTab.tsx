@@ -39,7 +39,7 @@ export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps
   const [requestBody, setRequestBody] = useState('{\n  \n}')
   const [loading, setLoading] = useState(false)
   const [showScopePrompt, setShowScopePrompt] = useState(false)
-  const [updatingWrite, setUpdatingWrite] = useState(false)
+  const [updatingMethods, setUpdatingMethods] = useState<Record<string, boolean>>({})
   const [response, setResponse] = useState<{
     status: number
     data: any
@@ -108,20 +108,29 @@ export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps
     }
   }
 
-  const handleToggleWrite = async (checked: boolean) => {
-    setUpdatingWrite(true)
+  const isMethodEnabled = (method: string): boolean => {
+    return sheet.allowed_methods?.includes(method) || false
+  }
+
+  const handleToggleMethod = async (method: string, checked: boolean) => {
+    setUpdatingMethods(prev => ({ ...prev, [method]: true }))
     try {
+      const currentMethods = sheet.allowed_methods || []
+      const updatedMethods = checked
+        ? [...currentMethods, method]
+        : currentMethods.filter(m => m !== method)
+      
       await api.patch(
         `/sheets/${sheet.id}/write-settings`,
-        { allow_write: checked }
+        { allowed_methods: updatedMethods }
       )
-      message.success(`Write operations ${checked ? 'enabled' : 'disabled'} successfully`)
+      message.success(`${method} ${checked ? 'enabled' : 'disabled'} successfully`)
       // Trigger a refresh by updating parent component (if needed)
       window.location.reload() // Simple refresh for now
     } catch (error: any) {
-      message.error(`Failed to update write settings: ${error.response?.data?.error || error.message}`)
+      message.error(`Failed to update method settings: ${error.response?.data?.error || error.message}`)
     } finally {
-      setUpdatingWrite(false)
+      setUpdatingMethods(prev => ({ ...prev, [method]: false }))
     }
   }
 
@@ -180,21 +189,9 @@ export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps
           <Descriptions.Item label="Transform to JSON Objects">
             {sheet.use_first_row_as_header ? 'Yes' : 'No'}
           </Descriptions.Item>
-          <Descriptions.Item label="Enable Write Operations">
-            <Space>
-              <Switch 
-                checked={sheet.allow_write} 
-                onChange={handleToggleWrite} 
-                loading={updatingWrite}
-              />
-              <Text type="secondary" style={{ fontSize: 12 }}>
-                {sheet.allow_write ? 'POST/PUT/PATCH enabled' : 'Only GET requests allowed'}
-              </Text>
-            </Space>
-          </Descriptions.Item>
         </Descriptions>
 
-        <Card title="Supported Methods" size="small">
+        <Card title="API Methods & Permissions" size="small">
           <Space direction="vertical" style={{ width: '100%' }}>
             <Row justify="space-between" align="middle">
               <Col>
@@ -202,7 +199,7 @@ export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps
               </Col>
               <Col>
                 {canRead ? (
-                  <Tag color="success">Available</Tag>
+                  <Tag color="success">Always Available</Tag>
                 ) : (
                   <Tooltip title="Grant read permission to enable">
                     <Tag>Locked</Tag>
@@ -216,7 +213,19 @@ export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps
                 <Text><code>POST</code> Add new rows</Text>
               </Col>
               <Col>
-                <Tag color="success">Available</Tag>
+                <Space>
+                  {!canWrite && (
+                    <Tooltip title="Requires write permission">
+                      <LockOutlined style={{ color: '#999' }} />
+                    </Tooltip>
+                  )}
+                  <Switch 
+                    checked={isMethodEnabled('POST')} 
+                    onChange={(checked) => handleToggleMethod('POST', checked)} 
+                    loading={updatingMethods['POST']}
+                    disabled={!canWrite}
+                  />
+                </Space>
               </Col>
             </Row>
 
@@ -225,7 +234,19 @@ export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps
                 <Text><code>PUT</code> Update rows</Text>
               </Col>
               <Col>
-                <Tag color="success">Available</Tag>
+                <Space>
+                  {!canWrite && (
+                    <Tooltip title="Requires write permission">
+                      <LockOutlined style={{ color: '#999' }} />
+                    </Tooltip>
+                  )}
+                  <Switch 
+                    checked={isMethodEnabled('PUT')} 
+                    onChange={(checked) => handleToggleMethod('PUT', checked)} 
+                    loading={updatingMethods['PUT']}
+                    disabled={!canWrite}
+                  />
+                </Space>
               </Col>
             </Row>
 
@@ -234,7 +255,19 @@ export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps
                 <Text><code>PATCH</code> Partially update rows</Text>
               </Col>
               <Col>
-                <Tag color="success">Available</Tag>
+                <Space>
+                  {!canWrite && (
+                    <Tooltip title="Requires write permission">
+                      <LockOutlined style={{ color: '#999' }} />
+                    </Tooltip>
+                  )}
+                  <Switch 
+                    checked={isMethodEnabled('PATCH')} 
+                    onChange={(checked) => handleToggleMethod('PATCH', checked)} 
+                    loading={updatingMethods['PATCH']}
+                    disabled={!canWrite}
+                  />
+                </Space>
               </Col>
             </Row>
           </Space>
@@ -251,9 +284,9 @@ export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps
                   style={{ width: 100 }}
                   options={[
                     { label: 'GET', value: 'GET' },
-                    { label: 'POST', value: 'POST', disabled: !canWrite },
-                    { label: 'PUT', value: 'PUT', disabled: !canWrite },
-                    { label: 'PATCH', value: 'PATCH', disabled: !canWrite },
+                    { label: 'POST', value: 'POST', disabled: !isMethodEnabled('POST') },
+                    { label: 'PUT', value: 'PUT', disabled: !isMethodEnabled('PUT') },
+                    { label: 'PATCH', value: 'PATCH', disabled: !isMethodEnabled('PATCH') },
                   ]}
                 />
                 <Input
