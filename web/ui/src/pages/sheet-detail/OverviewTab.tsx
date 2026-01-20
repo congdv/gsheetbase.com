@@ -40,7 +40,38 @@ export function OverviewTab({ sheet, onCopy, onNavigateToApiSettings, onPublish,
   }
 
   return (
-    <Card title="Sheet Information">
+    <Card 
+      title="Sheet Information"
+      extra={
+        !sheet.is_public ? (
+          <Button
+            type="primary"
+            size="small"
+            icon={<CheckCircleOutlined />}
+            onClick={() => setIsPublishModalOpen(true)}
+          >
+            Publish Sheet
+          </Button>
+        ) : (
+          <Popconfirm
+            title="Unpublish this sheet?"
+            description="This will revoke the API key and make the sheet private."
+            onConfirm={onUnpublish}
+            okText="Yes"
+            cancelText="No"
+          >
+            <Button
+              type="default"
+              size="small"
+              danger
+              loading={isUnpublishing}
+            >
+              Unpublish
+            </Button>
+          </Popconfirm>
+        )
+      }
+    >
       <Descriptions bordered column={1}>
         <Descriptions.Item label="Sheet Name">
           {sheet.sheet_name || '—'}
@@ -86,40 +117,11 @@ export function OverviewTab({ sheet, onCopy, onNavigateToApiSettings, onPublish,
           </Space>
         </Descriptions.Item>
         <Descriptions.Item label="Status">
-          <Space>
-            {sheet.is_public ? (
-              <Tag color="green">Public</Tag>
-            ) : (
-              <Tag>Private</Tag>
-            )}
-            {!sheet.is_public ? (
-              <Button
-                type="primary"
-                size="small"
-                icon={<CheckCircleOutlined />}
-                onClick={() => setIsPublishModalOpen(true)}
-              >
-                Publish Sheet
-              </Button>
-            ) : (
-              <Popconfirm
-                title="Unpublish this sheet?"
-                description="This will revoke the API key and make the sheet private."
-                onConfirm={onUnpublish}
-                okText="Yes"
-                cancelText="No"
-              >
-                <Button
-                  type="default"
-                  size="small"
-                  danger
-                  loading={isUnpublishing}
-                >
-                  Unpublish
-                </Button>
-              </Popconfirm>
-            )}
-          </Space>
+          {sheet.is_public ? (
+            <Tag color="green">Public</Tag>
+          ) : (
+            <Tag>Private</Tag>
+          )}
         </Descriptions.Item>
         <Descriptions.Item label="Registered">
           {new Date(sheet.created_at).toLocaleString()}
