@@ -4,9 +4,13 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"time"
+	"strconv"
+	"strings"
 
 	"gsheetbase/shared/repository"
+
+	"encoding/json"
+	"sort"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/oauth2"
@@ -37,7 +41,7 @@ func isMethodAllowed(allowedMethods []string, method string) bool {
 	return false
 }
 
-// GetPublic handles GET /v1/:api_key
+// GraphQL-style GET /v1/:api_key?collection=Sheet1&fields=asset,location&where={"owner":"Homeowner"}&orderBy=asset&limit=2&offset=0
 func (h *SheetHandler) GetPublic(c *gin.Context) {
 	apiKey := c.Param("api_key")
 	if apiKey == "" {
@@ -45,8 +49,13 @@ func (h *SheetHandler) GetPublic(c *gin.Context) {
 		return
 	}
 
-	// Get range from query param or use default
-	rangeParam := c.Query("range")
+	// Parse query params
+	collection := c.Query("collection")
+	fields := c.Query("fields")
+	limit := c.DefaultQuery("limit", "100")
+	offset := c.DefaultQuery("offset", "0")
+	orderBy := c.Query("orderBy")
+	where := c.Query("where")
 
 	// Find the sheet by API key
 	sheet, err := h.sheetRepo.FindByAPIKey(c.Request.Context(), apiKey)
@@ -55,52 +64,139 @@ func (h *SheetHandler) GetPublic(c *gin.Context) {
 		return
 	}
 
-	// Get the user to access their Google tokens
 	user, err := h.userRepo.FindByID(c.Request.Context(), sheet.UserID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch user credentials"})
 		return
 	}
 
-	// Set context values for usage tracking middleware
 	c.Set("sheet_id", sheet.ID)
 	c.Set("user_id", user.ID)
 
-	// Check if user has valid Google tokens
 	if user.GoogleAccessToken == nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "sheet owner needs to reconnect Google account"})
 		return
 	}
 
-	// Check if token is expired and we have a refresh token
-	if user.GoogleTokenExpiry != nil && user.GoogleTokenExpiry.Before(time.Now()) && user.GoogleRefreshToken != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "sheet owner's Google token has expired, please ask them to re-authenticate via the dashboard"})
-		return
-	}
-
-	// Determine which range to fetch
-	fetchRange := rangeParam
+	// Determine range
+	fetchRange := collection
 	if fetchRange == "" && sheet.DefaultRange != nil {
 		fetchRange = *sheet.DefaultRange
 	}
 	if fetchRange == "" {
-		fetchRange = "Sheet1" // Final fallback
+		fetchRange = "Sheet1"
 	}
 
-	// Fetch sheet data from Google
+	// Fetch sheet data
 	data, err := h.fetchSheetData(c.Request.Context(), *user.GoogleAccessToken, sheet.SheetID, fetchRange)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch sheet data", "details": err.Error()})
 		return
 	}
 
-	// Transform data if needed
-	if sheet.UseFirstRowAsHeader {
-		transformed := transformToJSON(data)
-		c.JSON(http.StatusOK, gin.H{"data": transformed})
+	// Transform to JSON
+	rows := transformToJSON(data)
+
+	// Apply simple where filter (equality only)
+	filtered := filterRows(rows, where)
+
+	// Select fields
+	selected := selectFields(filtered, fields)
+
+	// Order by
+	ordered := orderRows(selected, orderBy)
+
+	// Pagination only if explicitly set
+	paginated, pagination := paginateRows(ordered, limit, offset)
+	hasExplicitPagination := c.Query("limit") != "" || c.Query("offset") != ""
+	if hasExplicitPagination && pagination != nil {
+		c.JSON(http.StatusOK, gin.H{"data": paginated, "pagination": pagination})
 	} else {
-		c.JSON(http.StatusOK, gin.H{"data": data})
+		c.JSON(http.StatusOK, gin.H{"data": paginated})
 	}
+}
+
+// Helper: filterRows applies simple equality filter from where JSON
+func filterRows(rows []map[string]interface{}, where string) []map[string]interface{} {
+	if where == "" {
+		return rows
+	}
+	// Parse where as map[string]interface{}
+	var cond map[string]interface{}
+	err := json.Unmarshal([]byte(where), &cond)
+	if err != nil {
+		return rows // ignore invalid filter
+	}
+	filtered := make([]map[string]interface{}, 0)
+	for _, row := range rows {
+		match := true
+		for k, v := range cond {
+			if fmt.Sprintf("%v", row[k]) != fmt.Sprintf("%v", v) {
+				match = false
+				break
+			}
+		}
+		if match {
+			filtered = append(filtered, row)
+		}
+	}
+	return filtered
+}
+
+// Helper: selectFields returns only requested fields
+func selectFields(rows []map[string]interface{}, fields string) []map[string]interface{} {
+	if fields == "" {
+		return rows
+	}
+	keys := strings.Split(fields, ",")
+	selected := make([]map[string]interface{}, 0, len(rows))
+	for _, row := range rows {
+		obj := make(map[string]interface{})
+		for _, k := range keys {
+			k = strings.TrimSpace(k)
+			obj[k] = row[k]
+		}
+		selected = append(selected, obj)
+	}
+	return selected
+}
+
+// Helper: orderRows sorts by a single field
+func orderRows(rows []map[string]interface{}, orderBy string) []map[string]interface{} {
+	if orderBy == "" {
+		return rows
+	}
+	sort.SliceStable(rows, func(i, j int) bool {
+		return fmt.Sprintf("%v", rows[i][orderBy]) < fmt.Sprintf("%v", rows[j][orderBy])
+	})
+	return rows
+}
+
+// Helper: paginateRows returns paginated slice and pagination info
+func paginateRows(rows []map[string]interface{}, limitStr, offsetStr string) ([]map[string]interface{}, map[string]interface{}) {
+	limit, err1 := strconv.Atoi(limitStr)
+	offset, err2 := strconv.Atoi(offsetStr)
+	if err1 != nil || err2 != nil || limit <= 0 || offset < 0 {
+		return rows, nil
+	}
+	total := len(rows)
+	end := offset + limit
+	if end > total {
+		end = total
+	}
+	paginated := rows
+	if offset < total {
+		paginated = rows[offset:end]
+	} else {
+		paginated = []map[string]interface{}{}
+	}
+	pagination := map[string]interface{}{
+		"total":      total,
+		"limit":      limit,
+		"offset":     offset,
+		"nextOffset": end,
+	}
+	return paginated, pagination
 }
 
 func (h *SheetHandler) fetchSheetData(ctx context.Context, accessToken, sheetID, rangeStr string) ([][]interface{}, error) {
