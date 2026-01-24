@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -15,8 +16,10 @@ func (h *SheetHandler) PutPublic(c *gin.Context) {
 	}
 
 	var req struct {
-		Data  [][]interface{} `json:"data" binding:"required"`
-		Range string          `json:"range" binding:"required"`
+		Collection string                 `json:"collection"`
+		Where      map[string]interface{} `json:"where"`
+		Data       map[string]interface{} `json:"data" binding:"required"`
+		Returning  []string               `json:"returning"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -44,7 +47,6 @@ func (h *SheetHandler) PutPublic(c *gin.Context) {
 		return
 	}
 
-	// Set context values for usage tracking middleware
 	c.Set("sheet_id", sheet.ID)
 	c.Set("user_id", user.ID)
 
@@ -53,11 +55,85 @@ func (h *SheetHandler) PutPublic(c *gin.Context) {
 		return
 	}
 
-	// Update data in sheet
-	if err := h.updateSheetData(c.Request.Context(), *user.GoogleAccessToken, sheet.SheetID, req.Range, req.Data); err != nil {
+	// Determine range (use collection as sheet name, fallback to default)
+	targetRange := req.Collection
+	if targetRange == "" && sheet.DefaultRange != nil {
+		targetRange = *sheet.DefaultRange
+	}
+	if targetRange == "" {
+		targetRange = "Sheet1"
+	}
+
+	// Fetch current sheet data to get headers and rows
+	sheetData, err := h.fetchSheetData(c.Request.Context(), *user.GoogleAccessToken, sheet.SheetID, targetRange)
+	if err != nil || len(sheetData) == 0 {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch sheet data", "details": err.Error()})
+		return
+	}
+	headers := sheetData[0]
+	rows := transformToJSON(sheetData)
+
+	// Find rows matching 'where' (if provided)
+	var updatedRows []map[string]interface{}
+	for i, row := range rows {
+		if i == 0 {
+			continue // skip header row
+		}
+		match := true
+		if req.Where != nil {
+			for k, v := range req.Where {
+				if row[k] != v {
+					match = false
+					break
+				}
+			}
+		}
+		if match {
+			// Replace the entire row with req.Data, keeping header order
+			newRow := make([]interface{}, len(headers))
+			for j, h := range headers {
+				key := h
+				if v, ok := req.Data[fmt.Sprintf("%v", key)]; ok {
+					newRow[j] = v
+				} else {
+					newRow[j] = nil
+				}
+			}
+			// Update the row in sheetData
+			sheetData[i] = newRow
+			// Add to updatedRows for response
+			updatedRow := make(map[string]interface{})
+			for j, h := range headers {
+				updatedRow[fmt.Sprintf("%v", h)] = newRow[j]
+			}
+			updatedRows = append(updatedRows, updatedRow)
+		}
+	}
+
+	if len(updatedRows) == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "no rows matched for update"})
+		return
+	}
+
+	// Write updated data back to sheet (excluding header row)
+	if err := h.updateSheetData(c.Request.Context(), *user.GoogleAccessToken, sheet.SheetID, targetRange, sheetData[1:]); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update data", "details": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "rows updated successfully"})
+	// If returning fields specified, filter
+	var responseRows []map[string]interface{}
+	if len(req.Returning) > 0 {
+		for _, row := range updatedRows {
+			filtered := make(map[string]interface{})
+			for _, k := range req.Returning {
+				filtered[k] = row[k]
+			}
+			responseRows = append(responseRows, filtered)
+		}
+	} else {
+		responseRows = updatedRows
+	}
+
+	c.JSON(http.StatusOK, gin.H{"data": responseRows})
 }
