@@ -7,8 +7,11 @@ import (
 
 	"gsheetbase/shared/database"
 	"gsheetbase/shared/repository"
+	"gsheetbase/worker/internal/cache"
 	"gsheetbase/worker/internal/config"
 	"gsheetbase/worker/internal/http/handlers"
+	"gsheetbase/worker/internal/middleware"
+	"gsheetbase/worker/internal/services"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -29,6 +32,30 @@ func main() {
 	// Repositories
 	sheetRepo := repository.NewAllowedSheetRepo(db)
 	userRepo := repository.NewUserRepo(db)
+	usageRepo := repository.NewUsageRepo(db)
+
+	// Optional: Redis and rate limiting (only if REDIS_URL is set)
+	var rateLimitService *services.RateLimitService
+	if cfg.RedisURL != "" {
+		redisClient, err := cache.NewRedisClient(cfg.RedisURL)
+		if err != nil {
+			log.Printf("WARNING: Redis connection failed, rate limiting disabled: %v", err)
+		} else {
+			defer redisClient.Close()
+			log.Println("Redis connected - rate limiting enabled")
+			rateLimitService = services.NewRateLimitService(
+				redisClient.GetClient(),
+				cfg.RateLimitPerMinute,
+				cfg.RateLimitBurst,
+			)
+		}
+	} else {
+		log.Println("Redis URL not configured - rate limiting disabled")
+	}
+
+	// Usage tracker with background workers
+	usageTracker := middleware.NewUsageTracker(usageRepo, cfg.UsageTrackWorkers)
+	defer usageTracker.Shutdown()
 
 	// Handlers
 	sheetHandler := handlers.NewSheetHandler(sheetRepo, userRepo)
@@ -51,8 +78,17 @@ func main() {
 		c.JSON(http.StatusOK, gin.H{"status": "ok"})
 	})
 
-	// Public API routes
+	// Public API routes with optional rate limiting and usage tracking
 	v1 := r.Group("/v1")
+
+	// Apply rate limiting only if Redis is configured
+	if rateLimitService != nil {
+		v1.Use(middleware.RateLimitMiddleware(rateLimitService))
+	}
+
+	// Always track usage
+	v1.Use(middleware.UsageTrackingMiddleware(usageTracker))
+
 	v1.GET("/:api_key", sheetHandler.GetPublic)
 	v1.POST("/:api_key", sheetHandler.PostPublic)
 	v1.PUT("/:api_key", sheetHandler.PutPublic)

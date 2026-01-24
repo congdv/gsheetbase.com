@@ -62,6 +62,10 @@ func (h *SheetHandler) GetPublic(c *gin.Context) {
 		return
 	}
 
+	// Set context values for usage tracking middleware
+	c.Set("sheet_id", sheet.ID)
+	c.Set("user_id", user.ID)
+
 	// Check if user has valid Google tokens
 	if user.GoogleAccessToken == nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "sheet owner needs to reconnect Google account"})
@@ -197,6 +201,10 @@ func (h *SheetHandler) PostPublic(c *gin.Context) {
 		return
 	}
 
+	// Set context values for usage tracking middleware
+	c.Set("sheet_id", sheet.ID)
+	c.Set("user_id", user.ID)
+
 	if user.GoogleAccessToken == nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "sheet owner needs to reconnect Google account"})
 		return
@@ -257,6 +265,10 @@ func (h *SheetHandler) PutPublic(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch user credentials"})
 		return
 	}
+
+	// Set context values for usage tracking middleware
+	c.Set("sheet_id", sheet.ID)
+	c.Set("user_id", user.ID)
 
 	if user.GoogleAccessToken == nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "sheet owner needs to reconnect Google account"})

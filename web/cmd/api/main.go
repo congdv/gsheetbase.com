@@ -31,6 +31,7 @@ func main() {
 	// Repositories
 	userRepo := repository.NewUserRepo(db)
 	allowedSheetRepo := repository.NewAllowedSheetRepo(db)
+	usageRepo := repository.NewUsageRepo(db)
 
 	// Services
 	authService := services.NewAuthService(cfg, userRepo)
@@ -75,6 +76,11 @@ func main() {
 	// Sheet access (requires JWT auth + sheet must be registered)
 	sheetHandler := handlers.NewSheetHandler(sheetService)
 	api.POST("/sheets/data", middleware.Authenticate(cfg, authService), sheetHandler.Get)
+
+	// Analytics endpoints
+	analyticsHandler := handlers.NewAnalyticsHandler(usageRepo, allowedSheetRepo)
+	api.GET("/sheets/:id/analytics", middleware.Authenticate(cfg, authService), analyticsHandler.GetSheetAnalytics)
+	api.GET("/analytics", middleware.Authenticate(cfg, authService), analyticsHandler.GetUserAnalytics)
 
 	addr := ":" + cfg.Port
 	log.Printf("API listening on %s", addr)
