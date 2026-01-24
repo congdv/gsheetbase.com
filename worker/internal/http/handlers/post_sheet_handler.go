@@ -55,7 +55,7 @@ func (h *SheetHandler) PostPublic(c *gin.Context) {
 		return
 	}
 
-	// Determine range (use collection as sheet name)
+	// Determine range (use collection as sheet name, fallback to default)
 	targetRange := req.Collection
 	if targetRange == "" && sheet.DefaultRange != nil {
 		targetRange = *sheet.DefaultRange
