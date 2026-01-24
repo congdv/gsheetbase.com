@@ -10,6 +10,7 @@ import (
 )
 
 // RateLimitMiddleware creates a middleware that enforces rate limits per API key
+// NOTE: This is the legacy middleware. For production, use QuotaEnforcementMiddleware instead.
 func RateLimitMiddleware(rateLimitService *services.RateLimitService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		apiKey := c.Param("api_key")
@@ -19,8 +20,13 @@ func RateLimitMiddleware(rateLimitService *services.RateLimitService) gin.Handle
 			return
 		}
 
+		httpMethod := c.Request.Method
+
+		// Use a default rate limit of 60 requests per minute for legacy usage
+		defaultLimit := 60
+
 		// Check rate limit
-		result, err := rateLimitService.CheckLimit(c.Request.Context(), apiKey, nil)
+		result, err := rateLimitService.CheckLimit(c.Request.Context(), apiKey, httpMethod, defaultLimit)
 		if err != nil {
 			// Log error but don't block request on rate limit check failure
 			c.Next()

@@ -10,9 +10,7 @@ import (
 
 // RateLimitService handles rate limiting logic using Redis
 type RateLimitService struct {
-	redis         *redis.Client
-	defaultPerMin int
-	defaultBurst  int
+	redis *redis.Client
 }
 
 // RateLimitResult contains the result of a rate limit check
@@ -24,24 +22,19 @@ type RateLimitResult struct {
 }
 
 // NewRateLimitService creates a new rate limit service
-func NewRateLimitService(redisClient *redis.Client, perMinute, burst int) *RateLimitService {
+func NewRateLimitService(redisClient *redis.Client) *RateLimitService {
 	return &RateLimitService{
-		redis:         redisClient,
-		defaultPerMin: perMinute,
-		defaultBurst:  burst,
+		redis: redisClient,
 	}
 }
 
 // CheckLimit checks if a request is allowed under the rate limit
-func (s *RateLimitService) CheckLimit(ctx context.Context, apiKey string, customLimit *int) (*RateLimitResult, error) {
-	limit := s.defaultPerMin
-	if customLimit != nil && *customLimit > 0 {
-		limit = *customLimit
-	}
-
-	// Use current minute as window
+// httpMethod is used to determine if it's a read (GET) or write (POST/PUT/PATCH) operation
+// The limit parameter must be provided (from the user's subscription plan)
+func (s *RateLimitService) CheckLimit(ctx context.Context, apiKey, httpMethod string, limit int) (*RateLimitResult, error) {
+	// Use current minute as window, including method type for separate tracking
 	now := time.Now()
-	windowKey := fmt.Sprintf("rate_limit:%s:%s", apiKey, now.Format("2006-01-02T15:04"))
+	windowKey := fmt.Sprintf("rate_limit:%s:%s:%s", apiKey, httpMethod, now.Format("2006-01-02T15:04"))
 
 	// Lua script for atomic increment and check
 	script := redis.NewScript(`

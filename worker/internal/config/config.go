@@ -8,12 +8,10 @@ import (
 )
 
 type Config struct {
-	Port               string
-	DBURL              string
-	RedisURL           string
-	RateLimitPerMinute int
-	RateLimitBurst     int
-	UsageTrackWorkers  int
+	Port              string
+	DBURL             string
+	RedisURL          string
+	UsageTrackWorkers int
 }
 
 func Load() (*Config, error) {
@@ -21,12 +19,10 @@ func Load() (*Config, error) {
 	_ = godotenv.Load("../.env")
 
 	return &Config{
-		Port:               getEnv("WORKER_PORT", "8081"),
-		DBURL:              os.Getenv("DATABASE_URL"),
-		RedisURL:           os.Getenv("REDIS_URL"), // Optional - leave empty to disable rate limiting
-		RateLimitPerMinute: getEnvInt("RATE_LIMIT_PER_MINUTE", 60),
-		RateLimitBurst:     getEnvInt("RATE_LIMIT_BURST", 100),
-		UsageTrackWorkers:  getEnvInt("USAGE_TRACK_WORKERS", 3),
+		Port:              getEnv("WORKER_PORT", "8081"),
+		DBURL:             os.Getenv("DATABASE_URL"),
+		RedisURL:          os.Getenv("REDIS_URL"), // Optional - leave empty to disable rate limiting
+		UsageTrackWorkers: getEnvInt("USAGE_TRACK_WORKERS", 3),
 	}, nil
 }
 

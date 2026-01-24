@@ -16,6 +16,10 @@ type UsageRepo interface {
 	GetDailyUsageBySheet(ctx context.Context, sheetID uuid.UUID, startDate, endDate time.Time) ([]models.ApiUsageDaily, error)
 	GetDailyUsageByUser(ctx context.Context, userID uuid.UUID, startDate, endDate time.Time) ([]models.ApiUsageDaily, error)
 	GetDailyUsageByAPIKey(ctx context.Context, apiKey string, startDate, endDate time.Time) ([]models.ApiUsageDaily, error)
+
+	// Quota checking methods
+	GetTodayUsageCount(ctx context.Context, userID uuid.UUID, method string) (int, error)
+	GetMonthlyUsageCount(ctx context.Context, userID uuid.UUID, method string) (int, error)
 }
 
 type usageRepo struct {
@@ -126,4 +130,35 @@ func (r *usageRepo) GetDailyUsageByAPIKey(ctx context.Context, apiKey string, st
 	}
 
 	return results, rows.Err()
+}
+
+// GetTodayUsageCount returns the total request count for today by user and method
+func (r *usageRepo) GetTodayUsageCount(ctx context.Context, userID uuid.UUID, method string) (int, error) {
+	today := time.Now().UTC().Truncate(24 * time.Hour)
+
+	var count int
+	query := `
+		SELECT COALESCE(SUM(request_count), 0)
+		FROM api_usage_daily
+		WHERE user_id = $1 AND request_date = $2 AND method = $3
+	`
+
+	err := r.db.GetContext(ctx, &count, query, userID, today, method)
+	return count, err
+}
+
+// GetMonthlyUsageCount returns the total request count for the current month by user and method
+func (r *usageRepo) GetMonthlyUsageCount(ctx context.Context, userID uuid.UUID, method string) (int, error) {
+	now := time.Now().UTC()
+	firstOfMonth := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.UTC)
+
+	var count int
+	query := `
+		SELECT COALESCE(SUM(request_count), 0)
+		FROM api_usage_daily
+		WHERE user_id = $1 AND request_date >= $2 AND method = $3
+	`
+
+	err := r.db.GetContext(ctx, &count, query, userID, firstOfMonth, method)
+	return count, err
 }

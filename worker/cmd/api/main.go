@@ -45,8 +45,6 @@ func main() {
 			log.Println("Redis connected - rate limiting enabled")
 			rateLimitService = services.NewRateLimitService(
 				redisClient.GetClient(),
-				cfg.RateLimitPerMinute,
-				cfg.RateLimitBurst,
 			)
 		}
 	} else {
@@ -78,12 +76,12 @@ func main() {
 		c.JSON(http.StatusOK, gin.H{"status": "ok"})
 	})
 
-	// Public API routes with optional rate limiting and usage tracking
+	// Public API routes with quota enforcement (rate limits + daily/monthly quotas)
 	v1 := r.Group("/v1")
 
-	// Apply rate limiting only if Redis is configured
+	// Apply comprehensive quota enforcement if Redis is configured
 	if rateLimitService != nil {
-		v1.Use(middleware.RateLimitMiddleware(rateLimitService))
+		v1.Use(middleware.QuotaEnforcementMiddleware(rateLimitService, usageRepo, userRepo, sheetRepo))
 	}
 
 	// Always track usage

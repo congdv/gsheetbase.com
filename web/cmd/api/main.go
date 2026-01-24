@@ -82,6 +82,12 @@ func main() {
 	api.GET("/sheets/:id/analytics", middleware.Authenticate(cfg, authService), analyticsHandler.GetSheetAnalytics)
 	api.GET("/analytics", middleware.Authenticate(cfg, authService), analyticsHandler.GetUserAnalytics)
 
+	// Subscription & billing endpoints
+	subscriptionHandler := handlers.NewSubscriptionHandler(userRepo, usageRepo)
+	api.GET("/subscription/plan", middleware.Authenticate(cfg, authService), subscriptionHandler.GetCurrentPlan)
+	api.GET("/subscription/usage", middleware.Authenticate(cfg, authService), subscriptionHandler.GetCurrentUsage)
+	api.GET("/subscription/plans", subscriptionHandler.GetAvailablePlans) // Public endpoint
+
 	addr := ":" + cfg.Port
 	log.Printf("API listening on %s", addr)
 	if err := r.Run(addr); err != nil {
