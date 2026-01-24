@@ -133,6 +133,49 @@ Response:
 
 201 with returning fields or all created fields if no returning fields
 
+
+PUT /v1/<api-key>
+
+it is like full replacement for the whole object, PATCH is partial updates
+
+Request body
+
+with returing fields
+
+{
+  "collection": "assets",
+  "where": {"owner":"Homeowner"},
+  "data": {
+    "asset": "Desktop",
+    "networkAccess": "Wired Only",
+    "owner": "Homeowner",
+    "location": "Office",
+    "notes": "Completely reset via API",
+    "sensitivity": "Restricted"
+  }
+  "returning": ["asset", "notes", "sensitivity"]
+}
+
+without returing fields
+
+{
+  "collection": "assets",
+  "where": {"owner":"Homeowner"},
+  "data": {
+    "asset": "Desktop",
+    "networkAccess": "Wired Only",
+    "owner": "Homeowner",
+    "location": "Office",
+    "notes": "Completely reset via API",
+    "sensitivity": "Restricted"
+  }
+}
+
+Response:
+
+Status: 200 OK if you return the updated resource
+
+
 PATCH /v1/<api-key>
 
 Request body

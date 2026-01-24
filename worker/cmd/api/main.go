@@ -91,6 +91,7 @@ func main() {
 	v1.POST("/:api_key", sheetHandler.PostPublic)
 	v1.PUT("/:api_key", sheetHandler.PutPublic)
 	v1.PATCH("/:api_key", sheetHandler.PatchPublic)
+	v1.DELETE("/:api_key", sheetHandler.DeletePublic)
 
 	addr := ":" + cfg.Port
 	log.Printf("Worker API listening on %s", addr)
