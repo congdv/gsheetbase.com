@@ -90,14 +90,20 @@ func (h *SheetHandler) PutPublic(c *gin.Context) {
 	}
 
 	if match {
-		// Replace the entire row with req.Data, keeping header order
+		// Use previous row values for fields not present in req.Data
+		prevRow := sheetData[rowIndex]
 		newRow := make([]interface{}, len(headers))
 		for j, h := range headers {
 			key := h
 			if v, ok := req.Data[fmt.Sprintf("%v", key)]; ok {
 				newRow[j] = v
 			} else {
-				newRow[j] = nil
+				// Use previous value if not updated
+				if j < len(prevRow) {
+					newRow[j] = prevRow[j]
+				} else {
+					newRow[j] = nil
+				}
 			}
 		}
 		// Update the row in sheetData
@@ -113,8 +119,6 @@ func (h *SheetHandler) PutPublic(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "no rows matched for update"})
 		return
 	}
-
-	fmt.Printf("rows %v\n", sheetData)
 
 	// Write updated data back to sheet (excluding header row)
 	targetRange = targetRange + "!A2"
