@@ -71,51 +71,53 @@ func (h *SheetHandler) PutPublic(c *gin.Context) {
 		return
 	}
 	headers := sheetData[0]
-	rows := transformToJSON(sheetData[1:]) // Exclude header row from the data
+	rows := transformToJSON(sheetData)
 
 	// Find rows matching 'where' (if provided)
 	var updatedRows []map[string]interface{}
+	match := false
+	rowIndex := -1
 	for i, row := range rows {
-		if i == 0 {
-			continue // skip header row
-		}
-		match := true
 		if req.Where != nil {
 			for k, v := range req.Where {
-				if row[k] != v {
-					match = false
+				if row[k] == v {
+					match = true
+					rowIndex = i + 1 // header row additional
 					break
 				}
 			}
 		}
-		if match {
-			// Replace the entire row with req.Data, keeping header order
-			newRow := make([]interface{}, len(headers))
-			for j, h := range headers {
-				key := h
-				if v, ok := req.Data[fmt.Sprintf("%v", key)]; ok {
-					newRow[j] = v
-				} else {
-					newRow[j] = nil
-				}
-			}
-			// Update the row in sheetData
-			sheetData[i] = newRow
-			// Add to updatedRows for response
-			updatedRow := make(map[string]interface{})
-			for j, h := range headers {
-				updatedRow[fmt.Sprintf("%v", h)] = newRow[j]
-			}
-			updatedRows = append(updatedRows, updatedRow)
-		}
 	}
 
-	if len(updatedRows) == 0 {
+	if match {
+		// Replace the entire row with req.Data, keeping header order
+		newRow := make([]interface{}, len(headers))
+		for j, h := range headers {
+			key := h
+			if v, ok := req.Data[fmt.Sprintf("%v", key)]; ok {
+				newRow[j] = v
+			} else {
+				newRow[j] = nil
+			}
+		}
+		// Update the row in sheetData
+		sheetData[rowIndex] = newRow
+
+		// Prepare response updated rows
+		updatedRow := make(map[string]interface{})
+		for j, h := range headers {
+			updatedRow[fmt.Sprintf("%v", h)] = newRow[j]
+		}
+		updatedRows = append(updatedRows, updatedRow)
+	} else {
 		c.JSON(http.StatusNotFound, gin.H{"error": "no rows matched for update"})
 		return
 	}
 
+	fmt.Printf("rows %v\n", sheetData)
+
 	// Write updated data back to sheet (excluding header row)
+	targetRange = targetRange + "!A2"
 	if err := h.updateSheetData(c.Request.Context(), *user.GoogleAccessToken, sheet.SheetID, targetRange, sheetData[1:]); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update data", "details": err.Error()})
 		return
