@@ -71,7 +71,7 @@ func (h *SheetHandler) PutPublic(c *gin.Context) {
 		return
 	}
 	headers := sheetData[0]
-	rows := transformToJSON(sheetData)
+	rows := transformToJSON(sheetData[1:]) // Exclude header row from the data
 
 	// Find rows matching 'where' (if provided)
 	var updatedRows []map[string]interface{}
