@@ -16,7 +16,7 @@ func (h *SheetHandler) PostPublic(c *gin.Context) {
 	}
 
 	var req struct {
-		Collection string                 `json:"collection" binding:"required"`
+		Collection string                 `json:"collection"`
 		Data       map[string]interface{} `json:"data" binding:"required"`
 		Returning  []string               `json:"returning"`
 	}
