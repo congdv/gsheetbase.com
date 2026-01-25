@@ -178,12 +178,12 @@ export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps
             style={{ marginTop: 8 }}
           />
           <Paragraph style={{ marginTop: 8, fontSize: 12, color: '#666' }}>
-            Use this endpoint to access your sheet data. Add <code>?range=A1:Z100</code> to customize the range.
+            Use this endpoint to access your sheet data.
           </Paragraph>
         </div>
 
         <Descriptions bordered column={1} size="small">
-          <Descriptions.Item label="Default Range">
+          <Descriptions.Item label="Default Collection">
             {sheet.default_range || 'Sheet1'}
           </Descriptions.Item>
           <Descriptions.Item label="Transform to JSON Objects">

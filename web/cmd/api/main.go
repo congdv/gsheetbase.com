@@ -75,6 +75,7 @@ func main() {
 
 	// Sheet access (requires JWT auth + sheet must be registered)
 	sheetHandler := handlers.NewSheetHandler(sheetService)
+	api.POST("/sheets/create", middleware.Authenticate(cfg, authService), sheetHandler.CreateSheet)
 	api.POST("/sheets/data", middleware.Authenticate(cfg, authService), sheetHandler.Get)
 
 	// Analytics endpoints

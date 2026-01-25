@@ -1,3 +1,24 @@
+// Create new Google Sheet from template
+interface CreateSheetPayload {
+  template: string
+}
+
+interface CreateSheetResponse {
+  sheet_id: string
+  sheet_url: string
+}
+
+export function useCreateSheetMutation() {
+  return useMutation<CreateSheetResponse, any, CreateSheetPayload>({
+    mutationFn: async (payload) => {
+      const res = await api.post('/sheets/create', payload)
+      return res.data
+    },
+    onError: (error: any) => {
+      message.error(error?.response?.data?.error || 'Failed to create sheet')
+    },
+  })
+}
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { message } from 'antd'
 import api from '../lib/axios'

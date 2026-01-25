@@ -7,6 +7,7 @@ import (
 
 	"gsheetbase/shared/repository"
 	"gsheetbase/web/internal/config"
+
 	"github.com/google/uuid"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -25,6 +26,74 @@ import (
 // - Read-only enforced by OAuth scope
 type SheetService interface {
 	GetSheetData(ctx context.Context, userID uuid.UUID, accessToken, sheetID, sheetRange string) ([][]interface{}, error)
+	CreateSheetFromTemplate(ctx context.Context, userID uuid.UUID, accessToken, template string) (string, string, error)
+}
+
+// CreateSheetFromTemplate creates a new Google Sheet for the user with the given template
+func (s *sheetService) CreateSheetFromTemplate(ctx context.Context, userID uuid.UUID, accessToken, template string) (string, string, error) {
+	// Map template keys to schema
+	templateSchemas := map[string][]string{
+		"link-in-bio":   {"id", "title", "url", "icon", "order", "active", "description"},
+		"directory":     {"id", "name", "description", "category", "website_url", "logo_url", "featured", "tags", "created_at"},
+		"job-board":     {"id", "job_title", "company", "location", "salary", "job_type", "description", "apply_url", "status", "posted_date"},
+		"lead-gen":      {"timestamp", "full_name", "email", "interest_level", "source_url", "status", "notes"},
+		"services-page": {"id", "service_name", "description", "price", "billing_type", "package_name", "turnaround", "testimonial", "client_name", "booking_url"},
+	}
+	columns, ok := templateSchemas[template]
+	if !ok {
+		return "", "", fmt.Errorf("invalid template key")
+	}
+
+	// Create Google Sheets client with access token (must use write scope)
+	oauth2Token := &oauth2.Token{AccessToken: accessToken}
+	oauth2Config := &oauth2.Config{
+		ClientID:     s.cfg.GoogleClientID,
+		ClientSecret: s.cfg.GoogleClientSecret,
+		Endpoint:     google.Endpoint,
+		Scopes:       []string{sheets.SpreadsheetsScope},
+	}
+	client := oauth2Config.Client(ctx, oauth2Token)
+	srv, err := sheets.NewService(ctx, option.WithHTTPClient(client))
+	if err != nil {
+		return "", "", fmt.Errorf("unable to create sheets service: %w", err)
+	}
+
+	// Prepare sheet
+	sheetTitle := "Gsheetbase API - " + template
+	spreadsheet := &sheets.Spreadsheet{
+		Properties: &sheets.SpreadsheetProperties{
+			Title: sheetTitle,
+		},
+		Sheets: []*sheets.Sheet{
+			{
+				Properties: &sheets.SheetProperties{
+					Title: "Sheet1",
+				},
+				Data: []*sheets.GridData{
+					{
+						RowData: []*sheets.RowData{
+							{
+								Values: make([]*sheets.CellData, len(columns)),
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	for i, col := range columns {
+		spreadsheet.Sheets[0].Data[0].RowData[0].Values[i] = &sheets.CellData{
+			UserEnteredValue: &sheets.ExtendedValue{StringValue: &col},
+		}
+	}
+
+	created, err := srv.Spreadsheets.Create(spreadsheet).Do()
+	if err != nil {
+		return "", "", fmt.Errorf("failed to create sheet: %w", err)
+	}
+
+	// Return sheet ID and URL
+	return created.SpreadsheetId, created.SpreadsheetUrl, nil
 }
 
 type sheetService struct {

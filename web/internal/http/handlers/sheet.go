@@ -5,6 +5,7 @@ import (
 
 	"gsheetbase/web/internal/http/middleware"
 	"gsheetbase/web/internal/services"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -29,11 +30,13 @@ type getSheetRequest struct {
 // - Cleaner OAuth consent: "View your Google Spreadsheets" (no edit/delete warnings)
 //
 // To register a sheet:
-//   POST /api/sheets/register
-//   { "sheet_id": "...", "sheet_name": "My Sheet", "description": "..." }
+//
+//	POST /api/sheets/register
+//	{ "sheet_id": "...", "sheet_name": "My Sheet", "description": "..." }
 //
 // Extract Sheet ID from URL:
-//   https://docs.google.com/spreadsheets/d/SHEET_ID_HERE/edit
+//
+//	https://docs.google.com/spreadsheets/d/SHEET_ID_HERE/edit
 func (h *SheetHandler) Get(c *gin.Context) {
 	var req getSheetRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -61,4 +64,37 @@ func (h *SheetHandler) Get(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"data": data})
+}
+
+type createSheetRequest struct {
+	Template string `json:"template" binding:"required"`
+}
+
+// CreateSheet creates a new Google Sheet for the user from a template
+func (h *SheetHandler) CreateSheet(c *gin.Context) {
+	var req createSheetRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "template is required"})
+		return
+	}
+
+	user, exists := middleware.GetUserFromContext(c)
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "user not found in context"})
+		return
+	}
+	if user.GoogleAccessToken == nil || *user.GoogleAccessToken == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "google access token not found, please re-authenticate"})
+		return
+	}
+
+	sheetID, sheetURL, err := h.service.CreateSheetFromTemplate(
+		c.Request.Context(), user.ID, *user.GoogleAccessToken, req.Template,
+	)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"sheet_id": sheetID, "sheet_url": sheetURL})
 }

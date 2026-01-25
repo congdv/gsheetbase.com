@@ -230,7 +230,7 @@ export function OverviewTab({ sheet, onCopy, onNavigateToApiSettings, onPublish,
           }}
         >
           <Form.Item
-            label="Default Range"
+            label="Default Collection"
             name="default_range"
             tooltip="Specify the default sheet/range to fetch (e.g., Sheet1, Sheet1!A1:Z100)"
           >

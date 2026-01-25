@@ -86,8 +86,7 @@ export const ApiSettingsModal = ({
             }
           />
           <Paragraph style={{ marginTop: 8, fontSize: 12, color: '#666' }}>
-            Use this endpoint to access your sheet data. Add <code>?range=A1:Z100</code> to
-            customize the range.
+            Use this endpoint to access your sheet data.
           </Paragraph>
 
           <Typography.Title level={5} style={{ marginTop: 16 }}>
@@ -109,7 +108,7 @@ curl ${apiUrl}`}
             Settings
           </Typography.Title>
           <p>
-            <strong>Default Range:</strong> {sheet.default_range || 'Sheet1'}
+            <strong>Default Collection:</strong> {sheet.default_range || 'Sheet1'}
           </p>
           <p>
             <strong>Transform to JSON Objects:</strong>{' '}
@@ -128,9 +127,9 @@ curl ${apiUrl}`}
           </Typography.Paragraph>
 
           <Form.Item
-            label="Default Range"
+            label="Default Collection"
             name="default_range"
-            tooltip="The default sheet range to fetch (e.g., Sheet1, Sheet1!A1:Z100)"
+            tooltip="The default sheet range to fetch"
           >
             <Input placeholder="Sheet1" />
           </Form.Item>
