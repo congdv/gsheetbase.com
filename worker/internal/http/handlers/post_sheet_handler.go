@@ -64,39 +64,56 @@ func (h *SheetHandler) PostPublic(c *gin.Context) {
 		targetRange = "Sheet1"
 	}
 
-	// Fetch current sheet data to get headers
-	sheetData, err := h.fetchSheetData(c.Request.Context(), *user.GoogleAccessToken, sheet.SheetID, targetRange)
-	if err != nil || len(sheetData) == 0 {
+	headerRange := targetRange + "!1:1"
+
+	// fetch header row
+	headerData, err := h.fetchSheetData(c.Request.Context(), *user.GoogleAccessToken, sheet.SheetID, headerRange)
+	if err != nil || len(headerData) == 0 {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch sheet headers", "details": err.Error()})
 		return
 	}
-	headers := sheetData[0]
+	headers := headerData[0]
 
-	// Map req.Data to row in header order
-	row := make([]interface{}, len(headers))
-	for i, h := range headers {
-		key := h
-		if v, ok := req.Data[fmt.Sprintf("%v", key)]; ok {
-			row[i] = v
-		} else {
-			row[i] = nil
-		}
+	// Validate the json input
+	row, err := validateAndMap(headers, req.Data)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "failed to validate data", "details": err.Error()})
+		return
 	}
 
-	// Append the row
-	if err := h.appendSheetData(c.Request.Context(), *user.GoogleAccessToken, sheet.SheetID, targetRange, [][]interface{}{row}); err != nil {
+	fmt.Printf("Validation Error: %v\n%v\n", row, err)
+
+	// Append the row and get the appended values from the API response
+	appendResp, err := h.appendSheetData(c.Request.Context(), *user.GoogleAccessToken, sheet.SheetID, targetRange, [][]interface{}{row})
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to append data", "details": err.Error()})
 		return
 	}
-
-	// Fetch the updated sheet data to get the last row (assume append at end)
-	updatedData, err := h.fetchSheetData(c.Request.Context(), *user.GoogleAccessToken, sheet.SheetID, targetRange)
-	if err != nil || len(updatedData) <= 1 {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch updated sheet data", "details": err.Error()})
-		return
+	// Use the values returned in the response
+	var createdRow map[string]interface{}
+	if appendResp != nil && appendResp.Updates != nil && appendResp.Updates.UpdatedData != nil && len(appendResp.Updates.UpdatedData.Values) > 0 {
+		createdRow = map[string]interface{}{}
+		for i, h := range headers {
+			headerStr, _ := h.(string)
+			if i < len(appendResp.Updates.UpdatedData.Values[0]) {
+				createdRow[headerStr] = appendResp.Updates.UpdatedData.Values[0][i]
+			} else {
+				createdRow[headerStr] = nil
+			}
+		}
+	} else {
+		// Fallback: map input row
+		createdRow = map[string]interface{}{}
+		for i, h := range headers {
+			headerStr, _ := h.(string)
+			if i < len(row) {
+				createdRow[headerStr] = row[i]
+			} else {
+				createdRow[headerStr] = nil
+			}
+		}
 	}
-	jsonRows := transformToJSON(updatedData)
-	createdRow := jsonRows[len(jsonRows)-1]
 
 	// If returning fields specified, filter
 	if len(req.Returning) > 0 {

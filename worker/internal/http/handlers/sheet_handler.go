@@ -39,6 +39,32 @@ func isMethodAllowed(allowedMethods []string, method string) bool {
 	return false
 }
 
+// checks if the JSON has the required headers and returns the row slice
+func validateAndMap(headers []interface{}, jsonInput map[string]interface{}) ([]interface{}, error) {
+	newRow := make([]interface{}, len(headers))
+	missingHeaders := []string{}
+
+	for i, h := range headers {
+		headerStr, ok := h.(string)
+		if !ok {
+			return nil, fmt.Errorf("header at column %d is not string", i)
+		}
+
+		if val, exists := jsonInput[headerStr]; exists {
+			newRow[i] = val
+		} else {
+			missingHeaders = append(missingHeaders, headerStr)
+			newRow[i] = nil
+		}
+	}
+
+	if len(missingHeaders) > 0 {
+		return nil, fmt.Errorf("JSON is missing required fields: %s", strings.Join(missingHeaders, ", "))
+	}
+
+	return newRow, nil
+}
+
 // Helper: filterRows applies simple equality filter from where JSON
 func filterRows(rows []map[string]interface{}, where string) []map[string]interface{} {
 	if where == "" {
@@ -182,7 +208,7 @@ func transformToJSON(data [][]interface{}) []map[string]interface{} {
 	return result
 }
 
-func (h *SheetHandler) appendSheetData(ctx context.Context, accessToken, sheetID, rangeStr string, data [][]interface{}) error {
+func (h *SheetHandler) appendSheetData(ctx context.Context, accessToken, sheetID, rangeStr string, data [][]interface{}) (*sheets.AppendValuesResponse, error) {
 	token := &oauth2.Token{AccessToken: accessToken}
 	config := &oauth2.Config{
 		ClientID:     "dummy",
@@ -193,21 +219,23 @@ func (h *SheetHandler) appendSheetData(ctx context.Context, accessToken, sheetID
 
 	srv, err := sheets.NewService(ctx, option.WithHTTPClient(client))
 	if err != nil {
-		return fmt.Errorf("unable to create sheets service: %w", err)
+		return nil, fmt.Errorf("unable to create sheets service: %w", err)
 	}
 
 	valueRange := &sheets.ValueRange{
 		Values: data,
 	}
 
-	_, err = srv.Spreadsheets.Values.Append(sheetID, rangeStr, valueRange).
+	resp, err := srv.Spreadsheets.Values.Append(sheetID, rangeStr, valueRange).
 		ValueInputOption("USER_ENTERED").
+		InsertDataOption("INSERT_ROWS").
+		IncludeValuesInResponse(true).
 		Do()
 	if err != nil {
-		return fmt.Errorf("unable to append data to sheet: %w", err)
+		return nil, fmt.Errorf("unable to append data to sheet: %w", err)
 	}
 
-	return nil
+	return resp, nil
 }
 
 func (h *SheetHandler) updateSheetData(ctx context.Context, accessToken, sheetID, rangeStr string, data [][]interface{}) error {
