@@ -1,3 +1,6 @@
+# TODO List
+- Handle the expired access token with google service app
+
 CREATE TABLE plans (
     id                    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     plan_name             TEXT NOT NULL,  -- 'free', 'starter', 'pro', 'enterprise'
@@ -219,3 +222,4 @@ Response
 
 
 HTTP/1.1 204 No Content
+
