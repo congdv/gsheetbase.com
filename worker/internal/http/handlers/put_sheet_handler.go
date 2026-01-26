@@ -9,6 +9,11 @@ import (
 
 // PutPublic handles PUT /v1/:api_key/rows - Update/replace rows
 func (h *SheetHandler) PutPublic(c *gin.Context) {
+	h.updateSheetRows(c, "PUT")
+}
+
+// updateSheetRows contains the shared logic for updating sheet rows, used by both PUT and PATCH
+func (h *SheetHandler) updateSheetRows(c *gin.Context, method string) {
 	apiKey := c.Param("api_key")
 	if apiKey == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "api_key is required"})
@@ -34,16 +39,16 @@ func (h *SheetHandler) PutPublic(c *gin.Context) {
 		return
 	}
 
-	// Check if PUT method is allowed
-	if !isMethodAllowed(sheet.AllowedMethods, "PUT") {
-		c.JSON(http.StatusForbidden, gin.H{"error": "PUT method not enabled for this sheet"})
+	// Check if the method is allowed
+	if !isMethodAllowed(sheet.AllowedMethods, method) {
+		c.JSON(http.StatusForbidden, gin.H{"error": method + " method not enabled for this sheet"})
 		return
 	}
 
 	// Get the user to access their Google tokens
 	user, err := h.userRepo.FindByID(c.Request.Context(), sheet.UserID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch user credentials"})
+		c.JSON(500, gin.H{"error": "failed to fetch user credentials"})
 		return
 	}
 
@@ -51,7 +56,7 @@ func (h *SheetHandler) PutPublic(c *gin.Context) {
 	c.Set("user_id", user.ID)
 
 	if user.GoogleAccessToken == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "sheet owner needs to reconnect Google account"})
+		c.JSON(401, gin.H{"error": "sheet owner needs to reconnect Google account"})
 		return
 	}
 
@@ -67,7 +72,7 @@ func (h *SheetHandler) PutPublic(c *gin.Context) {
 	// Fetch current sheet data to get headers and rows
 	sheetData, err := h.fetchSheetData(c.Request.Context(), *user.GoogleAccessToken, sheet.SheetID, targetRange)
 	if err != nil || len(sheetData) == 0 {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch sheet data", "details": err.Error()})
+		c.JSON(500, gin.H{"error": "failed to fetch sheet data", "details": err.Error()})
 		return
 	}
 	headers := sheetData[0]
@@ -116,14 +121,14 @@ func (h *SheetHandler) PutPublic(c *gin.Context) {
 		}
 		updatedRows = append(updatedRows, updatedRow)
 	} else {
-		c.JSON(http.StatusNotFound, gin.H{"error": "no rows matched for update"})
+		c.JSON(404, gin.H{"error": "no rows matched for update"})
 		return
 	}
 
 	// Write updated data back to sheet (excluding header row)
 	targetRange = targetRange + "!A2"
 	if err := h.updateSheetData(c.Request.Context(), *user.GoogleAccessToken, sheet.SheetID, targetRange, sheetData[1:]); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update data", "details": err.Error()})
+		c.JSON(500, gin.H{"error": "failed to update data", "details": err.Error()})
 		return
 	}
 
@@ -141,5 +146,5 @@ func (h *SheetHandler) PutPublic(c *gin.Context) {
 		responseRows = updatedRows
 	}
 
-	c.JSON(http.StatusOK, gin.H{"data": responseRows})
+	c.JSON(200, gin.H{"data": responseRows})
 }
