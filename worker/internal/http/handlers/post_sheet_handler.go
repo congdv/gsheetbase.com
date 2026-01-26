@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -81,8 +80,6 @@ func (h *SheetHandler) PostPublic(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "failed to validate data", "details": err.Error()})
 		return
 	}
-
-	fmt.Printf("Validation Error: %v\n%v\n", row, err)
 
 	// Append the row and get the appended values from the API response
 	appendResp, err := h.appendSheetData(c.Request.Context(), *user.GoogleAccessToken, sheet.SheetID, targetRange, [][]interface{}{row})

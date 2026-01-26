@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -264,4 +265,84 @@ func (h *SheetHandler) updateSheetData(ctx context.Context, accessToken, sheetID
 	}
 
 	return nil
+}
+
+func (h *SheetHandler) deleteSheetDataAtRowIndex(ctx context.Context, accessToken, spreadsheetId, rangeStr string, rowIndexToDelete int64) error {
+	token := &oauth2.Token{AccessToken: accessToken}
+	config := &oauth2.Config{
+		ClientID:     "dummy",
+		ClientSecret: "dummy",
+		Endpoint:     google.Endpoint,
+	}
+	client := config.Client(ctx, token)
+
+	srv, err := sheets.NewService(ctx, option.WithHTTPClient(client))
+	if err != nil {
+		return fmt.Errorf("unable to create sheets service: %w", err)
+	}
+
+	spreadsheet, err := srv.Spreadsheets.Get(spreadsheetId).Do()
+	if err != nil {
+		return err
+	}
+	sheetName, _, err := parseRange(rangeStr)
+	if err != nil {
+		return err
+	}
+	var sheetID int64
+	found := false
+	for _, s := range spreadsheet.Sheets {
+		if s.Properties.Title == sheetName {
+			sheetID = s.Properties.SheetId
+			found = true
+			break
+		}
+	}
+	if !found {
+		return fmt.Errorf("sheet named '%s' not found", sheetName)
+	}
+
+	batchUpdate := &sheets.BatchUpdateSpreadsheetRequest{
+		Requests: []*sheets.Request{
+			{
+				DeleteDimension: &sheets.DeleteDimensionRequest{
+					Range: &sheets.DimensionRange{
+						SheetId:    sheetID,
+						Dimension:  "ROWS",
+						StartIndex: rowIndexToDelete,
+						EndIndex:   rowIndexToDelete + 1,
+					},
+				},
+			},
+		},
+	}
+
+	_, err = srv.Spreadsheets.BatchUpdate(spreadsheetId, batchUpdate).Do()
+
+	if err != nil {
+		return fmt.Errorf("unable to delete row data: %w", err)
+	}
+
+	return nil
+}
+
+// This helper takes "Sheet1!A5" and returns ("Sheet1", 4)
+func parseRange(rangeStr string) (string, int64, error) {
+	parts := strings.Split(rangeStr, "!")
+	if len(parts) != 2 {
+		return rangeStr, -1, nil
+	}
+
+	sheetName := parts[0]
+	// Use regex to find just the numbers in "A2" or "A2:B2"
+	re := regexp.MustCompile(`[0-9]+`)
+	rowStr := re.FindString(parts[1])
+
+	rowNum, err := strconv.ParseInt(rowStr, 10, 64)
+	if err != nil {
+		return "", 0, fmt.Errorf("could not parse row number: %v", err)
+	}
+
+	// Convert to 0-indexed (Row 2 becomes Index 1)
+	return sheetName, rowNum - 1, nil
 }

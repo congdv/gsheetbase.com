@@ -35,7 +35,7 @@ export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps
   const { hasScope, requestScopes } = useAuth()
 
   const [testUrl, setTestUrl] = useState(apiUrl)
-  const [httpMethod, setHttpMethod] = useState<'GET' | 'POST' | 'PUT' | 'PATCH'>('GET')
+  const [httpMethod, setHttpMethod] = useState<'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'>('GET')
   const [requestBody, setRequestBody] = useState('{\n  \n}')
   const [loading, setLoading] = useState(false)
   const [showScopePrompt, setShowScopePrompt] = useState(false)
@@ -62,7 +62,7 @@ export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps
         validateStatus: () => true,
       }
       
-      // Add request body for write methods
+      // Add request body for write methods only (not DELETE)
       if (['POST', 'PUT', 'PATCH'].includes(httpMethod)) {
         try {
           config.data = JSON.parse(requestBody)
@@ -219,9 +219,9 @@ export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps
                       <LockOutlined style={{ color: '#999' }} />
                     </Tooltip>
                   )}
-                  <Switch 
-                    checked={isMethodEnabled('POST')} 
-                    onChange={(checked) => handleToggleMethod('POST', checked)} 
+                  <Switch
+                    checked={isMethodEnabled('POST')}
+                    onChange={(checked) => handleToggleMethod('POST', checked)}
                     loading={updatingMethods['POST']}
                     disabled={!canWrite}
                   />
@@ -240,9 +240,9 @@ export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps
                       <LockOutlined style={{ color: '#999' }} />
                     </Tooltip>
                   )}
-                  <Switch 
-                    checked={isMethodEnabled('PUT')} 
-                    onChange={(checked) => handleToggleMethod('PUT', checked)} 
+                  <Switch
+                    checked={isMethodEnabled('PUT')}
+                    onChange={(checked) => handleToggleMethod('PUT', checked)}
                     loading={updatingMethods['PUT']}
                     disabled={!canWrite}
                   />
@@ -261,10 +261,31 @@ export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps
                       <LockOutlined style={{ color: '#999' }} />
                     </Tooltip>
                   )}
-                  <Switch 
-                    checked={isMethodEnabled('PATCH')} 
-                    onChange={(checked) => handleToggleMethod('PATCH', checked)} 
+                  <Switch
+                    checked={isMethodEnabled('PATCH')}
+                    onChange={(checked) => handleToggleMethod('PATCH', checked)}
                     loading={updatingMethods['PATCH']}
+                    disabled={!canWrite}
+                  />
+                </Space>
+              </Col>
+            </Row>
+
+            <Row justify="space-between" align="middle">
+              <Col>
+                <Text><code>DELETE</code> Delete rows</Text>
+              </Col>
+              <Col>
+                <Space>
+                  {!canWrite && (
+                    <Tooltip title="Requires write permission">
+                      <LockOutlined style={{ color: '#999' }} />
+                    </Tooltip>
+                  )}
+                  <Switch
+                    checked={isMethodEnabled('DELETE')}
+                    onChange={(checked) => handleToggleMethod('DELETE', checked)}
+                    loading={updatingMethods['DELETE']}
                     disabled={!canWrite}
                   />
                 </Space>
@@ -287,6 +308,7 @@ export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps
                     { label: 'POST', value: 'POST', disabled: !isMethodEnabled('POST') },
                     { label: 'PUT', value: 'PUT', disabled: !isMethodEnabled('PUT') },
                     { label: 'PATCH', value: 'PATCH', disabled: !isMethodEnabled('PATCH') },
+                    { label: 'DELETE', value: 'DELETE', disabled: !isMethodEnabled('DELETE') },
                   ]}
                 />
                 <Input
@@ -334,6 +356,7 @@ export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps
                   {httpMethod === 'POST' && 'POST appends new rows to the sheet. Range is optional.'}
                   {httpMethod === 'PUT' && 'PUT updates existing rows. Range is required.'}
                   {httpMethod === 'PATCH' && 'PATCH partially updates rows. Range is required.'}
+                  {httpMethod === 'DELETE' && 'DELETE removes rows. Range is required.'}
                 </Text>
               </div>
             )}
@@ -370,7 +393,7 @@ export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps
                       border: '1px solid #d9d9d9',
                     }}
                   >
-                    {JSON.stringify(response.data, null, 2)}
+                    {response.status === 204 ? "No content" : JSON.stringify(response.data, null, 2)}
                   </pre>
                 )}
               </div>
@@ -395,7 +418,7 @@ fetch('${apiUrl}')
   .then(data => console.log(data))
 
 // cURL - Fetch data
-curl ${apiUrl}` : 
+curl ${apiUrl}` :
 httpMethod === 'POST' ? `// JavaScript - Add new rows
 fetch('${apiUrl}', {
   method: 'POST',
@@ -409,8 +432,8 @@ fetch('${apiUrl}', {
 })
 
 // cURL - Add new rows
-curl -X POST ${apiUrl} \\
-  -H 'Content-Type: application/json' \\
+curl -X POST ${apiUrl} \
+  -H 'Content-Type: application/json' \
   -d '{"data": [["John", "Doe", "30"]]}'` :
 httpMethod === 'PUT' ? `// JavaScript - Update rows
 fetch('${apiUrl}', {
@@ -423,10 +446,10 @@ fetch('${apiUrl}', {
 })
 
 // cURL - Update rows
-curl -X PUT ${apiUrl} \\
-  -H 'Content-Type: application/json' \\
+curl -X PUT ${apiUrl} \
+  -H 'Content-Type: application/json' \
   -d '{"data": [["Updated", "Row"]], "range": "Sheet1!A2:B2"}'` :
-`// JavaScript - Partial update
+httpMethod === 'PATCH' ? `// JavaScript - Partial update
 fetch('${apiUrl}', {
   method: 'PATCH',
   headers: { 'Content-Type': 'application/json' },
@@ -437,9 +460,23 @@ fetch('${apiUrl}', {
 })
 
 // cURL - Partial update
-curl -X PATCH ${apiUrl} \\
-  -H 'Content-Type: application/json' \\
-  -d '{"data": [["Patched"]], "range": "Sheet1!A2"}'`}
+curl -X PATCH ${apiUrl} \
+  -H 'Content-Type: application/json' \
+  -d '{"data": [["Patched"]], "range": "Sheet1!A2"}'` :
+httpMethod === 'DELETE' ? `// JavaScript - Delete rows
+fetch('${apiUrl}', {
+  method: 'DELETE',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    range: "Sheet1!A2:B2"
+  })
+})
+
+// cURL - Delete rows
+curl -X DELETE ${apiUrl} \
+  -H 'Content-Type: application/json' \
+  -d '{"range": "Sheet1!A2:B2"}'` :
+''}
           </pre>
         </div>
 
