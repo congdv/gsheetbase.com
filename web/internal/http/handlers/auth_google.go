@@ -17,7 +17,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
-	"google.golang.org/api/sheets/v4"
 )
 
 type GoogleAuthHandler struct {
@@ -34,7 +33,7 @@ func NewGoogleAuthHandler(auth services.AuthService, cfg *config.Config) *Google
 			ClientID:     cfg.GoogleClientID,
 			ClientSecret: cfg.GoogleClientSecret,
 			RedirectURL:  cfg.GoogleRedirectUrl,
-			Scopes:       []string{"email", sheets.SpreadsheetsScope},
+			Scopes:       []string{"email"},
 			Endpoint:     google.Endpoint,
 		},
 	}
@@ -126,7 +125,7 @@ func (h *GoogleAuthHandler) Callback(c *gin.Context) {
 		scopes = strings.Split(scopeParam, " ")
 	} else {
 		// Fallback to default scopes
-		scopes = []string{"openid", "email", "profile", sheets.SpreadsheetsReadonlyScope}
+		scopes = []string{"openid", "email", "profile"}
 	}
 
 	fmt.Printf("DEBUG: Storing scopes: %v\n", scopes)

@@ -124,7 +124,7 @@ func (s *sheetService) GetSheetData(ctx context.Context, userID uuid.UUID, acces
 		ClientID:     s.cfg.GoogleClientID,
 		ClientSecret: s.cfg.GoogleClientSecret,
 		Endpoint:     google.Endpoint,
-		Scopes:       []string{sheets.SpreadsheetsReadonlyScope},
+		Scopes:       []string{},
 	}
 	client := oauth2Config.Client(ctx, oauth2Token)
 
