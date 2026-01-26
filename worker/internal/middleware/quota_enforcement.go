@@ -90,7 +90,7 @@ func QuotaEnforcementMiddleware(
 			c.JSON(http.StatusTooManyRequests, gin.H{
 				"error":       "Rate limit exceeded",
 				"message":     fmt.Sprintf("You have exceeded the rate limit of %d requests per minute for %s operations", rateLimitResult.Limit, methodCategory),
-				"retry_after": rateLimitResult.ResetAt.Unix(),
+				"retry_after": rateLimitResult.ResetAt.UTC().Format("2006-01-02T15:04:05Z07:00"),
 			})
 			c.Abort()
 			return

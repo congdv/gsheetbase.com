@@ -42,7 +42,7 @@ func RateLimitMiddleware(rateLimitService *services.RateLimitService) gin.Handle
 			c.JSON(http.StatusTooManyRequests, gin.H{
 				"error":       "Rate limit exceeded",
 				"message":     fmt.Sprintf("You have exceeded the rate limit of %d requests per minute", result.Limit),
-				"retry_after": result.ResetAt.Unix(),
+				"retry_after": result.ResetAt.UTC().Format("2006-01-02T15:04:05Z07:00"),
 			})
 			c.Abort()
 			return
