@@ -7,6 +7,7 @@ import { useSheets } from '../../hooks/useSheets'
 import { SheetsTable } from '../../components/sheets/SheetsTable'
 import { RegisterSheetModal } from '../../components/sheets/RegisterSheetModal'
 import SEO from '../../components/SEO'
+import { GOOGLE_SCOPE } from '@/constants/common'
 
 const { Title, Paragraph } = Typography
 
@@ -33,8 +34,7 @@ export default function HomePage() {
     deleteSheet,
   } = useSheets()
 
-  const REQUIRED_SCOPE = 'https://www.googleapis.com/auth/spreadsheets'
-  const hasSheetScope = hasScope(REQUIRED_SCOPE)
+  const hasSheetScope = hasScope(GOOGLE_SCOPE.READ_WRITE_SCOPE)
 
   const handleRegister = (values: { sheet_id: string; sheet_name?: string; description?: string }) => {
     registerSheet(values, {
@@ -45,7 +45,7 @@ export default function HomePage() {
   }
 
   const handleGrantAccess = async () => {
-    await requestScopes([REQUIRED_SCOPE])
+    await requestScopes([GOOGLE_SCOPE.READ_WRITE_SCOPE])
   }
 
   return (

@@ -5,6 +5,7 @@ import axios from 'axios'
 import api from '../../lib/axios'
 import { useAuth } from '../../context/AuthContext'
 import { ScopeConsentPrompt, ScopeInfo } from '../../components/ScopeConsentPrompt'
+import { GOOGLE_SCOPE } from '@/constants/common'
 
 const { Paragraph, Text } = Typography
 
@@ -47,8 +48,7 @@ export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps
     error?: string
   } | null>(null)
 
-  const canRead = hasScope('https://www.googleapis.com/auth/spreadsheets.readonly')
-  const canWrite = hasScope('https://www.googleapis.com/auth/spreadsheets')
+  const canReadAndWrite = hasScope(GOOGLE_SCOPE.READ_WRITE_SCOPE)
 
   const handleSendRequest = async () => {
     setLoading(true)
@@ -198,7 +198,7 @@ export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps
                 <Text><code>GET</code> Fetch sheet data</Text>
               </Col>
               <Col>
-                {canRead ? (
+                {canReadAndWrite ? (
                   <Tag color="success">Always Available</Tag>
                 ) : (
                   <Tooltip title="Grant read permission to enable">
@@ -214,7 +214,7 @@ export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps
               </Col>
               <Col>
                 <Space>
-                  {!canWrite && (
+                  {!canReadAndWrite && (
                     <Tooltip title="Requires write permission">
                       <LockOutlined style={{ color: '#999' }} />
                     </Tooltip>
@@ -223,7 +223,7 @@ export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps
                     checked={isMethodEnabled('POST')}
                     onChange={(checked) => handleToggleMethod('POST', checked)}
                     loading={updatingMethods['POST']}
-                    disabled={!canWrite}
+                    disabled={!canReadAndWrite}
                   />
                 </Space>
               </Col>
@@ -235,7 +235,7 @@ export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps
               </Col>
               <Col>
                 <Space>
-                  {!canWrite && (
+                  {!canReadAndWrite && (
                     <Tooltip title="Requires write permission">
                       <LockOutlined style={{ color: '#999' }} />
                     </Tooltip>
@@ -244,7 +244,7 @@ export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps
                     checked={isMethodEnabled('PUT')}
                     onChange={(checked) => handleToggleMethod('PUT', checked)}
                     loading={updatingMethods['PUT']}
-                    disabled={!canWrite}
+                    disabled={!canReadAndWrite}
                   />
                 </Space>
               </Col>
@@ -256,7 +256,7 @@ export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps
               </Col>
               <Col>
                 <Space>
-                  {!canWrite && (
+                  {!canReadAndWrite && (
                     <Tooltip title="Requires write permission">
                       <LockOutlined style={{ color: '#999' }} />
                     </Tooltip>
@@ -265,7 +265,7 @@ export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps
                     checked={isMethodEnabled('PATCH')}
                     onChange={(checked) => handleToggleMethod('PATCH', checked)}
                     loading={updatingMethods['PATCH']}
-                    disabled={!canWrite}
+                    disabled={!canReadAndWrite}
                   />
                 </Space>
               </Col>
@@ -277,7 +277,7 @@ export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps
               </Col>
               <Col>
                 <Space>
-                  {!canWrite && (
+                  {!canReadAndWrite && (
                     <Tooltip title="Requires write permission">
                       <LockOutlined style={{ color: '#999' }} />
                     </Tooltip>
@@ -286,7 +286,7 @@ export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps
                     checked={isMethodEnabled('DELETE')}
                     onChange={(checked) => handleToggleMethod('DELETE', checked)}
                     loading={updatingMethods['DELETE']}
-                    disabled={!canWrite}
+                    disabled={!canReadAndWrite}
                   />
                 </Space>
               </Col>

@@ -150,24 +150,9 @@ func paginateRows(rows []map[string]interface{}, limitStr, offsetStr string) ([]
 }
 
 func (h *SheetHandler) fetchSheetData(ctx context.Context, accessToken, sheetID, rangeStr string) ([][]interface{}, error) {
-	// Create OAuth2 token
-	token := &oauth2.Token{
-		AccessToken: accessToken,
-	}
-
-	// Create OAuth2 config (scopes don't matter for just creating a client with existing token)
-	config := &oauth2.Config{
-		ClientID:     "dummy",
-		ClientSecret: "dummy",
-		Endpoint:     google.Endpoint,
-	}
-
-	client := config.Client(ctx, token)
-
-	// Create Sheets service
-	srv, err := sheets.NewService(ctx, option.WithHTTPClient(client))
+	srv, err := getSheetsService(ctx, accessToken)
 	if err != nil {
-		return nil, fmt.Errorf("unable to create sheets service: %w", err)
+		return nil, err
 	}
 
 	// Get spreadsheet data
@@ -210,17 +195,9 @@ func transformToJSON(data [][]interface{}) []map[string]interface{} {
 }
 
 func (h *SheetHandler) appendSheetData(ctx context.Context, accessToken, sheetID, rangeStr string, data [][]interface{}) (*sheets.AppendValuesResponse, error) {
-	token := &oauth2.Token{AccessToken: accessToken}
-	config := &oauth2.Config{
-		ClientID:     "dummy",
-		ClientSecret: "dummy",
-		Endpoint:     google.Endpoint,
-	}
-	client := config.Client(ctx, token)
-
-	srv, err := sheets.NewService(ctx, option.WithHTTPClient(client))
+	srv, err := getSheetsService(ctx, accessToken)
 	if err != nil {
-		return nil, fmt.Errorf("unable to create sheets service: %w", err)
+		return nil, err
 	}
 
 	valueRange := &sheets.ValueRange{
@@ -240,17 +217,9 @@ func (h *SheetHandler) appendSheetData(ctx context.Context, accessToken, sheetID
 }
 
 func (h *SheetHandler) updateSheetData(ctx context.Context, accessToken, sheetID, rangeStr string, data [][]interface{}) error {
-	token := &oauth2.Token{AccessToken: accessToken}
-	config := &oauth2.Config{
-		ClientID:     "dummy",
-		ClientSecret: "dummy",
-		Endpoint:     google.Endpoint,
-	}
-	client := config.Client(ctx, token)
-
-	srv, err := sheets.NewService(ctx, option.WithHTTPClient(client))
+	srv, err := getSheetsService(ctx, accessToken)
 	if err != nil {
-		return fmt.Errorf("unable to create sheets service: %w", err)
+		return err
 	}
 
 	valueRange := &sheets.ValueRange{
@@ -268,17 +237,9 @@ func (h *SheetHandler) updateSheetData(ctx context.Context, accessToken, sheetID
 }
 
 func (h *SheetHandler) deleteSheetDataAtRowIndex(ctx context.Context, accessToken, spreadsheetId, rangeStr string, rowIndexToDelete int64) error {
-	token := &oauth2.Token{AccessToken: accessToken}
-	config := &oauth2.Config{
-		ClientID:     "dummy",
-		ClientSecret: "dummy",
-		Endpoint:     google.Endpoint,
-	}
-	client := config.Client(ctx, token)
-
-	srv, err := sheets.NewService(ctx, option.WithHTTPClient(client))
+	srv, err := getSheetsService(ctx, accessToken)
 	if err != nil {
-		return fmt.Errorf("unable to create sheets service: %w", err)
+		return err
 	}
 
 	spreadsheet, err := srv.Spreadsheets.Get(spreadsheetId).Do()
@@ -324,6 +285,24 @@ func (h *SheetHandler) deleteSheetDataAtRowIndex(ctx context.Context, accessToke
 	}
 
 	return nil
+}
+
+// getSheetsService creates a Google Sheets service using the provided access token.
+// In the future, this can be extended to check token expiry and refresh if needed.
+func getSheetsService(ctx context.Context, accessToken string) (*sheets.Service, error) {
+	token := &oauth2.Token{AccessToken: accessToken}
+	config := &oauth2.Config{
+		ClientID:     "dummy",
+		ClientSecret: "dummy",
+		Endpoint:     google.Endpoint,
+	}
+	client := config.Client(ctx, token)
+
+	srv, err := sheets.NewService(ctx, option.WithHTTPClient(client))
+	if err != nil {
+		return nil, fmt.Errorf("unable to create sheets service: %w", err)
+	}
+	return srv, nil
 }
 
 // This helper takes "Sheet1!A5" and returns ("Sheet1", 4)
