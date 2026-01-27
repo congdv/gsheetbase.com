@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useAuth } from '../../context/AuthContext'
 import { Typography, Card, Button } from 'antd'
 import { PlusOutlined } from '@ant-design/icons'
 import styled from 'styled-components'
@@ -23,7 +24,7 @@ const PageHeader = styled.div`
 
 export default function HomePage() {
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false)
-
+  const { hasScope, requestScopes, isLoading: authLoading } = useAuth()
   const {
     sheets,
     isLoading,
@@ -31,6 +32,9 @@ export default function HomePage() {
     isRegistering,
     deleteSheet,
   } = useSheets()
+
+  const REQUIRED_SCOPE = 'https://www.googleapis.com/auth/spreadsheets'
+  const hasSheetScope = hasScope(REQUIRED_SCOPE)
 
   const handleRegister = (values: { sheet_id: string; sheet_name?: string; description?: string }) => {
     registerSheet(values, {
@@ -40,6 +44,10 @@ export default function HomePage() {
     })
   }
 
+  const handleGrantAccess = async () => {
+    await requestScopes([REQUIRED_SCOPE])
+  }
+
   return (
     <PageContainer>
       <SEO
@@ -47,35 +55,50 @@ export default function HomePage() {
         description="Manage your Google Sheets API connections. View, register, and configure REST API endpoints for your spreadsheets."
         noIndex={true}
       />
-      <PageHeader>
-        <div>
-          <Title level={2}>My Sheets</Title>
-          <Paragraph>Manage your Google Sheets connections</Paragraph>
-        </div>
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={() => setIsRegisterModalOpen(true)}
-          size="large"
-        >
-          Register Sheet
-        </Button>
-      </PageHeader>
+      {!authLoading && !hasSheetScope ? (
+        <Card style={{ maxWidth: 480, margin: '48px auto', textAlign: 'center' }}>
+          <Title level={3}>Google Sheets Access Required</Title>
+          <Paragraph>
+            To use Gsheetbase, please grant access to your Google Sheets. This is required to register and manage your APIs.
+          </Paragraph>
+          <Button type="primary" size="large" onClick={handleGrantAccess}>
+            Grant Google Sheets Access
+          </Button>
+        </Card>
+      ) : (
+        <>
+          <PageHeader>
+            <div>
+              <Title level={2}>My Sheets</Title>
+              <Paragraph>Manage your Google Sheets connections</Paragraph>
+            </div>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => setIsRegisterModalOpen(true)}
+              size="large"
+              disabled={!hasSheetScope}
+            >
+              Register Sheet
+            </Button>
+          </PageHeader>
 
-      <Card>
-        <SheetsTable
-          sheets={sheets}
-          isLoading={isLoading}
-          onDelete={deleteSheet}
-        />
-      </Card>
+          <Card>
+            <SheetsTable
+              sheets={sheets}
+              isLoading={isLoading}
+              onDelete={hasSheetScope ? deleteSheet : () => {}}
+            />
+          </Card>
 
-      <RegisterSheetModal
-        open={isRegisterModalOpen}
-        isRegistering={isRegistering}
-        onCancel={() => setIsRegisterModalOpen(false)}
-        onRegister={handleRegister}
-      />
+          <RegisterSheetModal
+            open={isRegisterModalOpen}
+            isRegistering={isRegistering}
+            onCancel={() => setIsRegisterModalOpen(false)}
+            onRegister={hasSheetScope ? handleRegister : () => {}}
+          />
+        </>
+      )}
     </PageContainer>
   )
 }
