@@ -79,23 +79,20 @@ func main() {
 	// Public API routes with quota enforcement (rate limits + daily/monthly quotas)
 	v1 := r.Group("/v1")
 
-	// Apply comprehensive quota enforcement if Redis is configured
-	if rateLimitService != nil {
-		v1.Use(middleware.QuotaEnforcementMiddleware(rateLimitService, usageRepo, userRepo, sheetRepo))
-	}
-
-	// Always track usage
-	v1.Use(middleware.UsageTrackingMiddleware(usageTracker))
-
-	// Ensure Google access token is valid for all /:api_key routes
+	// Group all /v1/:api_key routes and apply all middlewares only to them
 	authService := services.NewAuthService()
-	v1.Use(middleware.AccessTokenEnsureMiddleware(sheetRepo, userRepo, authService, cfg.GoogleClientID, cfg.GoogleClientSecret))
+	v1ApiKey := v1.Group(":api_key")
+	if rateLimitService != nil {
+		v1ApiKey.Use(middleware.QuotaEnforcementMiddleware(rateLimitService, usageRepo, userRepo, sheetRepo))
+	}
+	v1ApiKey.Use(middleware.UsageTrackingMiddleware(usageTracker))
+	v1ApiKey.Use(middleware.AccessTokenEnsureMiddleware(sheetRepo, userRepo, authService, cfg.GoogleClientID, cfg.GoogleClientSecret))
 
-	v1.GET("/:api_key", sheetHandler.GetPublic)
-	v1.POST("/:api_key", sheetHandler.PostPublic)
-	v1.PUT("/:api_key", sheetHandler.PutPublic)
-	v1.PATCH("/:api_key", sheetHandler.PatchPublic)
-	v1.DELETE("/:api_key", sheetHandler.DeletePublic)
+	v1ApiKey.GET("", sheetHandler.GetPublic)
+	v1ApiKey.POST("", sheetHandler.PostPublic)
+	v1ApiKey.PUT("", sheetHandler.PutPublic)
+	v1ApiKey.PATCH("", sheetHandler.PatchPublic)
+	v1ApiKey.DELETE("", sheetHandler.DeletePublic)
 
 	addr := ":" + cfg.Port
 	log.Printf("Worker API listening on %s", addr)
