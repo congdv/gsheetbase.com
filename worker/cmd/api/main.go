@@ -87,6 +87,10 @@ func main() {
 	// Always track usage
 	v1.Use(middleware.UsageTrackingMiddleware(usageTracker))
 
+	// Ensure Google access token is valid for all /:api_key routes
+	authService := services.NewAuthService()
+	v1.Use(middleware.AccessTokenEnsureMiddleware(sheetRepo, userRepo, authService, cfg.GoogleClientID, cfg.GoogleClientSecret))
+
 	v1.GET("/:api_key", sheetHandler.GetPublic)
 	v1.POST("/:api_key", sheetHandler.PostPublic)
 	v1.PUT("/:api_key", sheetHandler.PutPublic)
