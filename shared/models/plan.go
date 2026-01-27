@@ -46,7 +46,7 @@ func GetPlanLimits(plan SubscriptionPlan) PlanLimits {
 	switch plan {
 	case PlanFree:
 		return PlanLimits{
-			GetRateLimit:       20,
+			GetRateLimit:       60,
 			UpdateRateLimit:    2,
 			DailyUpdateQuota:   200,
 			MonthlyGetQuota:    10000,
