@@ -60,7 +60,8 @@ func (r *userRepo) FindByID(ctx context.Context, id uuid.UUID) (models.User, err
 }
 
 func (r *userRepo) UpdateGoogleTokens(ctx context.Context, userID uuid.UUID, accessToken, refreshToken string, expiry time.Time) error {
-	_, err := r.db.ExecContext(ctx, `
+	if refreshToken != "" {
+		_, err := r.db.ExecContext(ctx, `
 		UPDATE users 
 		SET google_access_token = $1, 
 		    google_refresh_token = $2, 
@@ -68,6 +69,16 @@ func (r *userRepo) UpdateGoogleTokens(ctx context.Context, userID uuid.UUID, acc
 		    updated_at = NOW()
 		WHERE id = $4
 	`, accessToken, refreshToken, expiry, userID)
+		return err
+	}
+	// we should not update refresh token when it is empty since it is onetime token
+	_, err := r.db.ExecContext(ctx, `
+		UPDATE users 
+		SET google_access_token = $1, 
+		    google_token_expiry = $2,
+		    updated_at = NOW()
+		WHERE id = $3
+	`, accessToken, expiry, userID)
 	return err
 }
 
