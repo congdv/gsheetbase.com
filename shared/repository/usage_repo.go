@@ -54,7 +54,7 @@ func (r *usageRepo) GetDailyUsageBySheet(ctx context.Context, sheetID uuid.UUID,
 		SELECT id, api_key, user_id, sheet_id, request_date, method, request_count, created_at, updated_at
 		FROM api_usage_daily
 		WHERE sheet_id = $1 AND request_date >= $2 AND request_date <= $3
-		ORDER BY request_date DESC, method
+		ORDER BY request_date ASC, method
 	`
 
 	rows, err := r.db.QueryContext(ctx, query, sheetID, startDate, endDate)

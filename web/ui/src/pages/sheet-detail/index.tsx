@@ -162,16 +162,6 @@ export default function SheetDetailPage() {
             children: <ApiSettingsTab sheet={sheet} onCopy={copyToClipboard} onPublish={() => handlePublish({ use_first_row_as_header: true })} />,
           },
           {
-            key: 'data-preview',
-            label: (
-              <span>
-                <TableOutlined />
-                Data Preview
-              </span>
-            ),
-            children: <DataPreviewTab />,
-          },
-          {
             key: 'analytics',
             label: (
               <span>

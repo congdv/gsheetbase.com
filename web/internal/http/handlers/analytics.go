@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"gsheetbase/shared/repository"
+	"gsheetbase/web/internal/http/middleware"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -45,12 +46,11 @@ func (h *AnalyticsHandler) GetSheetAnalytics(c *gin.Context) {
 	}
 
 	// Get authenticated user from context
-	userIDRaw, exists := c.Get("user_id")
-	if !exists {
+	userID, ok := middleware.GetUserID(c)
+	if !ok {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
 	}
-	userID := userIDRaw.(uuid.UUID)
 
 	// Verify user owns this sheet
 	sheet, err := h.sheetRepo.FindByID(c.Request.Context(), sheetID)
@@ -135,12 +135,11 @@ func (h *AnalyticsHandler) GetSheetAnalytics(c *gin.Context) {
 // GET /api/v1/analytics?days=30
 func (h *AnalyticsHandler) GetUserAnalytics(c *gin.Context) {
 	// Get authenticated user from context
-	userIDRaw, exists := c.Get("user_id")
-	if !exists {
+	userID, ok := middleware.GetUserID(c)
+	if !ok {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
 	}
-	userID := userIDRaw.(uuid.UUID)
 
 	// Parse days parameter (default: 30)
 	daysParam := c.DefaultQuery("days", "30")
