@@ -21,6 +21,9 @@ run-worker: ## Run the worker service
 run-ui:
 	cd web/ui && npm run dev
 
+run-landing:
+	cd landing && npm run dev
+
 build: ## Build the application
 	go build -o bin/api web/cmd/api/main.go
 
