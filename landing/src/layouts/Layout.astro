@@ -1,0 +1,95 @@
+
+---
+import Footer from '../components/Footer.astro';
+import Header from '../components/Header.astro';
+import "../assets/styles.css";
+
+
+interface Props {
+	title?: string;
+	description?: string;
+}
+
+const { title = 'gsheetbase.com', description = 'A database that lives in your spreadsheet' } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width" />
+		<meta name="description" content={description} />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="icon" href="/favicon.ico" />
+
+		<!-- SEO / Social -->
+		<meta property="og:title" content={title} />
+		<meta property="og:description" content={description} />
+		<meta property="og:type" content="website" />
+		<meta property="og:image" content="/og-image.png" />
+		<meta property="og:url" content="https://gsheetbase.com/" />
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:title" content={title} />
+		<meta name="twitter:description" content={description} />
+		<meta name="twitter:image" content="/og-image.png" />
+
+		<link rel="manifest" href="/site.webmanifest" />
+		<link rel="apple-touch-icon" href="/favicon.svg" />
+		<meta name="theme-color" content="#ffffff" />
+
+		<!-- Structured data (JSON-LD) -->
+		<script type="application/ld+json">
+		{`{
+		  "@context": "https://schema.org",
+		  "@type": "WebSite",
+		  "name": "gsheetbase",
+		  "url": "https://gsheetbase.com/",
+		  "description": "A database that lives in your spreadsheet"
+		}`}
+		</script>
+		<meta name="generator" content={Astro.generator} />
+		<title>{title}</title>
+
+		<!-- Tailwind CSS is loaded from the project's built stylesheet -->
+
+		<!-- Google Fonts -->
+		<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet" />
+		<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+	</head>
+	<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 transition-colors duration-200">
+		<Header/>
+		<slot />
+		<Footer/>
+	</body>
+</html>
+
+<style is:global>
+	html,
+	body {
+		margin: 0;
+		width: 100%;
+		height: 100%;
+	}
+
+	body {
+		font-family: 'Manrope', sans-serif;
+		-webkit-font-smoothing: antialiased;
+	}
+
+	.code-container {
+		background: #1a1a1a;
+		color: #d1d1d1;
+	}
+
+	.neon-accent {
+		color: #3cf91a;
+	}
+
+	.border-subtle {
+		border-color: rgba(0, 0, 0, 0.08);
+	}
+
+	.dark .border-subtle {
+		border-color: rgba(255, 255, 255, 0.08);
+	}
+</style>

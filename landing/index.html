@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>gsheetbase.com | The developer's choice for lightweight backends</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#3cf91a",
+              "background-light": "#ffffff",
+              "background-dark": "#0a0a0a",
+            },
+            fontFamily: {
+              "display": ["Manrope", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style type="text/tailwindcss">
+        @layer base {
+            body {
+                font-family: 'Manrope', sans-serif;
+                -webkit-font-smoothing: antialiased;
+            }
+        }
+        .code-container {
+            background: #121212;
+            color: #d1d1d1;
+        }
+        .neon-accent {
+            color: #3cf91a;
+        }
+        .border-subtle {
+            border-color: rgba(0, 0, 0, 0.06);
+        }
+        .dark .border-subtle {
+            border-color: rgba(255, 255, 255, 0.06);
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 transition-colors duration-200">
+<div class="w-full flex justify-center">
+<div class="w-full max-w-[1100px] px-6">
+<header class="flex items-center justify-between py-8">
+<div class="flex items-center gap-3">
+<div class="bg-primary p-1 rounded">
+<span class="material-symbols-outlined text-black font-bold">database</span>
+</div>
+<h2 class="text-lg font-extrabold tracking-tight">gsheetbase.com</h2>
+</div>
+<div class="flex items-center gap-8">
+<nav class="hidden md:flex items-center gap-8">
+<a class="text-sm font-semibold hover:text-primary transition-colors" href="#">Docs</a>
+<a class="text-sm font-semibold hover:text-primary transition-colors" href="#">Changelog</a>
+<a class="text-sm font-semibold hover:text-primary transition-colors" href="#">Pricing</a>
+</nav>
+<button class="bg-black dark:bg-primary dark:text-black text-white px-5 py-2.5 rounded-lg text-sm font-bold hover:opacity-90 transition-all">
+                    Connect Your First Sheet
+                </button>
+</div>
+</header>
+</div>
+</div>
+<main class="w-full flex flex-col items-center">
+<section class="w-full max-w-[900px] px-6 pt-20 pb-12 text-center">
+<p class="text-primary font-bold text-sm tracking-widest uppercase mb-4">
+            The developer's choice for lightweight backends
+        </p>
+<h1 class="text-5xl md:text-7xl font-extrabold tracking-tighter leading-[1.05] mb-6">
+            A database that lives in your <span class="underline decoration-primary/40 decoration-4 underline-offset-8">spreadsheet</span>
+</h1>
+<p class="text-lg md:text-xl text-slate-500 dark:text-slate-400 max-w-[700px] mx-auto mb-10 leading-relaxed font-medium">
+            Turn any Google Sheet into a production-ready JSON API in seconds. 
+            No configuration, zero maintenance, just raw data power.
+        </p>
+<div class="flex flex-col items-center gap-6">
+<div class="flex flex-col sm:flex-row items-center justify-center gap-4 w-full">
+<button class="w-full sm:w-auto min-w-[240px] bg-primary text-black h-14 px-8 rounded-xl font-bold text-lg hover:shadow-[0_0_30px_rgba(60,249,26,0.3)] transition-all">
+                    Connect Your First Sheet
+                </button>
+<button class="w-full sm:w-auto min-w-[180px] bg-slate-100 dark:bg-white/10 text-slate-900 dark:text-white h-14 px-8 rounded-xl font-bold text-lg hover:bg-slate-200 dark:hover:bg-white/20 transition-all">
+                    View Docs
+                </button>
+</div>
+<div class="flex items-center gap-2 px-4 py-2 rounded-full border border-subtle bg-slate-50/50 dark:bg-white/5">
+<div class="flex -space-x-2">
+<div class="w-6 h-6 rounded-full bg-slate-200 border-2 border-white dark:border-black"></div>
+<div class="w-6 h-6 rounded-full bg-slate-300 border-2 border-white dark:border-black"></div>
+<div class="w-6 h-6 rounded-full bg-slate-400 border-2 border-white dark:border-black"></div>
+</div>
+<p class="text-xs font-bold text-slate-500 uppercase tracking-tight">Trusted by 2,000+ developers</p>
+</div>
+</div>
+</section>
+<section class="w-full max-w-[1100px] px-6 pb-24">
+<div class="relative bg-white dark:bg-black rounded-2xl border border-subtle shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] overflow-hidden aspect-[16/10] flex flex-col">
+<div class="h-12 border-b border-subtle flex items-center px-4 justify-between bg-slate-50 dark:bg-white/5">
+<div class="flex gap-2">
+<div class="w-3 h-3 rounded-full bg-slate-200 dark:bg-white/10"></div>
+<div class="w-3 h-3 rounded-full bg-slate-200 dark:bg-white/10"></div>
+<div class="w-3 h-3 rounded-full bg-slate-200 dark:bg-white/10"></div>
+</div>
+<div class="text-xs font-mono text-slate-400 dark:text-white/30 uppercase tracking-widest">gsheetbase // sheet-to-json interface</div>
+<div class="w-12"></div>
+</div>
+<div class="flex flex-1 overflow-hidden">
+<div class="w-1/2 border-r border-subtle p-8 bg-white dark:bg-slate-900/20">
+<div class="flex items-center justify-between mb-6">
+<span class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Google Sheet Source</span>
+<span class="text-[10px] bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 rounded-full font-bold">CONNECTED</span>
+</div>
+<div class="space-y-3">
+<div class="grid grid-cols-4 gap-4 border-b border-subtle pb-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+<div>ID</div><div>Product</div><div>Price</div><div>Stock</div>
+</div>
+<div class="grid grid-cols-4 gap-4 text-[12px] font-medium py-2 border-b border-slate-50 dark:border-white/5">
+<div class="text-slate-400">001</div><div>Macbook Pro</div><div class="font-mono">$2,499</div><div class="text-primary font-bold">12</div>
+</div>
+<div class="grid grid-cols-4 gap-4 text-[12px] font-medium py-2 border-b border-slate-50 dark:border-white/5">
+<div class="text-slate-400">002</div><div>iPad Air</div><div class="font-mono">$599</div><div class="text-primary font-bold">45</div>
+</div>
+<div class="grid grid-cols-4 gap-4 text-[12px] font-medium py-2 border-b border-slate-50 dark:border-white/5">
+<div class="text-slate-400">003</div><div>Studio Display</div><div class="font-mono">$1,599</div><div class="text-primary font-bold">8</div>
+</div>
+</div>
+</div>
+<div class="w-1/2 p-8 code-container font-mono text-sm relative">
+<div class="flex items-center justify-between mb-6">
+<span class="text-[10px] font-bold uppercase tracking-widest text-white/30">REST API Output</span>
+<div class="flex gap-2">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+</div>
+</div>
+<div class="text-[13px] space-y-1 leading-relaxed">
+<div>{</div>
+<div class="pl-4"><span class="text-slate-500">"status"</span>: <span class="neon-accent">"success"</span>,</div>
+<div class="pl-4"><span class="text-slate-500">"data"</span>: [</div>
+<div class="pl-8">{</div>
+<div class="pl-12"><span class="text-slate-500">"id"</span>: <span class="text-orange-300">1</span>,</div>
+<div class="pl-12"><span class="text-slate-500">"name"</span>: <span class="neon-accent">"Macbook Pro"</span>,</div>
+<div class="pl-12"><span class="text-slate-500">"price"</span>: <span class="text-orange-300">2499.00</span>,</div>
+<div class="pl-12"><span class="text-slate-500">"inStock"</span>: <span class="text-orange-300">true</span></div>
+<div class="pl-8">},</div>
+<div class="pl-8 text-slate-600">{ ... }</div>
+<div class="pl-4">]</div>
+<div>}</div>
+</div>
+<div class="absolute bottom-8 right-8">
+<button class="bg-white/5 hover:bg-white/10 text-white px-3 py-1.5 rounded border border-white/10 transition-colors flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest">
+<span class="material-symbols-outlined text-[14px]">content_copy</span>
+                            Copy API URL
+                        </button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="w-full max-w-[1100px] px-6 py-20 border-t border-subtle">
+<div class="mb-16">
+<h2 class="text-3xl font-extrabold tracking-tight mb-4">Built for Production</h2>
+<div class="w-12 h-1 bg-primary"></div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-12">
+<div class="flex flex-col gap-5">
+<div class="w-12 h-12 rounded-xl bg-slate-50 dark:bg-white/5 flex items-center justify-center text-primary border border-subtle">
+<span class="material-symbols-outlined font-bold">bolt</span>
+</div>
+<div>
+<h3 class="text-xl font-extrabold tracking-tight mb-3">Smart Caching</h3>
+<p class="text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
+                        Bypass Google API rate limits automatically. We serve your data from a global edge network with sub-50ms latency.
+                    </p>
+</div>
+</div>
+<div class="flex flex-col gap-5">
+<div class="w-12 h-12 rounded-xl bg-slate-50 dark:bg-white/5 flex items-center justify-center text-primary border border-subtle">
+<span class="material-symbols-outlined font-bold">shield</span>
+</div>
+<div>
+<h3 class="text-xl font-extrabold tracking-tight mb-3">Secure Auth &amp; Rate Limiting</h3>
+<p class="text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
+                        Protect your endpoints with API keys and custom rate limits. Control exactly who can access your data.
+                    </p>
+</div>
+</div>
+<div class="flex flex-col gap-5">
+<div class="w-12 h-12 rounded-xl bg-slate-50 dark:bg-white/5 flex items-center justify-center text-primary border border-subtle">
+<span class="material-symbols-outlined font-bold">edit_note</span>
+</div>
+<div>
+<h3 class="text-xl font-extrabold tracking-tight mb-3">Read/Write Support</h3>
+<p class="text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
+                        Not just a reader. Use POST and PUT requests to update your spreadsheet data directly from your application.
+                    </p>
+</div>
+</div>
+</div>
+</section>
+<section class="w-full max-w-[1100px] px-6 py-24 bg-slate-50 dark:bg-white/5 rounded-[2.5rem] my-12">
+<div class="text-center mb-16">
+<h2 class="text-4xl font-extrabold tracking-tight mb-4">What can you build with gsheetbase?</h2>
+<p class="text-slate-500 font-medium">Stop over-engineering. Start shipping.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+<div class="bg-white dark:bg-black p-8 rounded-2xl border border-subtle hover:border-primary/50 transition-colors group">
+<div class="text-slate-300 group-hover:text-primary transition-colors mb-6">
+<span class="material-symbols-outlined font-bold text-4xl">web</span>
+</div>
+<h3 class="text-xl font-bold mb-3">CMS-driven Landing Pages</h3>
+<p class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">
+                    Let non-technical teammates update website copy, pricing, and testimonials directly in Google Sheets.
+                </p>
+</div>
+<div class="bg-white dark:bg-black p-8 rounded-2xl border border-subtle hover:border-primary/50 transition-colors group">
+<div class="text-slate-300 group-hover:text-primary transition-colors mb-6">
+<span class="material-symbols-outlined font-bold text-4xl">admin_panel_settings</span>
+</div>
+<h3 class="text-xl font-bold mb-3">Internal Admin Tools</h3>
+<p class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">
+                    Build custom dashboards and internal workflows without setting up a traditional database or SQL server.
+                </p>
+</div>
+<div class="bg-white dark:bg-black p-8 rounded-2xl border border-subtle hover:border-primary/50 transition-colors group">
+<div class="text-slate-300 group-hover:text-primary transition-colors mb-6">
+<span class="material-symbols-outlined font-bold text-4xl">rocket_launch</span>
+</div>
+<h3 class="text-xl font-bold mb-3">Rapid MVPs &amp; Directories</h3>
+<p class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">
+                    Launch job boards, resource libraries, or startup directories in hours instead of days.
+                </p>
+</div>
+</div>
+</section>
+<section class="w-full max-w-[1100px] px-6 py-24">
+<div class="bg-slate-900 dark:bg-white rounded-[2rem] p-12 md:p-24 text-center relative overflow-hidden">
+<div class="absolute top-0 right-0 w-64 h-64 bg-primary/20 blur-[120px] rounded-full -mr-32 -mt-32"></div>
+<div class="absolute bottom-0 left-0 w-64 h-64 bg-primary/10 blur-[120px] rounded-full -ml-32 -mb-32"></div>
+<h2 class="text-4xl md:text-6xl font-extrabold tracking-tighter text-white dark:text-slate-900 mb-8 relative z-10">
+                Ready to build faster?
+            </h2>
+<div class="flex flex-col sm:flex-row items-center justify-center gap-6 relative z-10">
+<button class="w-full sm:w-auto min-w-[260px] bg-primary text-black h-16 px-10 rounded-xl font-extrabold text-xl hover:scale-[1.02] transition-transform">
+                    Connect Your First Sheet
+                </button>
+</div>
+<p class="mt-8 text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest text-xs relative z-10">
+                No credit card required. Free for up to 3 sheets.
+            </p>
+</div>
+</section>
+<footer class="w-full max-w-[1100px] px-6 py-12 border-t border-subtle">
+<div class="flex flex-col md:flex-row justify-between items-center gap-8">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 bg-primary rounded flex items-center justify-center">
+<span class="material-symbols-outlined text-[14px] text-black font-bold">database</span>
+</div>
+<span class="text-sm font-bold tracking-tight">gsheetbase.com</span>
+</div>
+<div class="flex gap-8 text-xs font-bold uppercase tracking-widest text-slate-400">
+<a class="hover:text-primary transition-colors" href="#">Documentation</a>
+<a class="hover:text-primary transition-colors" href="#">Privacy</a>
+<a class="hover:text-primary transition-colors" href="#">Twitter / X</a>
+</div>
+<div class="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em]">
+                © 2024 GSHEETBASE. BUILT WITH PRECISION.
+            </div>
+</div>
+</footer>
+</main>
+
+</body></html>

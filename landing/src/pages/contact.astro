@@ -1,0 +1,162 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Contact Us | gsheetbase.com" description="Get in touch with the gsheetbase.com team">
+
+  <main class="w-full flex flex-col items-center">
+    <div class="w-full max-w-[900px] px-6 py-16">
+      <div class="text-center mb-12">
+        <h1 class="text-4xl md:text-5xl font-extrabold tracking-tighter mb-4">Get in Touch</h1>
+        <p class="text-lg text-slate-500 dark:text-slate-400">
+          Have questions? We'd love to hear from you. Send us a message and we'll respond as soon as possible.
+        </p>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-12">
+        <!-- Contact Form -->
+        <div class="bg-white dark:bg-slate-900/50 rounded-2xl border border-subtle p-8">
+          <form class="space-y-6">
+            <div>
+              <label for="name" class="block text-sm font-bold mb-2">Your Name</label>
+              <input
+                type="text"
+                id="name"
+                name="name"
+                required
+                class="w-full px-4 py-3 rounded-lg border border-subtle bg-white dark:bg-black text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary transition-all"
+                placeholder="John Doe"
+              />
+            </div>
+
+            <div>
+              <label for="email" class="block text-sm font-bold mb-2">Email Address</label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                required
+                class="w-full px-4 py-3 rounded-lg border border-subtle bg-white dark:bg-black text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary transition-all"
+                placeholder="john@example.com"
+              />
+            </div>
+
+            <div>
+              <label for="subject" class="block text-sm font-bold mb-2">Subject</label>
+              <input
+                type="text"
+                id="subject"
+                name="subject"
+                required
+                class="w-full px-4 py-3 rounded-lg border border-subtle bg-white dark:bg-black text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary transition-all"
+                placeholder="How can we help?"
+              />
+            </div>
+
+            <div>
+              <label for="message" class="block text-sm font-bold mb-2">Message</label>
+              <textarea
+                id="message"
+                name="message"
+                rows="5"
+                required
+                class="w-full px-4 py-3 rounded-lg border border-subtle bg-white dark:bg-black text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary transition-all resize-none"
+                placeholder="Tell us more about your question or feedback..."
+              ></textarea>
+            </div>
+
+            <button
+              type="submit"
+              class="w-full bg-primary text-black py-3 px-6 rounded-lg font-bold text-lg hover:opacity-90 transition-all"
+            >
+              Send Message
+            </button>
+          </form>
+        </div>
+
+        <!-- Contact Information -->
+        <div class="space-y-8">
+          <div>
+            <h2 class="text-2xl font-bold tracking-tight mb-6">Contact Information</h2>
+            
+            <div class="space-y-6">
+              <div class="flex gap-4">
+                <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
+                  <span class="material-symbols-outlined">mail</span>
+                </div>
+                <div>
+                  <h3 class="font-bold mb-1">Email</h3>
+                  <a href="mailto:hello@gsheetbase.com" class="text-slate-600 dark:text-slate-400 hover:text-primary transition-colors">
+                    hello@gsheetbase.com
+                  </a>
+                </div>
+              </div>
+
+              <div class="flex gap-4">
+                <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
+                  <span class="material-symbols-outlined">support</span>
+                </div>
+                <div>
+                  <h3 class="font-bold mb-1">Support</h3>
+                  <a href="mailto:support@gsheetbase.com" class="text-slate-600 dark:text-slate-400 hover:text-primary transition-colors">
+                    support@gsheetbase.com
+                  </a>
+                </div>
+              </div>
+
+              <div class="flex gap-4">
+                <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
+                  <span class="material-symbols-outlined">code</span>
+                </div>
+                <div>
+                  <h3 class="font-bold mb-1">GitHub</h3>
+                  <a href="https://github.com/gsheetbase" target="_blank" rel="noopener noreferrer" class="text-slate-600 dark:text-slate-400 hover:text-primary transition-colors">
+                    github.com/gsheetbase
+                  </a>
+                </div>
+              </div>
+
+              <div class="flex gap-4">
+                <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
+                  <span class="material-symbols-outlined">forum</span>
+                </div>
+                <div>
+                  <h3 class="font-bold mb-1">Community</h3>
+                  <a href="https://discord.gg/gsheetbase" target="_blank" rel="noopener noreferrer" class="text-slate-600 dark:text-slate-400 hover:text-primary transition-colors">
+                    Join our Discord
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-slate-100 dark:bg-white/5 rounded-2xl p-6 border border-subtle">
+            <h3 class="font-bold mb-3 flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary">schedule</span>
+              Response Time
+            </h3>
+            <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+              We typically respond to all inquiries within 24-48 hours during business days. 
+              For urgent technical issues, please mention "URGENT" in your subject line.
+            </p>
+          </div>
+
+          <div class="bg-slate-100 dark:bg-white/5 rounded-2xl p-6 border border-subtle">
+            <h3 class="font-bold mb-3 flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary">menu_book</span>
+              Before You Contact
+            </h3>
+            <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed mb-3">
+              Looking for quick answers? Check out our:
+            </p>
+            <ul class="text-sm text-slate-600 dark:text-slate-400 space-y-2">
+              <li>• <a href="/docs" class="hover:text-primary transition-colors">Documentation</a></li>
+              <li>• <a href="/docs/faq" class="hover:text-primary transition-colors">FAQ</a></li>
+              <li>• <a href="/changelog" class="hover:text-primary transition-colors">Changelog</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</Layout>

@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://gsheetbase.com/sitemap.xml
