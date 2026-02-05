@@ -7,3 +7,15 @@ dist
 ui/node_modules
 ui/dist
 bin/
+worker/
+landing/
+docs/
+migrations/
+scripts/
+.github/
+.vscode/
+Makefile
+railway.json
+PRICING.md
+.gitignore
+README.md

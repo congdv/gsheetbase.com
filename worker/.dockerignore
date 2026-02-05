@@ -7,3 +7,13 @@ dist
 bin/
 web/
 landing/
+docs/
+migrations/
+scripts/
+.github/
+.vscode/
+Makefile
+railway.json
+PRICING.md
+.gitignore
+README.md

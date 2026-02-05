@@ -3,7 +3,6 @@
   "services": [
     {
       "name": "web",
-      "root": "web",
       "build": {
         "builder": "DOCKERFILE",
         "dockerfilePath": "web/Dockerfile"
@@ -11,11 +10,13 @@
       "deploy": {
         "restartPolicyType": "ON_FAILURE",
         "restartPolicyMaxRetries": 10
+      },
+      "variables": {
+        "PORT": "8080"
       }
     },
     {
       "name": "worker",
-      "root": "worker",
       "build": {
         "builder": "DOCKERFILE",
         "dockerfilePath": "worker/Dockerfile"
@@ -23,6 +24,9 @@
       "deploy": {
         "restartPolicyType": "ON_FAILURE",
         "restartPolicyMaxRetries": 10
+      },
+      "variables": {
+        "WORKER_PORT": "8081"
       }
     }
   ]
