@@ -39,6 +39,13 @@ func main() {
 
 	r := gin.Default()
 
+	// Serve static frontend files
+	r.Static("/assets", "./web/ui/dist/assets")
+	r.StaticFile("/favicon.ico", "./web/ui/dist/favicon.ico")
+	r.StaticFile("/robots.txt", "./web/ui/dist/robots.txt")
+	r.StaticFile("/site.webmanifest", "./web/ui/dist/site.webmanifest")
+	r.StaticFile("/sitemap.xml", "./web/ui/dist/sitemap.xml")
+
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{cfg.FrontendOrigin},
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
@@ -88,6 +95,11 @@ func main() {
 	api.GET("/subscription/plan", middleware.Authenticate(cfg, authService), subscriptionHandler.GetCurrentPlan)
 	api.GET("/subscription/usage", middleware.Authenticate(cfg, authService), subscriptionHandler.GetCurrentUsage)
 	api.GET("/subscription/plans", subscriptionHandler.GetAvailablePlans) // Public endpoint
+
+	// Serve index.html for all other routes (SPA fallback)
+	r.NoRoute(func(ctx *gin.Context) {
+		ctx.File("./web/ui/dist/index.html")
+	})
 
 	addr := ":" + cfg.Port
 	log.Printf("API listening on %s", addr)
