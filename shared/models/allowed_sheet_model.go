@@ -19,7 +19,6 @@ type AllowedSheet struct {
 	UseFirstRowAsHeader bool           `db:"use_first_row_as_header" json:"use_first_row_as_header"`
 	AllowWrite          bool           `db:"allow_write" json:"allow_write"`
 	AllowedMethods      pq.StringArray `db:"allowed_methods" json:"allowed_methods"`
-	RateLimitOverride   *int           `db:"rate_limit_override" json:"rate_limit_override,omitempty"`
 	CreatedAt           time.Time      `db:"created_at" json:"created_at"`
 	UpdatedAt           time.Time      `db:"updated_at" json:"updated_at"`
 }
