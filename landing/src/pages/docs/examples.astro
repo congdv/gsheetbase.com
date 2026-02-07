@@ -3,20 +3,19 @@ import DocLayout from "../../layouts/DocLayout.astro";
 ---
 
 <DocLayout
-    title="Examples - gsheetbase"
-    description="Real-world examples using gsheetbase"
+  title="Examples - gsheetbase"
+  description="Real-world examples using gsheetbase"
 >
-    <article class="prose prose-slate dark:prose-invert max-w-none">
-        <h1>Examples</h1>
+  <article class="prose prose-slate dark:prose-invert max-w-none">
+    <h1>Examples</h1>
 
-        <p>
-            Here are some real-world examples to help you get started with
-            gsheetbase.
-        </p>
+    <p>
+      Here are some real-world examples to help you get started with gsheetbase.
+    </p>
 
-        <h2>Example 1: Todo List Manager</h2>
-        <p>Create a simple todo app backed by Google Sheets:</p>
-        <pre><code class="language-javascript">{`// Fetch all pending todos
+    <h2>Example 1: Todo List Manager</h2>
+    <p>Create a simple todo app backed by Google Sheets:</p>
+    <pre><code class="language-javascript">{`// Fetch all pending todos
 const todos = await db.query()
   .select('id', 'title', 'due_date')
   .where('status', '=', 'pending')
@@ -33,9 +32,9 @@ await db.insert({
   created_at: new Date()
 });`}</code></pre>
 
-        <h2>Example 2: User Directory</h2>
-        <p>Query and manage a user directory:</p>
-        <pre><code class="language-javascript">{`// Search for users by name
+    <h2>Example 2: User Directory</h2>
+    <p>Query and manage a user directory:</p>
+    <pre><code class="language-javascript">{`// Search for users by name
 const users = await db.query()
   .select('name', 'email', 'department')
   .where('name', 'LIKE', '%John%')
@@ -53,9 +52,9 @@ await db.update(userId, {
   updated_at: new Date()
 });`}</code></pre>
 
-        <h2>Example 3: Inventory Management</h2>
-        <p>Track inventory levels across locations:</p>
-        <pre><code class="language-javascript">{`// Find low-stock items
+    <h2>Example 3: Inventory Management</h2>
+    <p>Track inventory levels across locations:</p>
+    <pre><code class="language-javascript">{`// Find low-stock items
 const lowStock = await db.query()
   .where('quantity', '<', 10)
   .where('location', '=', 'Warehouse A')
@@ -73,9 +72,9 @@ await db.insert([
   { sku: 'PROD002', name: 'Gadget', quantity: 50 }
 ]);`}</code></pre>
 
-        <h2>Example 4: Event Tracking</h2>
-        <p>Track events and analytics in a spreadsheet:</p>
-        <pre><code class="language-javascript">{`// Log an event
+    <h2>Example 4: Event Tracking</h2>
+    <p>Track events and analytics in a spreadsheet:</p>
+    <pre><code class="language-javascript">{`// Log an event
 await db.insert({
   event_type: 'page_view',
   user_id: userId,
@@ -91,17 +90,10 @@ const pageViews = await db.query()
 
 console.log(\`Total page views: \${pageViews.count}\`);`}</code></pre>
 
-        <h2>Ready to Build?</h2>
-        <p>
-            Check out the <a href="/docs/api-reference">API Reference</a> for all
-            available methods, or <a href="/docs/getting-started">get started</a
-            > in 5 minutes.
-        </p>
-    </article>
+    <h2>Ready to Build?</h2>
+    <p>
+      Check out the <a href="/docs/api-reference">API Reference</a> for all available
+      methods, or <a href="/docs/getting-started">get started</a> in 5 minutes.
+    </p>
+  </article>
 </DocLayout>
-
-<style>
-    :global(article a) {
-        @apply text-primary hover:underline;
-    }
-</style>
