@@ -15,6 +15,8 @@ const { Content } = Layout
 
 export default function App() {
   const { user, isLoading } = useAuth()
+  const isProdMode = import.meta.env.MODE === 'production'
+  const landingPageUrl = 'http://localhost:4321'
 
   if (isLoading) {
     return (
@@ -26,12 +28,18 @@ export default function App() {
     )
   }
 
+  // In production, redirect to landing page if not authenticated
+  if (isProdMode && !user && window.location.pathname !== ROUTES.OAUTH_CALLBACK) {
+    window.location.href = landingPageUrl
+    return null
+  }
+
   return (
     <ConfigProvider>
       <StructuredData />
       <Routes>
-        <Route path={ROUTES.ROOT} element={!user ? <Navigate to={ROUTES.LOGIN} replace /> : <Navigate to={ROUTES.HOME} replace />} />
-        <Route path={ROUTES.LOGIN} element={!user ? <LoginPage /> : <Navigate to={ROUTES.HOME} replace />} />
+        <Route path={ROUTES.ROOT} element={!user ? <Navigate to={isProdMode ? ROUTES.HOME : ROUTES.LOGIN} replace /> : <Navigate to={ROUTES.HOME} replace />} />
+        {!isProdMode && <Route path={ROUTES.LOGIN} element={!user ? <LoginPage /> : <Navigate to={ROUTES.HOME} replace />} />}
         <Route path={ROUTES.OAUTH_CALLBACK} element={<OAuthCallbackPage />} />
 
         <Route element={
