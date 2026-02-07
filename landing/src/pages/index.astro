@@ -1,5 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
+const GOOGLE_AUTH_BASE = import.meta.env.VITE_APP_BASE_URL ?? "";
 ---
 
 <Layout
@@ -38,7 +39,11 @@ import Layout from "../layouts/Layout.astro";
         No configuration, zero boilerplate, just raw data.
       </p>
       <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-        <button
+        <a
+          href={GOOGLE_AUTH_BASE
+            ? `${GOOGLE_AUTH_BASE}/auth/google/start`
+            : "/auth/google"}
+          role="button"
           class="w-full border border-primary/20 text-primary sm:w-auto min-w-[180px] h-14 px-8 rounded-xl font-bold text-base sm:text-lg hover:shadow-[0_0_20px_rgba(60,249,26,0.3)] transition-all flex items-center justify-center whitespace-nowrap"
         >
           <span class="inline-flex items-center mr-3" aria-hidden="true">
@@ -67,7 +72,7 @@ import Layout from "../layouts/Layout.astro";
             </svg>
           </span>
           Continue with Google
-        </button>
+        </a>
         <button
           class="w-full sm:w-auto min-w-[180px] bg-slate-200 dark:bg-white/10 text-slate-900 dark:text-white h-14 px-8 rounded-xl font-bold text-lg hover:bg-slate-300 dark:hover:bg-white/20 transition-all"
         >
@@ -346,7 +351,11 @@ import Layout from "../layouts/Layout.astro";
         <div
           class="flex flex-col sm:flex-row items-center justify-center gap-6 relative z-10"
         >
-          <button
+          <a
+            href={GOOGLE_AUTH_BASE
+              ? `${GOOGLE_AUTH_BASE}/auth/google/start`
+              : "/auth/google"}
+            role="button"
             class="w-full sm:w-auto min-w-[200px] border border-primary/20 border text-primary h-14 px-10 rounded-xl font-bold text-base sm:text-lg hover:scale-105 transition-transform flex items-center justify-center whitespace-nowrap"
           >
             <span class="inline-flex items-center mr-3" aria-hidden="true">
@@ -375,7 +384,7 @@ import Layout from "../layouts/Layout.astro";
               </svg>
             </span>
             Continue with Google
-          </button>
+          </a>
         </div>
         <p
           class="mt-8 text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest text-xs relative z-10"
