@@ -16,7 +16,7 @@ const { Content } = Layout
 export default function App() {
   const { user, isLoading } = useAuth()
   const isProdMode = import.meta.env.MODE === 'production'
-  const landingPageUrl = 'http://localhost:4321'
+  const landingPageUrl = import.meta.env.VITE_LANDING_PAGE_URL ?? 'http://localhost:4321'
 
   if (isLoading) {
     return (
