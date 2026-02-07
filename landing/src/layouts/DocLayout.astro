@@ -1,0 +1,111 @@
+---
+import Layout from "./Layout.astro";
+
+interface Props {
+    title?: string;
+    description?: string;
+}
+
+const { title = "Documentation", description = "gsheetbase Documentation" } =
+    Astro.props;
+
+const sidebarItems = [
+    { label: "Getting Started", href: "/docs/getting-started" },
+    { label: "API Reference", href: "/docs/api-reference" },
+    { label: "FAQ", href: "/docs/faq" },
+    { label: "Examples", href: "/docs/examples" },
+];
+---
+
+<Layout title={title} description={description}>
+    <div class="w-full flex flex-col items-center">
+        <div class="w-full max-w-[1100px] px-4 sm:px-6 py-8 sm:py-12">
+            <!-- Mobile Menu Button -->
+            <button
+                id="mobile-menu-button"
+                class="md:hidden mb-4 flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 rounded-md text-sm font-medium text-slate-900 dark:text-slate-100"
+                aria-label="Toggle documentation menu"
+            >
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+                <span>Menu</span>
+            </button>
+
+            <div class="flex flex-col md:flex-row gap-8">
+                <!-- Sidebar Navigation -->
+                <aside
+                    id="mobile-sidebar"
+                    class="w-full md:w-64 md:flex-shrink-0 hidden md:block"
+                >
+                    <nav class="md:sticky md:top-20 space-y-2">
+                        <h3
+                            class="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-4"
+                        >
+                            Docs
+                        </h3>
+                        <ul class="space-y-1">
+                            {
+                                sidebarItems.map((item) => (
+                                    <li>
+                                        <a
+                                            href={item.href}
+                                            class="block text-sm px-3 py-2 rounded-md text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-primary transition-colors"
+                                        >
+                                            {item.label}
+                                        </a>
+                                    </li>
+                                ))
+                            }
+                        </ul>
+                    </nav>
+                </aside>
+
+                <!-- Main Content -->
+                <main class="flex-1 min-w-0">
+                    <slot />
+                </main>
+            </div>
+        </div>
+    </div>
+</Layout>
+
+<style>
+    /* Sidebar sticky positioning */
+    @media (min-width: 768px) {
+        aside {
+            position: sticky;
+            top: 5rem;
+        }
+    }
+</style>
+
+<script>
+    // Mobile menu toggle
+    const menuButton = document.getElementById("mobile-menu-button");
+    const sidebar = document.getElementById("mobile-sidebar");
+
+    menuButton?.addEventListener("click", () => {
+        sidebar?.classList.toggle("hidden");
+    });
+
+    // Close sidebar when clicking a link on mobile
+    const sidebarLinks = sidebar?.querySelectorAll("a");
+    sidebarLinks?.forEach((link) => {
+        link.addEventListener("click", () => {
+            if (window.innerWidth < 768) {
+                sidebar?.classList.add("hidden");
+            }
+        });
+    });
+</script>

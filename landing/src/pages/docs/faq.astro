@@ -1,0 +1,104 @@
+---
+import DocLayout from "../../layouts/DocLayout.astro";
+---
+
+<DocLayout
+    title="FAQ - gsheetbase"
+    description="Frequently asked questions about gsheetbase"
+>
+    <article class="prose prose-slate dark:prose-invert max-w-none">
+        <h1>Frequently Asked Questions</h1>
+
+        <h2>General</h2>
+
+        <h3>What is gsheetbase?</h3>
+        <p>
+            gsheetbase is a service that turns your Google Sheets into a
+            powerful database. Use standard SQL-like queries to read, write, and
+            update data directly from your spreadsheets.
+        </p>
+
+        <h3>Is gsheetbase free?</h3>
+        <p>
+            Yes! gsheetbase has a free tier with up to 1,000 requests per month.
+            We also offer paid plans for higher usage.
+        </p>
+
+        <h3>What spreadsheets does gsheetbase work with?</h3>
+        <p>
+            gsheetbase works with Google Sheets. Just share your spreadsheet
+            with the gsheetbase service account, and you're ready to go.
+        </p>
+
+        <h2>Usage & Integration</h2>
+
+        <h3>How do I authenticate?</h3>
+        <p>Use your API key when initializing the client:</p>
+        <pre><code class="language-javascript">{`const db = new gsheetbase({ apiKey: 'your-key' });`}</code></pre>
+
+        <h3>Can I use gsheetbase with Node.js?</h3>
+        <p>
+            Yes, gsheetbase has SDKs for Node.js, Python, and JavaScript
+            (browser). Check the documentation for your language.
+        </p>
+
+        <h3>What are the rate limits?</h3>
+        <p>
+            Free tier: 1,000 requests/month. Pro tier: 100,000 requests/month.
+            Enterprise: Custom limits. Each request counts as one query
+            operation.
+        </p>
+
+        <h2>Data & Performance</h2>
+
+        <h3>How fast is gsheetbase?</h3>
+        <p>
+            Most queries complete in under 100ms. Performance depends on
+            spreadsheet size and query complexity. Larger datasets may take
+            longer.
+        </p>
+
+        <h3>Can I query large spreadsheets?</h3>
+        <p>
+            Yes, gsheetbase can handle spreadsheets with tens of thousands of
+            rows. For very large datasets, we recommend using filters and limits
+            to improve performance.
+        </p>
+
+        <h3>Is my data secure?</h3>
+        <p>
+            Yes. All data is encrypted in transit using HTTPS. We use OAuth 2.0
+            for authentication and never store your spreadsheet contents on our
+            servers.
+        </p>
+
+        <h2>Troubleshooting</h2>
+
+        <h3>I'm getting an authentication error</h3>
+        <p>
+            Make sure you've shared your spreadsheet with the gsheetbase service
+            account. Check your API key is correct and hasn't expired.
+        </p>
+
+        <h3>Queries are slow</h3>
+        <p>
+            Try adding filters with <code>where()</code> clauses and limits. Large
+            spreadsheets benefit from narrowing down results.
+        </p>
+
+        <h3>I need more help</h3>
+        <p>
+            Check the <a href="/docs/getting-started">Getting Started</a> guide or
+            <a href="/contact">contact us</a> for support.
+        </p>
+    </article>
+</DocLayout>
+
+<style>
+    :global(article a) {
+        @apply text-primary hover:underline;
+    }
+    :global(article code) {
+        @apply bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded text-sm;
+    }
+</style>

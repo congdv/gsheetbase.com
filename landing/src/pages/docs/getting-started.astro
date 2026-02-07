@@ -1,0 +1,68 @@
+---
+import DocLayout from "../../layouts/DocLayout.astro";
+---
+
+<DocLayout
+    title="Getting Started - gsheetbase"
+    description="Get started with gsheetbase in 5 minutes"
+>
+    <article class="prose prose-slate dark:prose-invert max-w-none">
+        <h1>Getting Started with gsheetbase</h1>
+
+        <p>
+            Welcome! This guide will help you set up gsheetbase and create your
+            first database-powered spreadsheet in just a few minutes.
+        </p>
+
+        <h2>1. Installation</h2>
+        <p>First, install the gsheetbase package:</p>
+        <pre><code class="language-bash">npm install gsheetbase</code></pre>
+
+        <h2>2. API Key Setup</h2>
+        <p>
+            Create a free account at <a href="https://gsheetbase.com"
+                >gsheetbase.com</a
+            > and get your API key from the dashboard.
+        </p>
+
+        <h2>3. First Query</h2>
+        <p>Here's a simple example to fetch data from your spreadsheet:</p>
+        <pre><code class="language-javascript">{`const gsheetbase = require('gsheetbase');
+
+const db = new gsheetbase({
+  apiKey: 'your-api-key-here',
+  spreadsheetId: 'your-spreadsheet-id'
+});
+
+// Fetch all data
+const data = await db.query().select('*').get();
+console.log(data);`}</code></pre>
+
+        <h2>4. Next Steps</h2>
+        <ul>
+            <li>
+                Read the <a href="/docs/api-reference">API Reference</a> for detailed
+                documentation
+            </li>
+            <li>
+                Check out <a href="/docs/examples">Examples</a> for common use cases
+            </li>
+            <li>
+                Browse the <a href="/docs/faq">FAQ</a> for answers to common questions
+            </li>
+        </ul>
+
+        <h2>Need Help?</h2>
+        <p>
+            If you get stuck, head over to our <a href="/contact"
+                >contact page</a
+            > or check the <a href="/docs/faq">FAQ</a>.
+        </p>
+    </article>
+</DocLayout>
+
+<style>
+    :global(article a) {
+        @apply text-primary hover:underline;
+    }
+</style>

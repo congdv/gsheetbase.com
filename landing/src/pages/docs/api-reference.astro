@@ -1,0 +1,82 @@
+---
+import DocLayout from "../../layouts/DocLayout.astro";
+---
+
+<DocLayout
+    title="API Reference - gsheetbase"
+    description="Complete API reference for gsheetbase"
+>
+    <article class="prose prose-slate dark:prose-invert max-w-none">
+        <h1>API Reference</h1>
+
+        <p>
+            This is the complete reference for the gsheetbase API. All methods
+            are async and return promises.
+        </p>
+
+        <h2>Core Methods</h2>
+
+        <h3>query()</h3>
+        <p>Create a new query to fetch data from your spreadsheet.</p>
+        <pre><code class="language-javascript">{`const result = await db.query()
+  .select('name', 'email')
+  .where('status', '=', 'active')
+  .get();`}</code></pre>
+
+        <h3>insert(data)</h3>
+        <p>Insert new rows into your spreadsheet.</p>
+        <pre><code class="language-javascript">{`await db.insert([
+  { name: 'John', email: 'john@example.com' },
+  { name: 'Jane', email: 'jane@example.com' }
+]);`}</code></pre>
+
+        <h3>update(id, data)</h3>
+        <p>Update an existing row by ID.</p>
+        <pre><code class="language-javascript">{`await db.update('row-id', {
+  name: 'Updated Name',
+  email: 'new@example.com'
+});`}</code></pre>
+
+        <h3>delete(id)</h3>
+        <p>Delete a row by ID.</p>
+        <pre><code class="language-javascript">{`await db.delete('row-id');`}</code></pre>
+
+        <h2>Query Methods</h2>
+
+        <h3>select(...columns)</h3>
+        <p>Select specific columns to return.</p>
+        <pre><code class="language-javascript">{`.select('name', 'email')`}</code></pre>
+
+        <h3>where(column, operator, value)</h3>
+        <p>
+            Filter results. Operators: =, !=, &gt;, &lt;, &gt;=, &lt;=, IN, LIKE
+        </p>
+        <pre><code class="language-javascript">{`.where('age', '>', 18)`}</code></pre>
+
+        <h3>orderBy(column, direction)</h3>
+        <p>Sort results. Direction: ASC, DESC</p>
+        <pre><code class="language-javascript">{`.orderBy('created_at', 'DESC')`}</code></pre>
+
+        <h3>limit(n)</h3>
+        <p>Limit the number of results.</p>
+        <pre><code class="language-javascript">{`.limit(10)`}</code></pre>
+
+        <h2>Response Format</h2>
+        <p>All queries return data in the following format:</p>
+        <pre><code class="language-javascript">{`{
+  success: true,
+  data: [
+    { id: '1', name: 'John', email: 'john@example.com' },
+    ...
+  ],
+  count: 1,
+  error: null
+}`}</code></pre>
+    </article>
+</DocLayout>
+
+<style>
+    :global(article a) {
+        @apply text-primary hover:underline;
+    }
+</style>

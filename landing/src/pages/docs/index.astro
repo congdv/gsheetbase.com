@@ -1,0 +1,83 @@
+---
+import DocLayout from "../../layouts/DocLayout.astro";
+---
+
+<DocLayout
+    title="Documentation"
+    description="gsheetbase documentation and guides"
+>
+    <div>
+        <h1 class="text-3xl font-bold mb-6 text-slate-900 dark:text-slate-100">
+            Documentation
+        </h1>
+
+        <p class="text-lg text-slate-600 dark:text-slate-400 mb-8">
+            Welcome to gsheetbase documentation. Here you'll find guides, API
+            reference, and examples to help you get started.
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Getting Started Card -->
+            <a
+                href="/docs/getting-started"
+                class="block p-6 border border-subtle rounded-lg hover:border-primary hover:shadow-md transition-all"
+            >
+                <h2
+                    class="text-xl font-semibold mb-2 text-slate-900 dark:text-slate-100"
+                >
+                    Getting Started
+                </h2>
+                <p class="text-slate-600 dark:text-slate-400 text-sm">
+                    Learn the basics and set up your first gsheetbase project in
+                    minutes.
+                </p>
+            </a>
+
+            <!-- API Reference Card -->
+            <a
+                href="/docs/api-reference"
+                class="block p-6 border border-subtle rounded-lg hover:border-primary hover:shadow-md transition-all"
+            >
+                <h2
+                    class="text-xl font-semibold mb-2 text-slate-900 dark:text-slate-100"
+                >
+                    API Reference
+                </h2>
+                <p class="text-slate-600 dark:text-slate-400 text-sm">
+                    Complete API documentation for all gsheetbase endpoints and
+                    methods.
+                </p>
+            </a>
+
+            <!-- FAQ Card -->
+            <a
+                href="/docs/faq"
+                class="block p-6 border border-subtle rounded-lg hover:border-primary hover:shadow-md transition-all"
+            >
+                <h2
+                    class="text-xl font-semibold mb-2 text-slate-900 dark:text-slate-100"
+                >
+                    FAQ
+                </h2>
+                <p class="text-slate-600 dark:text-slate-400 text-sm">
+                    Frequently asked questions and troubleshooting tips.
+                </p>
+            </a>
+
+            <!-- Examples Card -->
+            <a
+                href="/docs/examples"
+                class="block p-6 border border-subtle rounded-lg hover:border-primary hover:shadow-md transition-all"
+            >
+                <h2
+                    class="text-xl font-semibold mb-2 text-slate-900 dark:text-slate-100"
+                >
+                    Examples
+                </h2>
+                <p class="text-slate-600 dark:text-slate-400 text-sm">
+                    Real-world examples and use cases to inspire your projects.
+                </p>
+            </a>
+        </div>
+    </div>
+</DocLayout>
