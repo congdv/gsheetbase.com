@@ -1,4 +1,5 @@
 import { GoogleOutlined } from '@ant-design/icons'
+import { useConfig } from '../context/ConfigContext'
 import SEO from '../components/SEO'
 import {
   PageContainer,
@@ -10,9 +11,9 @@ import {
 } from '../styles/global'
 
 export default function LoginPage() {
+  const config = useConfig()
   const googleStart = () => {
-    const base = import.meta.env.VITE_API_BASE_URL
-    window.location.href = `${base}/auth/google/start`
+    window.location.href = `${config.apiBaseUrl}/auth/google/start`
   }
 
   return (
@@ -24,9 +25,9 @@ export default function LoginPage() {
       />
       <StyledCard>
         <TitleContainer>
-          <img 
-            src="/gsheetbase.svg" 
-            alt="Gsheetbase Logo" 
+          <img
+            src="/gsheetbase.svg"
+            alt="Gsheetbase Logo"
             style={{ height: '48px', marginBottom: '16px' }}
           />
           <StyledTitle level={2}>

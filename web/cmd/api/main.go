@@ -58,6 +58,10 @@ func main() {
 		ctx.String(http.StatusOK, "ok")
 	})
 
+	// Public config endpoint for frontend
+	configHandler := handlers.NewConfigHandler(cfg)
+	r.GET("/config", configHandler.GetConfig)
+
 	api := r.Group("/api")
 
 	// Google OAuth routes

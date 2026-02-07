@@ -4,6 +4,7 @@ import LoginPage from './pages/LoginPage'
 import ProtectedRoute from './components/ProtectedRoute'
 import DashboardLayout from './components/Layout/DashboardLayout'
 import { useAuth } from './context/AuthContext'
+import { useConfig } from './context/ConfigContext'
 import OAuthCallbackPage from './pages/OAuthCallbackPage'
 import HomePage from './pages/home'
 import BillingPage from './pages/billing'
@@ -15,8 +16,9 @@ const { Content } = Layout
 
 export default function App() {
   const { user, isLoading } = useAuth()
-  const isProdMode = import.meta.env.VITE_FORCE_PROD === 'true'
-  const landingPageUrl = import.meta.env.VITE_LANDING_PAGE_URL ?? 'http://localhost:4321'
+  const config = useConfig()
+  const isProdMode = config.forceProd
+  const landingPageUrl = config.landingPageUrl
 
   if (isLoading) {
     return (

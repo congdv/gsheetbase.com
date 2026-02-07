@@ -3,6 +3,7 @@ import { CopyOutlined, RocketOutlined, SendOutlined, LockOutlined } from '@ant-d
 import { useState } from 'react'
 import axios from 'axios'
 import api from '../../lib/axios'
+import { useConfig } from '../../context/ConfigContext'
 import { useAuth } from '../../context/AuthContext'
 import { ScopeConsentPrompt, ScopeInfo } from '../../components/ScopeConsentPrompt'
 import { GOOGLE_SCOPE } from '@/constants/common'
@@ -31,8 +32,8 @@ interface ApiSettingsTabProps {
 }
 
 export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps) {
-  const workerBaseUrl = import.meta.env.VITE_WORKER_BASE_URL || 'https://api.gsheetbase.com'
-  const apiUrl = `${workerBaseUrl}/v1/${sheet.api_key}`
+  const config = useConfig()
+  const apiUrl = `${config.workerBaseUrl}/v1/${sheet.api_key}`
   const { hasScope, requestScopes } = useAuth()
 
   const [testUrl, setTestUrl] = useState(apiUrl)
@@ -61,7 +62,7 @@ export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps
         url: testUrl,
         validateStatus: () => true,
       }
-      
+
       // Add request body for write methods only (not DELETE)
       if (['POST', 'PUT', 'PATCH'].includes(httpMethod)) {
         try {
@@ -76,7 +77,7 @@ export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps
           return
         }
       }
-      
+
       const res = await axios(config)
       const endTime = Date.now()
 
@@ -119,7 +120,7 @@ export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps
       const updatedMethods = checked
         ? [...currentMethods, method]
         : currentMethods.filter(m => m !== method)
-      
+
       await api.patch(
         `/sheets/${sheet.id}/write-settings`,
         { allowed_methods: updatedMethods }
@@ -207,7 +208,7 @@ export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps
                 )}
               </Col>
             </Row>
-            
+
             <Row justify="space-between" align="middle">
               <Col>
                 <Text><code>POST</code> Add new rows</Text>
@@ -331,14 +332,14 @@ export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps
               <div>
                 <Space direction="horizontal" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
                   <Text strong>Request Body</Text>
-                  <Button 
-                    size="small" 
+                  <Button
+                    size="small"
                     onClick={() => {
-                      const example = httpMethod === 'POST' 
+                      const example = httpMethod === 'POST'
                         ? '{\n  "data": [\n    ["John", "Doe", "30"],\n    ["Jane", "Smith", "25"]\n  ]\n}'
                         : httpMethod === 'PUT'
-                        ? '{\n  "data": [\n    ["Updated", "Row", "1"],\n    ["Updated", "Row", "2"]\n  ],\n  "range": "Sheet1!A2:C3"\n}'
-                        : '{\n  "data": [\n    ["Patched", "Value"]\n  ],\n  "range": "Sheet1!A2:B2"\n}'
+                          ? '{\n  "data": [\n    ["Updated", "Row", "1"],\n    ["Updated", "Row", "2"]\n  ],\n  "range": "Sheet1!A2:C3"\n}'
+                          : '{\n  "data": [\n    ["Patched", "Value"]\n  ],\n  "range": "Sheet1!A2:B2"\n}'
                       setRequestBody(example)
                     }}
                   >
@@ -419,7 +420,7 @@ fetch('${apiUrl}')
 
 // cURL - Fetch data
 curl ${apiUrl}` :
-httpMethod === 'POST' ? `// JavaScript - Add new rows
+              httpMethod === 'POST' ? `// JavaScript - Add new rows
 fetch('${apiUrl}', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
@@ -435,7 +436,7 @@ fetch('${apiUrl}', {
 curl -X POST ${apiUrl} \
   -H 'Content-Type: application/json' \
   -d '{"data": [["John", "Doe", "30"]]}'` :
-httpMethod === 'PUT' ? `// JavaScript - Update rows
+                httpMethod === 'PUT' ? `// JavaScript - Update rows
 fetch('${apiUrl}', {
   method: 'PUT',
   headers: { 'Content-Type': 'application/json' },
@@ -449,7 +450,7 @@ fetch('${apiUrl}', {
 curl -X PUT ${apiUrl} \
   -H 'Content-Type: application/json' \
   -d '{"data": [["Updated", "Row"]], "range": "Sheet1!A2:B2"}'` :
-httpMethod === 'PATCH' ? `// JavaScript - Partial update
+                  httpMethod === 'PATCH' ? `// JavaScript - Partial update
 fetch('${apiUrl}', {
   method: 'PATCH',
   headers: { 'Content-Type': 'application/json' },
@@ -463,7 +464,7 @@ fetch('${apiUrl}', {
 curl -X PATCH ${apiUrl} \
   -H 'Content-Type: application/json' \
   -d '{"data": [["Patched"]], "range": "Sheet1!A2"}'` :
-httpMethod === 'DELETE' ? `// JavaScript - Delete rows
+                    httpMethod === 'DELETE' ? `// JavaScript - Delete rows
 fetch('${apiUrl}', {
   method: 'DELETE',
   headers: { 'Content-Type': 'application/json' },
@@ -476,7 +477,7 @@ fetch('${apiUrl}', {
 curl -X DELETE ${apiUrl} \
   -H 'Content-Type: application/json' \
   -d '{"range": "Sheet1!A2:B2"}'` :
-''}
+                      ''}
           </pre>
         </div>
 

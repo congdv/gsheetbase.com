@@ -2,6 +2,7 @@ import { Modal, Form, Input, Switch, Typography, Button, Tooltip } from 'antd'
 import { CopyOutlined } from '@ant-design/icons'
 import { message } from 'antd'
 import { useEffect } from 'react'
+import { useConfig } from '../../context/ConfigContext'
 import { Sheet } from '../../hooks/useSheets'
 
 const { Paragraph } = Typography
@@ -22,8 +23,8 @@ export const ApiSettingsModal = ({
   onPublish,
 }: ApiSettingsModalProps) => {
   const [form] = Form.useForm()
-  const workerBaseUrl = import.meta.env.VITE_WORKER_BASE_URL || 'https://api.gsheetbase.com'
-  const apiUrl = sheet?.api_key ? `${workerBaseUrl}/v1/${sheet.api_key}` : ''
+  const config = useConfig()
+  const apiUrl = sheet?.api_key ? `${config.workerBaseUrl}/v1/${sheet.api_key}` : ''
 
   useEffect(() => {
     if (open && sheet) {
@@ -62,10 +63,10 @@ export const ApiSettingsModal = ({
       footer={
         isPublishedSheet
           ? [
-              <Button key="close" onClick={handleCancel}>
-                Close
-              </Button>,
-            ]
+            <Button key="close" onClick={handleCancel}>
+              Close
+            </Button>,
+          ]
           : undefined
       }
       width={700}
