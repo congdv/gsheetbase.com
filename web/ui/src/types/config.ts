@@ -26,7 +26,7 @@ export function validateConfig(obj: unknown): RuntimeConfig {
     }
 
     return {
-        apiBaseUrl: config.apiBaseUrl,
+        apiBaseUrl: config.apiBaseUrl + "/api",
         workerBaseUrl: config.workerBaseUrl,
         landingPageUrl: config.landingPageUrl,
         forceProd: config.forceProd,

@@ -19,6 +19,12 @@ type Config struct {
 	GoogleClientID     string
 	GoogleClientSecret string
 	GoogleRedirectUrl  string
+
+	// Frontend configuration
+	FrontendApiBaseUrl     string
+	FrontendWorkerBaseUrl  string
+	FrontendLandingPageUrl string
+	FrontEendForceProd     bool
 }
 
 func Load() (*Config, error) {
@@ -37,6 +43,11 @@ func Load() (*Config, error) {
 		GoogleClientID:     env("GOOGLE_CLIENT_ID", ""),
 		GoogleClientSecret: env("GOOGLE_CLIENT_SECRET", ""),
 		GoogleRedirectUrl:  env("GOOGLE_REDIRECT_URL", ""),
+
+		FrontendApiBaseUrl:     env("API_BASE_URL", ""),
+		FrontendWorkerBaseUrl:  env("WORKER_BASE_URL", ""),
+		FrontendLandingPageUrl: env("LANDING_PAGE_URL", ""),
+		FrontEendForceProd:     envBool("FORCE_PROD", false),
 	}
 	return cfg, nil
 }

@@ -1,6 +1,6 @@
 import { RuntimeConfig, validateConfig } from "../types/config";
 
-const CONFIG_ENDPOINT = "/config";
+const CONFIG_ENDPOINT = "/frontend-config";
 
 export async function fetchConfig(): Promise<RuntimeConfig> {
     const baseURL = import.meta.env.VITE_API_BASE_URL ?? ""

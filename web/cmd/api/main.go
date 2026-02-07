@@ -59,8 +59,8 @@ func main() {
 	})
 
 	// Public config endpoint for frontend
-	configHandler := handlers.NewConfigHandler(cfg)
-	r.GET("/config", configHandler.GetConfig)
+	configHandler := handlers.NewFrontendConfigHandler(cfg)
+	r.GET("/frontend-config", configHandler.GetConfig)
 
 	api := r.Group("/api")
 
