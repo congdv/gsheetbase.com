@@ -8,9 +8,17 @@ RUN npm ci
 
 COPY web/ui/ ./
 
-# Build arg for API URL (will be /api since served from same origin)
-ARG VITE_API_BASE_URL=/api
+# Build args for Vite environment variables (must be provided at build time)
+ARG VITE_API_BASE_URL
+ARG VITE_WORKER_BASE_URL
+ARG VITE_LANDING_PAGE_URL
+ARG VITE_FORCE_PROD
+
+# Set environment variables for the build
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+ENV VITE_WORKER_BASE_URL=$VITE_WORKER_BASE_URL
+ENV VITE_LANDING_PAGE_URL=$VITE_LANDING_PAGE_URL
+ENV VITE_FORCE_PROD=$VITE_FORCE_PROD
 
 RUN npm run build
 
