@@ -3,6 +3,7 @@ import { CopyOutlined, RocketOutlined, SendOutlined, LockOutlined } from '@ant-d
 import { useState } from 'react'
 import axios from 'axios'
 import api from '../../lib/axios'
+import { queryClient } from '../../lib/queryClient'
 import { useConfig } from '../../context/ConfigContext'
 import { useAuth } from '../../context/AuthContext'
 import { ScopeConsentPrompt, ScopeInfo } from '../../components/ScopeConsentPrompt'
@@ -41,6 +42,7 @@ export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps
   const [requestBody, setRequestBody] = useState('{\n  \n}')
   const [loading, setLoading] = useState(false)
   const [showScopePrompt, setShowScopePrompt] = useState(false)
+  const [pendingMethod, setPendingMethod] = useState<{ method: string; checked: boolean } | null>(null)
   const [updatingMethods, setUpdatingMethods] = useState<Record<string, boolean>>({})
   const [response, setResponse] = useState<{
     status: number
@@ -50,6 +52,7 @@ export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps
   } | null>(null)
 
   const canReadAndWrite = hasScope(GOOGLE_SCOPE.READ_WRITE_SCOPE)
+  const canReadOnly = hasScope(GOOGLE_SCOPE.READ_ONLY_SCOPE)
 
   const handleSendRequest = async () => {
     setLoading(true)
@@ -105,6 +108,12 @@ export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps
       const scopes = selectedScopes ?? [GOOGLE_SCOPE.READ_WRITE_SCOPE]
       await requestScopes(scopes)
       setShowScopePrompt(false)
+      if (pendingMethod) {
+        const { method, checked } = pendingMethod
+        setPendingMethod(null)
+        // Proceed with the pending toggle after consent is granted
+        handleToggleMethod(method, checked)
+      }
     } catch (error) {
       console.error('Failed to request write scope:', error)
     }
@@ -127,8 +136,8 @@ export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps
         { allowed_methods: updatedMethods }
       )
       message.success(`${method} ${checked ? 'enabled' : 'disabled'} successfully`)
-      // Trigger a refresh by updating parent component (if needed)
-      window.location.reload() // Simple refresh for now
+      // Invalidate sheets query so parent page refetches updated sheet data
+      await queryClient.invalidateQueries({ queryKey: ['sheets'] })
     } catch (error: any) {
       message.error(`Failed to update method settings: ${error.response?.data?.error || error.message}`)
     } finally {
@@ -201,7 +210,7 @@ export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps
                 <Text><code>GET</code> Fetch sheet data</Text>
               </Col>
               <Col>
-                {canReadAndWrite ? (
+                {canReadOnly ? (
                   <Tag color="success">Always Available</Tag>
                 ) : (
                   <Tooltip title="Grant read permission to enable">
@@ -224,9 +233,15 @@ export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps
                   )}
                   <Switch
                     checked={isMethodEnabled('POST')}
-                    onChange={(checked) => handleToggleMethod('POST', checked)}
+                    onChange={(checked) => {
+                      if (checked && !canReadAndWrite) {
+                        setPendingMethod({ method: 'POST', checked })
+                        setShowScopePrompt(true)
+                      } else {
+                        handleToggleMethod('POST', checked)
+                      }
+                    }}
                     loading={updatingMethods['POST']}
-                    disabled={!canReadAndWrite}
                   />
                 </Space>
               </Col>
@@ -247,7 +262,6 @@ export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps
                     checked={isMethodEnabled('PUT')}
                     onChange={(checked) => handleToggleMethod('PUT', checked)}
                     loading={updatingMethods['PUT']}
-                    disabled={!canReadAndWrite}
                   />
                 </Space>
               </Col>
@@ -268,7 +282,6 @@ export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps
                     checked={isMethodEnabled('PATCH')}
                     onChange={(checked) => handleToggleMethod('PATCH', checked)}
                     loading={updatingMethods['PATCH']}
-                    disabled={!canReadAndWrite}
                   />
                 </Space>
               </Col>
@@ -289,7 +302,6 @@ export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps
                     checked={isMethodEnabled('DELETE')}
                     onChange={(checked) => handleToggleMethod('DELETE', checked)}
                     loading={updatingMethods['DELETE']}
-                    disabled={!canReadAndWrite}
                   />
                 </Space>
               </Col>

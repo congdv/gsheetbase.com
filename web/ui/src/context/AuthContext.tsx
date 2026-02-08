@@ -17,7 +17,7 @@ type AuthState = {
 type AuthContextValue = AuthState & {
   logout: () => Promise<void>
   checkSession: () => Promise<void>
-  requestScopes: (scopes: string[]) => Promise<void>
+  requestScopes: (scopes: string[], awaitCompletion?: boolean) => Promise<void>
   hasScope: (scope: string) => boolean
 }
 
@@ -53,31 +53,61 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return state.user?.google_scopes?.includes(scope) ?? false
   }
 
-  const requestScopes = async (scopes: string[]) => {
+  const requestScopes = async (scopes: string[], awaitCompletion = true) => {
     try {
       const response = await api.post('/auth/google/request-scopes', { scopes })
       const authUrl = response.data.auth_url
-      
+
       // Open in popup window instead of full redirect
       const width = 600
       const height = 700
       const left = window.screenX + (window.outerWidth - width) / 2
       const top = window.screenY + (window.outerHeight - height) / 2
-      
+
       const popup = window.open(
         authUrl,
         'Google Authorization',
         `width=${width},height=${height},left=${left},top=${top},toolbar=0,menubar=0,location=0`
       )
-      
-      // Poll for popup closure and refresh session
-      const pollTimer = setInterval(() => {
-        if (popup?.closed) {
-          clearInterval(pollTimer)
-          // Refresh user session to get updated scopes
-          checkSession()
-        }
-      }, 500)
+
+      // If caller does not want to wait for completion, return immediately after opening popup
+      if (!awaitCompletion) return
+
+      // Return a promise that resolves only after popup closes and checkSession completes
+      return await new Promise<void>((resolve, reject) => {
+        const start = Date.now()
+        const maxWait = 1000 * 60 * 3 // 3 minutes timeout
+
+        const pollTimer = setInterval(async () => {
+          try {
+            if (!popup) {
+              clearInterval(pollTimer)
+              reject(new Error('Popup blocked or failed to open'))
+              return
+            }
+
+            if (popup.closed) {
+              clearInterval(pollTimer)
+              try {
+                await checkSession()
+                resolve()
+              } catch (err) {
+                reject(err)
+              }
+              return
+            }
+
+            if (Date.now() - start > maxWait) {
+              clearInterval(pollTimer)
+              try { popup.close() } catch { }
+              reject(new Error('Timed out waiting for OAuth consent'))
+            }
+          } catch (err) {
+            clearInterval(pollTimer)
+            reject(err as Error)
+          }
+        }, 500)
+      })
     } catch (error) {
       console.error('Failed to request scopes:', error)
       throw error
