@@ -4,6 +4,7 @@ import { UserOutlined, LogoutOutlined, HomeOutlined, CreditCardOutlined } from '
 import styled from 'styled-components'
 import { useAuth } from '../../context/AuthContext'
 import { ROUTES } from '../../constants/routes'
+import logo from '../../assets/gsheetbase.svg'
 
 const { Header, Content, Sider } = Layout
 
@@ -130,8 +131,8 @@ export default function DashboardLayout() {
     <StyledLayout>
       <StyledHeader>
         <LogoContainer onClick={() => navigate(ROUTES.HOME)}>
-          <img src="/gsheetbase.svg" alt="Gsheetbase Logo" />
-          <LogoText>Gsheetbase</LogoText>
+          <img src={logo} alt="gsheetbase Logo" />
+          <LogoText>gsheetbase</LogoText>
         </LogoContainer>
         <UserSection>
           <UserEmail>{user?.email}</UserEmail>

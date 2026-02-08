@@ -1,4 +1,5 @@
 import { GoogleOutlined } from '@ant-design/icons'
+import logo from '../assets/gsheetbase.svg'
 import { useConfig } from '../context/ConfigContext'
 import SEO from '../components/SEO'
 import {
@@ -25,11 +26,7 @@ export default function LoginPage() {
       />
       <StyledCard>
         <TitleContainer>
-          <img
-            src="/gsheetbase.svg"
-            alt="Gsheetbase Logo"
-            style={{ height: '48px', marginBottom: '16px' }}
-          />
+          <img src={logo} alt="Gsheetbase Logo" style={{ height: '48px', marginBottom: '16px' }} />
           <StyledTitle level={2}>
             Gsheetbase
           </StyledTitle>
