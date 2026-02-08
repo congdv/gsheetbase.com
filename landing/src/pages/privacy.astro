@@ -1,101 +1,589 @@
 ---
-import Layout from '../layouts/Layout.astro';
+import Layout from "../layouts/Layout.astro";
 ---
 
-<Layout title="Privacy Policy | gsheetbase.com" description="Privacy policy for gsheetbase.com">
-
+<Layout
+  title="Privacy Policy | gsheetbase.com"
+  description="Privacy policy for gsheetbase.com"
+>
   <main class="w-full flex flex-col items-center">
     <article class="w-full max-w-[800px] px-6 py-16">
-      <h1 class="text-4xl md:text-5xl font-extrabold tracking-tighter mb-4">Privacy Policy</h1>
-      <p class="text-slate-500 dark:text-slate-400 mb-8">Last updated: February 2, 2026</p>
+      <h1 class="text-4xl md:text-5xl font-extrabold tracking-tighter mb-4">
+        Privacy Policy
+      </h1>
+      <p class="text-slate-500 dark:text-slate-400 mb-8">
+        Last updated: February 7, 2026
+      </p>
 
       <div class="prose prose-slate dark:prose-invert max-w-none">
         <section class="mb-8">
-          <h2 class="text-2xl font-bold tracking-tight mb-4">1. Introduction</h2>
+          <h2 class="text-2xl font-bold tracking-tight mb-4">
+            1. Introduction
+          </h2>
           <p class="text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
-            Welcome to gsheetbase.com. We respect your privacy and are committed to protecting your personal data. 
-            This privacy policy will inform you about how we look after your personal data when you visit our website 
-            and use our services, and tell you about your privacy rights.
+            GsheetBase (&quot;GsheetBase&quot;, &quot;we&quot;, &quot;our&quot;,
+            or &quot;us&quot;) provides a web application that connects to your
+            Google Account so you can view and sync data from your Google Sheets
+            within our product.
+          </p>
+          <p class="text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
+            This Privacy Policy explains how we collect, use, store, and share
+            information, including information obtained through Google APIs. By
+            using GsheetBase, you agree to the practices described in this
+            Privacy Policy.
           </p>
         </section>
 
         <section class="mb-8">
-          <h2 class="text-2xl font-bold tracking-tight mb-4">2. Data We Collect</h2>
+          <h2 class="text-2xl font-bold tracking-tight mb-4">
+            2. Information We Collect
+          </h2>
           <p class="text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
-            We may collect, use, store and transfer different kinds of personal data about you:
+            We may collect, use, store, and transfer different kinds of
+            information about you when you use GsheetBase:
           </p>
-          <ul class="list-disc pl-6 space-y-2 text-slate-600 dark:text-slate-300">
-            <li><strong>Identity Data:</strong> First name, last name, username</li>
-            <li><strong>Contact Data:</strong> Email address</li>
-            <li><strong>Technical Data:</strong> IP address, browser type, operating system</li>
-            <li><strong>Usage Data:</strong> Information about how you use our website and services</li>
-            <li><strong>Google Sheets Data:</strong> Spreadsheet data you choose to sync with our API</li>
+
+          <h3 class="text-xl font-semibold tracking-tight mb-3">
+            2.1 Account and Contact Information
+          </h3>
+          <ul
+            class="list-disc pl-6 space-y-2 text-slate-600 dark:text-slate-300 mb-4"
+          >
+            <li>Email address</li>
+            <li>Name (if provided)</li>
+            <li>Workspace or organization name (if provided)</li>
+            <li>
+              Authentication identifiers and access logs (such as sign-in
+              timestamps, IP address, and browser information)
+            </li>
+          </ul>
+
+          <h3 class="text-xl font-semibold tracking-tight mb-3">
+            2.2 Billing and Subscription Information
+          </h3>
+          <ul
+            class="list-disc pl-6 space-y-2 text-slate-600 dark:text-slate-300 mb-4"
+          >
+            <li>
+              Payment and billing details (processed via our payment providers)
+            </li>
+            <li>Subscription plan, invoices, and transaction history</li>
+          </ul>
+
+          <h3 class="text-xl font-semibold tracking-tight mb-3">
+            2.3 Usage Information
+          </h3>
+          <ul
+            class="list-disc pl-6 space-y-2 text-slate-600 dark:text-slate-300 mb-4"
+          >
+            <li>
+              Actions taken in the application (for example, connecting a sheet
+              or configuring syncs)
+            </li>
+            <li>Device, browser, and technical log data</li>
+            <li>Aggregated analytics about feature usage</li>
+          </ul>
+
+          <h3 class="text-xl font-semibold tracking-tight mb-3">
+            2.4 Google User Data (via Google APIs)
+          </h3>
+          <p class="text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
+            When you connect your Google account and authorize GsheetBase, we
+            access specific Google user data under the following scopes:
+          </p>
+          <ul
+            class="list-disc pl-6 space-y-2 text-slate-600 dark:text-slate-300 mb-4"
+          >
+            <li>
+              <code>https://www.googleapis.com/auth/spreadsheets.readonly</code> (required
+              for read-only access)
+            </li>
+            <li>
+              <code>https://www.googleapis.com/auth/spreadsheets</code> (optional,
+              only if you enable write/sync features)
+            </li>
+          </ul>
+          <p class="text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
+            Depending on how you use GsheetBase, we may access:
+          </p>
+          <ul
+            class="list-disc pl-6 space-y-2 text-slate-600 dark:text-slate-300 mb-4"
+          >
+            <li>
+              Google Sheets metadata: spreadsheet IDs, titles, sheet names, and
+              structure (such as columns and ranges)
+            </li>
+            <li>
+              Google Sheets content: cell values, formulas, and other data
+              contained in your spreadsheets
+            </li>
+            <li>
+              Basic profile information from Google (such as your email address)
+              used for identifying your account and permissions
+            </li>
+          </ul>
+          <p class="text-slate-600 dark:text-slate-300 leading-relaxed">
+            We do not access your Gmail, Google Drive files other than the
+            specific spreadsheets you connect, or any other Google data outside
+            the granted scopes.
+          </p>
+        </section>
+
+        <section class="mb-8">
+          <h2 class="text-2xl font-bold tracking-tight mb-4">
+            3. Why We Access Google User Data
+          </h2>
+          <p class="text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
+            We access Google Sheets data solely to provide and improve the
+            GsheetBase service, including:
+          </p>
+          <ul
+            class="list-disc pl-6 space-y-2 text-slate-600 dark:text-slate-300 mb-4"
+          >
+            <li>
+              Displaying your Google Sheets data inside the GsheetBase interface
+            </li>
+            <li>
+              Enabling you to configure and run syncs between Google Sheets and
+              other parts of our application
+            </li>
+            <li>
+              Performing operations you explicitly request (such as reading
+              ranges or writing updates if you enabled write access)
+            </li>
+            <li>
+              Maintaining and troubleshooting your connections and
+              configurations
+            </li>
+            <li>
+              Ensuring security, abuse prevention, and reliability of the
+              integration
+            </li>
+          </ul>
+          <p class="text-slate-600 dark:text-slate-300 leading-relaxed">
+            We do not access Google user data for advertising, selling data, or
+            building unrelated products.
+          </p>
+        </section>
+
+        <section class="mb-8">
+          <h2 class="text-2xl font-bold tracking-tight mb-4">
+            4. How We Use Google User Data
+          </h2>
+
+          <h3 class="text-xl font-semibold tracking-tight mb-3">
+            4.1 Core Product Functionality
+          </h3>
+          <ul
+            class="list-disc pl-6 space-y-2 text-slate-600 dark:text-slate-300 mb-4"
+          >
+            <li>
+              To read Google Sheets data you select and display it in our
+              dashboards, tables, or views
+            </li>
+            <li>
+              To process and transform that data (for example, filters,
+              calculations, mappings) as configured by you
+            </li>
+            <li>
+              If you enable write access, to update your spreadsheets with
+              changes or sync results that you explicitly configure
+            </li>
+          </ul>
+
+          <h3 class="text-xl font-semibold tracking-tight mb-3">
+            4.2 Account Management and Support
+          </h3>
+          <ul
+            class="list-disc pl-6 space-y-2 text-slate-600 dark:text-slate-300 mb-4"
+          >
+            <li>
+              To associate connected spreadsheets with your GsheetBase account
+            </li>
+            <li>
+              To provide customer support and investigate reported issues (which
+              may involve limited, logged access to specific data as necessary
+              to resolve a support ticket and only with appropriate safeguards)
+            </li>
+          </ul>
+
+          <h3 class="text-xl font-semibold tracking-tight mb-3">
+            4.3 Security, Abuse Prevention, and Compliance
+          </h3>
+          <ul
+            class="list-disc pl-6 space-y-2 text-slate-600 dark:text-slate-300"
+          >
+            <li>To secure access tokens and verify authorization</li>
+            <li>
+              To detect and prevent misuse, fraud, or abuse of the integration
+            </li>
+            <li>
+              To comply with applicable law, regulation, and legal process where
+              required
+            </li>
+          </ul>
+          <p class="text-slate-600 dark:text-slate-300 leading-relaxed mt-4">
+            We do not use Google user data to create or augment profiles for
+            advertising, or to train generalized AI or machine learning models.
+          </p>
+        </section>
+
+        <section class="mb-8">
+          <h2 class="text-2xl font-bold tracking-tight mb-4">
+            5. Where and How We Store Google User Data
+          </h2>
+
+          <h3 class="text-xl font-semibold tracking-tight mb-3">
+            5.1 Storage Locations
+          </h3>
+          <p class="text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
+            We store data on secure cloud infrastructure operated by reputable
+            third-party providers located in data centers in regions such as the
+            United States or other jurisdictions with adequate protections.
+            Access tokens and refresh tokens are stored in encrypted form and
+            are used only by our servers to access the Google APIs on your
+            behalf.
+          </p>
+
+          <h3 class="text-xl font-semibold tracking-tight mb-3">
+            5.2 Data Stored by Default
+          </h3>
+          <ul
+            class="list-disc pl-6 space-y-2 text-slate-600 dark:text-slate-300 mb-4"
+          >
+            <li>
+              Identifiers and metadata for spreadsheets you connect (such as
+              spreadsheet IDs, names, and sheet structure)
+            </li>
+            <li>
+              Configuration data (for example, which sheets, ranges, and columns
+              are mapped, and your sync rules and schedules)
+            </li>
+            <li>
+              Logs of API requests and system events for security, debugging,
+              and compliance
+            </li>
+          </ul>
+
+          <h3 class="text-xl font-semibold tracking-tight mb-3">
+            5.3 Optional Storage of Sheet Content
+          </h3>
+          <p class="text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
+            In many cases, we read your Google Sheets data on demand and process
+            it transiently in memory. If you enable certain features (such as
+            background sync, caching, or integrations that require persistent
+            storage), we may store copies of relevant rows, columns, or derived
+            data in our databases to provide those features efficiently. In all
+            cases, stored content is treated as confidential and is protected
+            using industry-standard security measures, including encryption in
+            transit, access controls, and monitoring.
+          </p>
+        </section>
+
+        <section class="mb-8">
+          <h2 class="text-2xl font-bold tracking-tight mb-4">
+            6. Data Retention
+          </h2>
+          <p class="text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
+            We retain information according to the following principles:
+          </p>
+          <ul
+            class="list-disc pl-6 space-y-2 text-slate-600 dark:text-slate-300 mb-4"
+          >
+            <li>
+              <strong>Account data:</strong> retained for as long as your account
+              is active and for a reasonable period thereafter as necessary for billing,
+              legal, or operational purposes.
+            </li>
+            <li>
+              <strong>Google user data (content and metadata):</strong> retained only
+              for as long as necessary to provide the features you have enabled (such
+              as sync jobs and configuration) and to maintain service integrity and
+              security.
+            </li>
+            <li>
+              When you disconnect your Google account from GsheetBase or delete
+              specific integrations, we will revoke or delete related access
+              tokens and remove or anonymize associated configuration and stored
+              content from our systems within a reasonable period, subject to
+              backups and legal obligations.
+            </li>
+            <li>
+              <strong>Backups:</strong> data may remain in system backups for a limited
+              time before being purged on a scheduled basis.
+            </li>
+          </ul>
+          <p class="text-slate-600 dark:text-slate-300 leading-relaxed">
+            You may request deletion of your account and associated data by
+            contacting us as described in the &quot;Contact Us&quot; section
+            below.
+          </p>
+        </section>
+
+        <section class="mb-8">
+          <h2 class="text-2xl font-bold tracking-tight mb-4">
+            7. Data Sharing and Third Parties
+          </h2>
+
+          <h3 class="text-xl font-semibold tracking-tight mb-3">
+            7.1 No Selling or Sharing of Google User Data
+          </h3>
+          <p class="text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
+            We do not sell, rent, or lease your Google user data or other
+            personal information to third parties. We do not share Google user
+            data with third parties for their own independent marketing or
+            advertising purposes.
+          </p>
+
+          <h3 class="text-xl font-semibold tracking-tight mb-3">
+            7.2 Service Providers
+          </h3>
+          <p class="text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
+            We may share limited data with third-party service providers who
+            perform services on our behalf, such as:
+          </p>
+          <ul
+            class="list-disc pl-6 space-y-2 text-slate-600 dark:text-slate-300 mb-4"
+          >
+            <li>Cloud hosting and infrastructure</li>
+            <li>Database and logging services</li>
+            <li>Payment processing</li>
+            <li>Customer support tools</li>
+            <li>Analytics and monitoring</li>
+          </ul>
+          <p class="text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
+            These providers may process data only under our instructions, for
+            the sole purpose of providing their services to us, and are bound by
+            confidentiality and data protection obligations at least as
+            protective as those in this Privacy Policy.
+          </p>
+
+          <h3 class="text-xl font-semibold tracking-tight mb-3">
+            7.3 Legal and Safety Requirements
+          </h3>
+          <p class="text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
+            We may disclose information if we reasonably believe it is necessary
+            to:
+          </p>
+          <ul
+            class="list-disc pl-6 space-y-2 text-slate-600 dark:text-slate-300 mb-4"
+          >
+            <li>
+              Comply with an applicable law, regulation, legal process, or
+              enforceable governmental request
+            </li>
+            <li>
+              Enforce our Terms of Service or protect the security and integrity
+              of GsheetBase
+            </li>
+            <li>
+              Protect the rights, property, or safety of GsheetBase, our users,
+              or the public
+            </li>
+          </ul>
+          <p class="text-slate-600 dark:text-slate-300 leading-relaxed">
+            Any such disclosure of Google user data will be strictly limited and
+            consistent with the Google API Services User Data Policy, including
+            its Limited Use requirements.
+          </p>
+        </section>
+
+        <section class="mb-8">
+          <h2 class="text-2xl font-bold tracking-tight mb-4">
+            8. How You Can Revoke Google Access
+          </h2>
+          <p class="text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
+            You remain in control of your Google account and Google user data at
+            all times. You can revoke GsheetBase’s access to your Google account
+            in the following ways:
+          </p>
+          <ul
+            class="list-disc pl-6 space-y-2 text-slate-600 dark:text-slate-300 mb-4"
+          >
+            <li>
+              From your Google Account: visit your Google Account permissions at
+              <a
+                href="https://myaccount.google.com/permissions"
+                class="text-primary hover:underline"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                https://myaccount.google.com/permissions
+              </a>
+              , find &quot;GsheetBase&quot; in the list of connected apps, and remove
+              its access.
+            </li>
+            <li>
+              From within GsheetBase: use the account or integrations settings
+              in our app to disconnect your Google account and remove configured
+              connections.
+            </li>
+          </ul>
+          <p class="text-slate-600 dark:text-slate-300 leading-relaxed">
+            Once access is revoked, GsheetBase will no longer be able to call
+            Google APIs on your behalf. We will delete or anonymize stored
+            Google user data associated with the revoked connection within a
+            reasonable timeframe, subject to backups and legal requirements as
+            described in the &quot;Data Retention&quot; section above.
+          </p>
+        </section>
+
+        <section class="mb-8">
+          <h2 class="text-2xl font-bold tracking-tight mb-4">
+            9. Compliance with Google API Services User Data Policy and Limited
+            Use
+          </h2>
+          <p class="text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
+            Our use of information received from Google APIs, including data
+            obtained via the scopes
+            <code>https://www.googleapis.com/auth/spreadsheets.readonly</code> and
+            <code>https://www.googleapis.com/auth/spreadsheets</code>, adheres
+            to the Google API Services User Data Policy, including its Limited
+            Use requirements.
+          </p>
+          <ul
+            class="list-disc pl-6 space-y-2 text-slate-600 dark:text-slate-300 mb-4"
+          >
+            <li>
+              We only access, use, and store Google user data that is necessary
+              to provide and improve the GsheetBase features you choose to use.
+            </li>
+            <li>
+              We do not use Google user data for advertising, targeting ads, or
+              creating advertising profiles.
+            </li>
+            <li>
+              We do not sell or transfer Google user data to third parties,
+              except as necessary to provide or secure our service, comply with
+              applicable law, or as part of a merger, acquisition, or asset sale
+              where the data protections will remain at least as protective.
+            </li>
+            <li>
+              We do not use Google user data to develop, improve, or train
+              generalized AI or machine learning models.
+            </li>
+            <li>
+              Human access to Google user data is strictly limited, logged, and
+              only allowed when necessary for security, support, legal
+              compliance, or service reliability, and always under obligations
+              of confidentiality.
+            </li>
           </ul>
         </section>
 
         <section class="mb-8">
-          <h2 class="text-2xl font-bold tracking-tight mb-4">3. How We Use Your Data</h2>
+          <h2 class="text-2xl font-bold tracking-tight mb-4">10. Security</h2>
           <p class="text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
-            We will only use your personal data when the law allows us to. Most commonly, we use your data to:
+            We use technical and organizational measures designed to protect
+            your information, including Google user data, from unauthorized
+            access, loss, misuse, or alteration, such as:
           </p>
-          <ul class="list-disc pl-6 space-y-2 text-slate-600 dark:text-slate-300">
-            <li>Provide and maintain our service</li>
-            <li>Process your API requests and sync your spreadsheet data</li>
-            <li>Send you service updates and technical notices</li>
-            <li>Improve our services and develop new features</li>
-            <li>Monitor usage patterns and prevent fraud</li>
+          <ul
+            class="list-disc pl-6 space-y-2 text-slate-600 dark:text-slate-300 mb-4"
+          >
+            <li>Encryption in transit (HTTPS/TLS)</li>
+            <li>
+              Encrypted storage for sensitive credentials (such as OAuth tokens)
+            </li>
+            <li>
+              Access controls restricting internal access to data on a
+              need-to-know basis
+            </li>
+            <li>
+              Logging and monitoring of access and relevant system activities
+            </li>
+            <li>
+              Regular updates and security reviews of our infrastructure and
+              code
+            </li>
           </ul>
-        </section>
-
-        <section class="mb-8">
-          <h2 class="text-2xl font-bold tracking-tight mb-4">4. Data Security</h2>
-          <p class="text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
-            We have implemented appropriate security measures to prevent your personal data from being accidentally lost, 
-            used, or accessed in an unauthorized way. All data is encrypted in transit using TLS 1.3 and at rest using 
-            industry-standard encryption algorithms.
+          <p class="text-slate-600 dark:text-slate-300 leading-relaxed">
+            No method of transmission or storage is completely secure. While we
+            strive to protect your information, we cannot guarantee absolute
+            security.
           </p>
         </section>
 
         <section class="mb-8">
-          <h2 class="text-2xl font-bold tracking-tight mb-4">5. Data Retention</h2>
+          <h2 class="text-2xl font-bold tracking-tight mb-4">
+            11. Children&apos;s Privacy
+          </h2>
           <p class="text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
-            We will only retain your personal data for as long as necessary to fulfill the purposes we collected it for. 
-            Cached spreadsheet data is stored for up to 24 hours for performance optimization.
+            GsheetBase is not directed to children under 16, and we do not
+            knowingly collect personal information from children under 16. If we
+            discover that we have collected information from a child under 16
+            without appropriate consent, we will delete that information as soon
+            as reasonably possible.
           </p>
         </section>
 
         <section class="mb-8">
-          <h2 class="text-2xl font-bold tracking-tight mb-4">6. Third-Party Services</h2>
+          <h2 class="text-2xl font-bold tracking-tight mb-4">
+            12. Your Rights and Choices
+          </h2>
           <p class="text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
-            Our service integrates with Google Sheets. When you use our service, you grant us permission to access your 
-            Google Sheets data as specified in our Terms of Service. We do not share your data with any other third parties 
-            except as necessary to provide our service or as required by law.
+            Depending on your jurisdiction, you may have rights with respect to
+            your personal information, such as:
           </p>
-        </section>
-
-        <section class="mb-8">
-          <h2 class="text-2xl font-bold tracking-tight mb-4">7. Your Legal Rights</h2>
-          <p class="text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
-            Under certain circumstances, you have rights under data protection laws in relation to your personal data:
-          </p>
-          <ul class="list-disc pl-6 space-y-2 text-slate-600 dark:text-slate-300">
-            <li>Request access to your personal data</li>
-            <li>Request correction of your personal data</li>
-            <li>Request erasure of your personal data</li>
-            <li>Object to processing of your personal data</li>
-            <li>Request restriction of processing your personal data</li>
-            <li>Request transfer of your personal data</li>
-            <li>Right to withdraw consent</li>
+          <ul
+            class="list-disc pl-6 space-y-2 text-slate-600 dark:text-slate-300 mb-4"
+          >
+            <li>Accessing the information we hold about you</li>
+            <li>Correcting or updating inaccurate information</li>
+            <li>Requesting deletion of your personal information</li>
+            <li>Objecting to or restricting certain processing</li>
+            <li>Exporting your data in a portable format (where applicable)</li>
           </ul>
+          <p class="text-slate-600 dark:text-slate-300 leading-relaxed">
+            You can exercise these rights by contacting us using the details
+            below. We may need to verify your identity before responding. You
+            can also control and revoke GsheetBase’s access to your Google
+            account at any time as described in the &quot;How You Can Revoke
+            Google Access&quot; section above.
+          </p>
         </section>
 
         <section class="mb-8">
-          <h2 class="text-2xl font-bold tracking-tight mb-4">8. Contact Us</h2>
+          <h2 class="text-2xl font-bold tracking-tight mb-4">
+            13. Changes to This Privacy Policy
+          </h2>
           <p class="text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
-            If you have any questions about this privacy policy or our privacy practices, please contact us at:
+            We may update this Privacy Policy from time to time. If we make
+            material changes, we will notify you by posting the updated policy
+            on our website, providing a notice within the GsheetBase
+            application, and/or sending an email to the address associated with
+            your account.
           </p>
           <p class="text-slate-600 dark:text-slate-300 leading-relaxed">
-            Email: <a href="mailto:privacy@gsheetbase.com" class="text-primary hover:underline">privacy@gsheetbase.com</a>
+            Your continued use of GsheetBase after any update constitutes your
+            acceptance of the revised Privacy Policy.
+          </p>
+        </section>
+
+        <section class="mb-8">
+          <h2 class="text-2xl font-bold tracking-tight mb-4">14. Contact Us</h2>
+          <p class="text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
+            If you have questions about this Privacy Policy, our use of Google
+            user data, or your privacy rights, please contact us at:
+          </p>
+          <p class="text-slate-600 dark:text-slate-300 leading-relaxed mb-1">
+            GsheetBase
+          </p>
+          <p class="text-slate-600 dark:text-slate-300 leading-relaxed mb-1">
+            Email:
+            <a
+              href="mailto:support@gsheetbase.com"
+              class="text-primary hover:underline">support@gsheetbase.com</a
+            >
+          </p>
+          <p class="text-slate-600 dark:text-slate-300 leading-relaxed">
+            Website:
+            <a
+              href="https://www.gsheetbase.com"
+              class="text-primary hover:underline"
+              target="_blank"
+              rel="noopener noreferrer">https://www.gsheetbase.com</a
+            >
           </p>
         </section>
       </div>
