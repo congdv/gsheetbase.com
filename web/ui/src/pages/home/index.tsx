@@ -6,7 +6,6 @@ import styled from 'styled-components'
 import { useSheets } from '../../hooks/useSheets'
 import { SheetsTable } from '../../components/sheets/SheetsTable'
 import { RegisterSheetModal } from '../../components/sheets/RegisterSheetModal'
-import SEO from '../../components/SEO'
 import { GOOGLE_SCOPE } from '@/constants/common'
 
 const { Title, Paragraph } = Typography
@@ -50,11 +49,6 @@ export default function HomePage() {
 
   return (
     <PageContainer>
-      <SEO
-        title="Dashboard"
-        description="Manage your Google Sheets API connections. View, register, and configure REST API endpoints for your spreadsheets."
-        noIndex={true}
-      />
       {!authLoading && !hasSheetScope ? (
         <Card style={{ maxWidth: 480, margin: '48px auto', textAlign: 'center' }}>
           <Title level={3}>Google Sheets Access Required</Title>
@@ -87,7 +81,7 @@ export default function HomePage() {
             <SheetsTable
               sheets={sheets}
               isLoading={isLoading}
-              onDelete={hasSheetScope ? deleteSheet : () => {}}
+              onDelete={hasSheetScope ? deleteSheet : () => { }}
             />
           </Card>
 
@@ -95,7 +89,7 @@ export default function HomePage() {
             open={isRegisterModalOpen}
             isRegistering={isRegistering}
             onCancel={() => setIsRegisterModalOpen(false)}
-            onRegister={hasSheetScope ? handleRegister : () => {}}
+            onRegister={hasSheetScope ? handleRegister : () => { }}
           />
         </>
       )}
