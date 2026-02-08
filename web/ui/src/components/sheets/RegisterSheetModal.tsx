@@ -1,6 +1,9 @@
-import { Modal, Form, Input, Button, Card, Typography, Space } from 'antd'
+import { Modal, Form, Input, Button, Card, Typography, Space, message } from 'antd'
 import { useEffect, useState } from 'react'
 import { useCreateSheetMutation } from '../../hooks/useSheets'
+import { useAuth } from '@/context/AuthContext'
+import { GOOGLE_SCOPE } from '@/constants/common'
+import { ScopeConsentPrompt, ScopeInfo } from '../ScopeConsentPrompt'
 
 interface RegisterSheetModalProps {
   open: boolean
@@ -58,6 +61,25 @@ export const RegisterSheetModal = ({
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null)
   const [creatingSheet, setCreatingSheet] = useState(false)
   const createSheetMutation = useCreateSheetMutation()
+  const { hasScope, requestScopes, isLoading: authLoading } = useAuth()
+  const [showScopePrompt, setShowScopePrompt] = useState(false)
+
+  const scopeInfo: ScopeInfo[] = [
+    {
+      scope: GOOGLE_SCOPE.READ_WRITE_SCOPE,
+      reason: 'Write access to your Google Sheets',
+      example: 'Allows creating and updating sheets via the API',
+      optional: false,
+    },
+  ]
+
+  const handleCreateNewClick = () => {
+    if (hasScope(GOOGLE_SCOPE.READ_WRITE_SCOPE)) {
+      setShowTemplate(true)
+    } else {
+      setShowScopePrompt(true)
+    }
+  }
 
   useEffect(() => {
     if (!open) {
@@ -126,7 +148,7 @@ export const RegisterSheetModal = ({
               form.setFieldValue('sheet_id', extracted)
             }}
             addonAfter={
-              <Button size="small" onClick={() => setShowTemplate(true)}>
+              <Button size="small" onClick={handleCreateNewClick} disabled={authLoading}>
                 Create New
               </Button>
             }
@@ -154,7 +176,7 @@ export const RegisterSheetModal = ({
         width={600}
       >
         <Text strong>Select a template to create a new Google Sheet:</Text>
-        <Space direction="vertical" style={{ width: '100%' , marginTop: '10px'}} size="large">
+        <Space direction="vertical" style={{ width: '100%', marginTop: '10px' }} size="large">
           <div
             style={{
               display: 'flex',
@@ -206,6 +228,22 @@ export const RegisterSheetModal = ({
           </Text>
         </Space>
       </Modal>
+      <ScopeConsentPrompt
+        open={showScopePrompt}
+        onConsent={async (selectedScopes) => {
+          try {
+            await requestScopes(selectedScopes ?? [GOOGLE_SCOPE.READ_WRITE_SCOPE])
+            setShowScopePrompt(false)
+            message.success('Permission request started. Complete consent in the popup.')
+            setShowTemplate(true)
+          } catch (err) {
+            console.error(err)
+            message.error('Failed to start permission request')
+          }
+        }}
+        onCancel={() => setShowScopePrompt(false)}
+        scopes={scopeInfo}
+      />
     </Modal>
   )
 }

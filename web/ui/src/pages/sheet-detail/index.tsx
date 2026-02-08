@@ -10,7 +10,6 @@ import { message } from 'antd'
 import { useSheets } from '../../hooks/useSheets'
 import { OverviewTab } from './OverviewTab'
 import { ApiSettingsTab } from './ApiSettingsTab'
-import { DataPreviewTab } from './DataPreviewTab'
 import { AnalyticsTab } from './AnalyticsTab'
 
 const { Title, Paragraph } = Typography
@@ -18,7 +17,6 @@ const { Title, Paragraph } = Typography
 const PageContainer = styled.div`
   padding: 24px;
   margin: 0 auto;
-  max-width: 1200px;
 `
 
 const PageHeader = styled.div`
@@ -46,7 +44,7 @@ export default function SheetDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState<string>('overview')
-  
+
   const { publishSheet, isPublishing, unpublishSheet, isUnpublishing } = useSheets()
 
   // Sync tab with URL hash
@@ -141,9 +139,9 @@ export default function SheetDetailPage() {
                 Overview
               </span>
             ),
-            children: <OverviewTab 
-              sheet={sheet} 
-              onCopy={copyToClipboard} 
+            children: <OverviewTab
+              sheet={sheet}
+              onCopy={copyToClipboard}
               onNavigateToApiSettings={() => handleTabChange('api-settings')}
               onPublish={handlePublish}
               onUnpublish={handleUnpublish}
