@@ -93,7 +93,7 @@ export default function DashboardLayout() {
 
   const handleLogout = async () => {
     await logout()
-    navigate(ROUTES.LOGIN)
+    navigate(ROUTES.HOME)
   }
 
   const userMenuItems = [
