@@ -5,53 +5,40 @@ const year = new Date().getFullYear();
 
 <div class="w-full flex flex-col items-center">
   <footer class="w-full max-w-[1100px] px-6 py-12 border-t border-subtle">
-    <div class="w-full flex flex-col items-center">
-      <div class="text-xs text-slate-400 font-medium w-3xl mb-2">
-        gsheetbase’s use and transfer of information received from Google APIs
-        to any other app will adhere to <a
-          href="https://developers.google.com/terms/api-services-user-data-policy#additional_requirements_for_specific_api_scopes"
-          target="_blank"
-          class="underline">Google API Services User Data Policy</a
-        >, including the Limited Use requirements.
+    <div class="flex flex-col md:flex-row justify-between items-center gap-8">
+      <a
+        href="/"
+        class="flex items-center gap-1 hover:opacity-80 transition-opacity"
+      >
+        <div class="size-8 text-primary">
+          <svg
+            fill="none"
+            viewBox="0 0 48 48"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              clip-rule="evenodd"
+              d="M24 4H42V17.3333V30.6667H24V44H6V30.6667V17.3333H24V4Z"
+              fill="currentColor"
+              fill-rule="evenodd"></path>
+          </svg>
+        </div>
+        <span class="text-sm font-bold tracking-tight">gsheetbase.com</span>
+      </a>
+      <div
+        class="flex gap-8 text-sm font-semibold text-slate-500 dark:text-slate-400"
+      >
+        <a class="hover:text-primary transition-colors" href="#"
+          >Documentation</a
+        >
+        <a class="hover:text-primary transition-colors" href="/terms">Terms</a>
+        <a class="hover:text-primary transition-colors" href="/privacy"
+          >Privacy</a
+        >
+        <a class="hover:text-primary transition-colors" href="#">Twitter / X</a>
       </div>
-      <div class="flex flex-col md:flex-row justify-between items-center gap-8">
-        <a
-          href="/"
-          class="flex items-center gap-1 hover:opacity-80 transition-opacity"
-        >
-          <div class="size-8 text-primary">
-            <svg
-              fill="none"
-              viewBox="0 0 48 48"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                clip-rule="evenodd"
-                d="M24 4H42V17.3333V30.6667H24V44H6V30.6667V17.3333H24V4Z"
-                fill="currentColor"
-                fill-rule="evenodd"></path>
-            </svg>
-          </div>
-          <span class="text-sm font-bold tracking-tight">gsheetbase.com</span>
-        </a>
-        <div
-          class="flex gap-8 text-sm font-semibold text-slate-500 dark:text-slate-400"
-        >
-          <a class="hover:text-primary transition-colors" href="#"
-            >Documentation</a
-          >
-          <a class="hover:text-primary transition-colors" href="/terms">Terms</a
-          >
-          <a class="hover:text-primary transition-colors" href="/privacy"
-            >Privacy</a
-          >
-          <a class="hover:text-primary transition-colors" href="#"
-            >Twitter / X</a
-          >
-        </div>
-        <div class="text-xs text-slate-400 font-medium">
-          © {year} gsheetbase. All rights reserved.
-        </div>
+      <div class="text-xs text-slate-400 font-medium">
+        © {year} gsheetbase. All rights reserved.
       </div>
     </div>
   </footer>
