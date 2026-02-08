@@ -4,6 +4,14 @@ import { useParams } from 'react-router-dom'
 import { useState } from 'react'
 import { useSheetAnalytics } from '../../hooks/useSheetAnalytics'
 import styled from 'styled-components'
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc'
+import timezone from 'dayjs/plugin/timezone'
+
+dayjs.extend(utc)
+dayjs.extend(timezone)
+
+const browserTz = typeof window !== 'undefined' ? dayjs.tz.guess() : 'UTC'
 
 const ChartContainer = styled.div`
   margin-top: 24px;
@@ -59,48 +67,20 @@ export function AnalyticsTab() {
     )
   }
 
-  // Build a contiguous series for the selected `days` range (fill zeros for missing dates)
-  const formatDate = (d: Date) => {
-    const yyyy = d.getFullYear()
-    const mm = String(d.getMonth() + 1).padStart(2, '0')
-    const dd = String(d.getDate()).padStart(2, '0')
-    return `${yyyy}-${mm}-${dd}`
-  }
 
-  const end = new Date()
-  end.setHours(0, 0, 0, 0)
-  const start = new Date(end)
-  start.setDate(end.getDate() - (days - 1))
 
-  const dateMap = new Map<string, any>(data.daily_usage.map((d: any) => [d.date, d]))
-
-  const filledDailyUsage = Array.from({ length: days }).map((_, i) => {
-    const dt = new Date(start)
-    dt.setDate(start.getDate() + i)
-    const dateStr = formatDate(dt)
-    const src = dateMap.get(dateStr)
-    return src
-      ? src
-      : {
-          date: dateStr,
-          total_count: 0,
-          get_count: 0,
-          post_count: 0,
-          put_count: 0,
-          patch_count: 0,
-          delete_count: 0,
-        }
-  })
 
   // Calculate total/avg/peak from the filled series
-  const totalRequests = filledDailyUsage.reduce((sum: number, day: any) => sum + (day.total_count || 0), 0)
+  const totalRequests = data.daily_usage.reduce((sum: number, day: any) => sum + (day.total_count || 0), 0)
   const avgDailyRequests = Math.round(totalRequests / days)
 
-  const peakDay = filledDailyUsage.reduce((max: any, day: any) => (day.total_count > (max.total_count || 0) ? day : max), filledDailyUsage[0])
+  const peakDay = data.daily_usage.reduce((max: any, day: any) => (day.total_count > (max.total_count || 0) ? day : max), data.daily_usage[0])
 
-  // Prepare chart data from filled series
-  const chartData = filledDailyUsage.map((day: any) => ({
-    date: day.date,
+  // Prepare chart data from filled series - convert date to browser timezone
+  const chartData = data.daily_usage.reverse().map((day: any) => ({
+    // use a Date object for the chart's time scale and keep a formatted label if needed
+    date: dayjs(day.date).tz(browserTz).toDate(),
+    dateLabel: dayjs(day.date).tz(browserTz).format('YYYY-MM-DD'),
     total_count: day.total_count || 0,
     GET: day.get_count || 0,
     POST: day.post_count || 0,
@@ -157,9 +137,13 @@ export function AnalyticsTab() {
       ],
     },
     xAxis: {
+      type: 'time',
       label: {
         autoRotate: true,
         autoHide: true,
+        formatter: (text: string) => {
+          return dayjs(text).tz(browserTz).format('MMM D')
+        },
       },
     },
     yAxis: {
@@ -211,7 +195,7 @@ export function AnalyticsTab() {
               title="Peak Day"
               value={peakDay.total_count}
               precision={0}
-              suffix={`(${peakDay.date})`}
+              suffix={`(${dayjs(peakDay.date).tz(browserTz).format('YYYY-MM-DD')})`}
             />
           </Col>
         </Row>

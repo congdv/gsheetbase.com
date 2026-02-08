@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 	"net/http"
+	"sort"
 	"time"
 
 	"gsheetbase/shared/repository"
@@ -88,7 +89,11 @@ func (h *AnalyticsHandler) GetSheetAnalytics(c *gin.Context) {
 	// Aggregate by date
 	dailyMap := make(map[string]*DailyUsageSummary)
 	for _, record := range usageRecords {
-		dateKey := record.RequestDate.Format("2006-01-02")
+		// Group by calendar date (midnight UTC) so counts for the same day
+		// always map to the same key. Use RFC3339 timestamp at 00:00:00Z.
+		d := record.RequestDate.UTC()
+		dateKeyTime := time.Date(d.Year(), d.Month(), d.Day(), 0, 0, 0, 0, time.UTC)
+		dateKey := dateKeyTime.Format(time.RFC3339)
 
 		if _, exists := dailyMap[dateKey]; !exists {
 			dailyMap[dateKey] = &DailyUsageSummary{
@@ -111,22 +116,33 @@ func (h *AnalyticsHandler) GetSheetAnalytics(c *gin.Context) {
 		}
 	}
 
-	// Convert map to sorted slice
+	// Ensure every day in the range has an entry (default zeros)
+	start := startDate.UTC()
+	end := endDate.UTC()
+	for d := start; !d.After(end); d = d.AddDate(0, 0, 1) {
+		key := time.Date(d.Year(), d.Month(), d.Day(), 0, 0, 0, 0, time.UTC).Format(time.RFC3339)
+		if _, exists := dailyMap[key]; !exists {
+			dailyMap[key] = &DailyUsageSummary{Date: key}
+		}
+	}
+
+	// Convert map to slice
 	dailyStats := make([]DailyUsageSummary, 0, len(dailyMap))
 	for _, summary := range dailyMap {
 		dailyStats = append(dailyStats, *summary)
 	}
 
-	// Sort by date descending (most recent first)
-	// Note: This is a simple implementation. For production, use sort.Slice
+	sort.Slice(dailyStats, func(i, j int) bool {
+		return dailyStats[i].Date < dailyStats[j].Date
+	})
 
 	c.JSON(http.StatusOK, gin.H{
 		"sheet_id":    sheetID,
 		"sheet_name":  sheet.SheetName,
 		"api_key":     sheet.APIKey,
 		"period_days": days,
-		"start_date":  startDate.Format("2006-01-02"),
-		"end_date":    endDate.Format("2006-01-02"),
+		"start_date":  startDate.UTC().Format(time.RFC3339),
+		"end_date":    endDate.UTC().Format(time.RFC3339),
 		"daily_usage": dailyStats,
 	})
 }
@@ -167,7 +183,10 @@ func (h *AnalyticsHandler) GetUserAnalytics(c *gin.Context) {
 	totalRequests := 0
 
 	for _, record := range usageRecords {
-		dateKey := record.RequestDate.Format("2006-01-02")
+		// Group by calendar date (midnight UTC)
+		d := record.RequestDate.UTC()
+		dateKeyTime := time.Date(d.Year(), d.Month(), d.Day(), 0, 0, 0, 0, time.UTC)
+		dateKey := dateKeyTime.Format(time.RFC3339)
 
 		if _, exists := dailyMap[dateKey]; !exists {
 			dailyMap[dateKey] = &DailyUsageSummary{
@@ -191,16 +210,30 @@ func (h *AnalyticsHandler) GetUserAnalytics(c *gin.Context) {
 		}
 	}
 
+	// Ensure every day in the range has an entry (default zeros)
+	start := startDate.UTC()
+	end := endDate.UTC()
+	for d := start; !d.After(end); d = d.AddDate(0, 0, 1) {
+		key := time.Date(d.Year(), d.Month(), d.Day(), 0, 0, 0, 0, time.UTC).Format(time.RFC3339)
+		if _, exists := dailyMap[key]; !exists {
+			dailyMap[key] = &DailyUsageSummary{Date: key}
+		}
+	}
+
 	// Convert map to slice
 	dailyStats := make([]DailyUsageSummary, 0, len(dailyMap))
 	for _, summary := range dailyMap {
 		dailyStats = append(dailyStats, *summary)
 	}
 
+	sort.Slice(dailyStats, func(i, j int) bool {
+		return dailyStats[i].Date < dailyStats[j].Date
+	})
+
 	c.JSON(http.StatusOK, gin.H{
 		"period_days":    days,
-		"start_date":     startDate.Format("2006-01-02"),
-		"end_date":       endDate.Format("2006-01-02"),
+		"start_date":     startDate.UTC().Format(time.RFC3339),
+		"end_date":       endDate.UTC().Format(time.RFC3339),
 		"total_requests": totalRequests,
 		"daily_usage":    dailyStats,
 	})
