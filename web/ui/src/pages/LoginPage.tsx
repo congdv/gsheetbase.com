@@ -1,7 +1,6 @@
 import { GoogleOutlined } from '@ant-design/icons'
 import logo from '../assets/gsheetbase.svg'
 import { useConfig } from '../context/ConfigContext'
-import SEO from '../components/SEO'
 import {
   PageContainer,
   StyledCard,
@@ -19,11 +18,6 @@ export default function LoginPage() {
 
   return (
     <PageContainer>
-      <SEO
-        title="Login"
-        description="Sign in to Gsheetbase to turn your Google Sheets into REST APIs. Fast, secure, and easy to use."
-        keywords="google sheets api login, sign in, authentication"
-      />
       <StyledCard>
         <TitleContainer>
           <img src={logo} alt="Gsheetbase Logo" style={{ height: '48px', marginBottom: '16px' }} />
