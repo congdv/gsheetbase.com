@@ -100,9 +100,10 @@ export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps
     }
   }
 
-  const handleRequestWriteScope = async () => {
+  const handleRequestWriteScope = async (selectedScopes?: string[]) => {
     try {
-      await requestScopes(['https://www.googleapis.com/auth/spreadsheets'])
+      const scopes = selectedScopes ?? [GOOGLE_SCOPE.READ_WRITE_SCOPE]
+      await requestScopes(scopes)
       setShowScopePrompt(false)
     } catch (error) {
       console.error('Failed to request write scope:', error)
@@ -137,9 +138,10 @@ export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps
 
   const scopeInfo: ScopeInfo[] = [
     {
-      scope: 'spreadsheets',
+      scope: GOOGLE_SCOPE.READ_WRITE_SCOPE,
       reason: 'Write access to your Google Sheets',
       example: 'Allows adding, updating, and deleting rows via API',
+      optional: false,
     },
   ]
 
