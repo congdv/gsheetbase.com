@@ -2,15 +2,32 @@
 ---
 import Footer from '../components/Footer.astro';
 import Header from '../components/Header.astro';
+import SEO from '../components/SEO.astro';
 import "../assets/styles.css";
-
 
 interface Props {
 	title?: string;
 	description?: string;
+	image?: string;
+	imageAlt?: string;
+	robots?: string;
+	type?: string;
+	siteName?: string;
+	published?: string;
+	author?: string;
 }
 
-const { title = 'gsheetbase.com', description = 'A database that lives in your spreadsheet' } = Astro.props;
+const {
+	title = 'gsheetbase.com',
+	description = 'A database that lives in your spreadsheet',
+	image = '/og-image.svg',
+	imageAlt = 'gsheetbase preview',
+	robots = 'index,follow',
+	type = 'website',
+	siteName = 'gsheetbase',
+	published = undefined,
+	author = undefined,
+} = Astro.props as Props;
 ---
 
 <!doctype html>
@@ -18,20 +35,20 @@ const { title = 'gsheetbase.com', description = 'A database that lives in your s
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width" />
-		<meta name="description" content={description} />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<link rel="icon" href="/favicon.ico" />
 
-		<!-- SEO / Social -->
-		<meta property="og:title" content={title} />
-		<meta property="og:description" content={description} />
-		<meta property="og:type" content="website" />
-		<meta property="og:image" content="/og-image.png" />
-		<meta property="og:url" content="https://gsheetbase.com/" />
-		<meta name="twitter:card" content="summary_large_image" />
-		<meta name="twitter:title" content={title} />
-		<meta name="twitter:description" content={description} />
-		<meta name="twitter:image" content="/og-image.png" />
+		<SEO
+			title={title}
+			description={description}
+			image={image}
+			imageAlt={imageAlt}
+			type={type}
+			robots={robots}
+			siteName={siteName}
+			published={published}
+			author={author}
+		/>
 
 		<link rel="manifest" href="/site.webmanifest" />
 		<link rel="apple-touch-icon" href="/favicon.svg" />
@@ -48,7 +65,6 @@ const { title = 'gsheetbase.com', description = 'A database that lives in your s
 		}`}
 		</script>
 		<meta name="generator" content={Astro.generator} />
-		<title>{title}</title>
 
 		<!-- Tailwind CSS is loaded from the project's built stylesheet -->
 

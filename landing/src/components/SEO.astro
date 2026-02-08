@@ -1,0 +1,64 @@
+---
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+  imageAlt?: string;
+  type?: string;
+  robots?: string;
+  siteName?: string;
+  published?: string;
+  author?: string;
+}
+
+const {
+  title = 'gsheetbase.com',
+  description = 'A database that lives in your spreadsheet',
+  image = '/og-image.svg',
+  imageAlt = 'gsheetbase preview',
+  type = 'website',
+  robots = 'index,follow',
+  siteName = 'gsheetbase',
+  published = undefined,
+  author = undefined,
+} = Astro.props as Props;
+---
+
+<link rel="canonical" href={Astro.site + (Astro.url?.pathname ?? '/')} />
+<meta name="description" content={description} />
+<meta name="robots" content={robots} />
+
+<!-- Open Graph -->
+<meta property="og:site_name" content={siteName} />
+<meta property="og:locale" content="en_US" />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:type" content={type} />
+<meta property="og:url" content={Astro.site + (Astro.url?.pathname ?? '/')} />
+<meta property="og:image" content={image} />
+<meta property="og:image:alt" content={imageAlt} />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:site" content="@your_twitter_handle" />
+<meta name="twitter:creator" content="@your_twitter_handle" />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={image} />
+
+<!-- Article JSON-LD when applicable -->
+{published ? (
+  <script type="application/ld+json">
+  {`{
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "${title}",
+    "image": ["${image}"],
+    "datePublished": "${published}",
+    "author": { "@type": "Person", "name": "${author ?? ''}" },
+    "publisher": { "@type": "Organization", "name": "${siteName}" }
+  }`}
+  </script>
+) : null}
