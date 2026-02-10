@@ -44,11 +44,15 @@ func SheetAuthMiddleware(sheetRepo repository.AllowedSheetRepo) gin.HandlerFunc 
 				return
 			}
 
+		} else {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "missing api_key"})
+			c.Abort()
+			return
 		}
 
 		// No API key: try Authorization header
 		if authHeader == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "missing api_key or Authorization header"})
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "missing Authorization header"})
 			c.Abort()
 			return
 		}
