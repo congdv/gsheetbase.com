@@ -7,6 +7,7 @@ import { queryClient } from '../../lib/queryClient'
 import { useConfig } from '../../context/ConfigContext'
 import { useAuth } from '../../context/AuthContext'
 import { ScopeConsentPrompt, ScopeInfo } from '../../components/ScopeConsentPrompt'
+import { AuthManagementCard } from '../../components/sheets/AuthManagementCard'
 import { GOOGLE_SCOPE } from '@/constants/common'
 
 const { Paragraph, Text } = Typography
@@ -23,6 +24,9 @@ interface Sheet {
   use_first_row_as_header: boolean
   allow_write?: boolean
   allowed_methods?: string[]
+  auth_type?: string
+  auth_bearer_token?: string
+  auth_basic_username?: string
   created_at: string
 }
 
@@ -308,6 +312,8 @@ export function ApiSettingsTab({ sheet, onCopy, onPublish }: ApiSettingsTabProps
             </Row>
           </Space>
         </Card>
+
+        <AuthManagementCard sheetId={sheet.id} currentAuthType={sheet.auth_type || 'none'} sheet={sheet} />
 
         <Card title="API Tester" size="small">
           <Space direction="vertical" size="middle" style={{ width: '100%' }}>

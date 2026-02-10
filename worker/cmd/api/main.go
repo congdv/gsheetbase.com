@@ -79,20 +79,38 @@ func main() {
 	// Public API routes with quota enforcement (rate limits + daily/monthly quotas)
 	v1 := r.Group("/v1")
 
-	// Group all /v1/:api_key routes and apply all middlewares only to them
-	authService := services.NewAuthService()
-	v1ApiKey := v1.Group(":api_key")
-	if rateLimitService != nil {
-		v1ApiKey.Use(middleware.QuotaEnforcementMiddleware(rateLimitService, usageRepo, userRepo, sheetRepo))
-	}
-	v1ApiKey.Use(middleware.UsageTrackingMiddleware(usageTracker))
-	v1ApiKey.Use(middleware.AccessTokenEnsureMiddleware(sheetRepo, userRepo, authService, cfg.GoogleClientID, cfg.GoogleClientSecret))
+	// Apply SheetAuthMiddleware to resolve sheets by api_key, Bearer, or Basic auth
+	v1.Use(middleware.SheetAuthMiddleware(sheetRepo))
 
-	v1ApiKey.GET("", sheetHandler.GetPublic)
-	v1ApiKey.POST("", sheetHandler.PostPublic)
-	v1ApiKey.PUT("", sheetHandler.PutPublic)
-	v1ApiKey.PATCH("", sheetHandler.PatchPublic)
-	v1ApiKey.DELETE("", sheetHandler.DeletePublic)
+	// Group for handling routes that may have `:api_key` param (backward compat)
+	// or rely on Authorization header (new auth types)
+	authService := services.NewAuthService()
+	apiKeyGroup := v1.Group(":api_key")
+	if rateLimitService != nil {
+		apiKeyGroup.Use(middleware.QuotaEnforcementMiddleware(rateLimitService, usageRepo, userRepo, sheetRepo))
+	}
+	apiKeyGroup.Use(middleware.UsageTrackingMiddleware(usageTracker))
+	apiKeyGroup.Use(middleware.AccessTokenEnsureMiddleware(sheetRepo, userRepo, authService, cfg.GoogleClientID, cfg.GoogleClientSecret))
+
+	apiKeyGroup.GET("", sheetHandler.GetPublic)
+	apiKeyGroup.POST("", sheetHandler.PostPublic)
+	apiKeyGroup.PUT("", sheetHandler.PutPublic)
+	apiKeyGroup.PATCH("", sheetHandler.PatchPublic)
+	apiKeyGroup.DELETE("", sheetHandler.DeletePublic)
+
+	// Also register routes without :api_key param to support Authorization header auth
+	authOnlyGroup := v1.Group("")
+	if rateLimitService != nil {
+		authOnlyGroup.Use(middleware.QuotaEnforcementMiddleware(rateLimitService, usageRepo, userRepo, sheetRepo))
+	}
+	authOnlyGroup.Use(middleware.UsageTrackingMiddleware(usageTracker))
+	authOnlyGroup.Use(middleware.AccessTokenEnsureMiddleware(sheetRepo, userRepo, authService, cfg.GoogleClientID, cfg.GoogleClientSecret))
+
+	authOnlyGroup.GET("", sheetHandler.GetPublic)
+	authOnlyGroup.POST("", sheetHandler.PostPublic)
+	authOnlyGroup.PUT("", sheetHandler.PutPublic)
+	authOnlyGroup.PATCH("", sheetHandler.PatchPublic)
+	authOnlyGroup.DELETE("", sheetHandler.DeletePublic)
 
 	addr := ":" + cfg.Port
 	log.Printf("Worker API listening on %s", addr)

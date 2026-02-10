@@ -84,6 +84,14 @@ func main() {
 	api.DELETE("/sheets/:id/unpublish", middleware.Authenticate(cfg, authService), allowedSheetHandler.Unpublish)
 	api.PATCH("/sheets/:id/write-settings", middleware.Authenticate(cfg, authService), allowedSheetHandler.UpdateWriteSettings)
 
+	// Authentication management (bearer token and basic auth setup)
+	api.GET("/sheets/:id/auth", middleware.Authenticate(cfg, authService), allowedSheetHandler.GetAuthStatus)
+	api.POST("/sheets/:id/auth/type", middleware.Authenticate(cfg, authService), allowedSheetHandler.SetAuthType)
+	api.POST("/sheets/:id/auth/bearer", middleware.Authenticate(cfg, authService), allowedSheetHandler.GenerateBearerToken)
+	api.POST("/sheets/:id/auth/bearer/rotate", middleware.Authenticate(cfg, authService), allowedSheetHandler.RotateBearerToken)
+	api.POST("/sheets/:id/auth/basic", middleware.Authenticate(cfg, authService), allowedSheetHandler.SetBasicAuth)
+	api.DELETE("/sheets/:id/auth", middleware.Authenticate(cfg, authService), allowedSheetHandler.DisableAuth)
+
 	// Sheet access (requires JWT auth + sheet must be registered)
 	sheetHandler := handlers.NewSheetHandler(sheetService)
 	api.POST("/sheets/create", middleware.Authenticate(cfg, authService), sheetHandler.CreateSheet)

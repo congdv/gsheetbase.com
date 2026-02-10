@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/base64"
+	"errors"
 	"time"
 
 	"gsheetbase/shared/models"
@@ -11,7 +12,10 @@ import (
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"
+	"golang.org/x/crypto/bcrypt"
 )
+
+var ErrUnauthorized = errors.New("unauthorized: invalid credentials")
 
 type AllowedSheetRepo interface {
 	Register(ctx context.Context, userID uuid.UUID, sheetID, sheetName, description string) (models.AllowedSheet, error)
@@ -19,11 +23,14 @@ type AllowedSheetRepo interface {
 	FindByUserID(ctx context.Context, userID uuid.UUID) ([]models.AllowedSheet, error)
 	FindByID(ctx context.Context, id uuid.UUID) (models.AllowedSheet, error)
 	FindByAPIKey(ctx context.Context, apiKey string) (models.AllowedSheet, error)
+	FindByBearerToken(ctx context.Context, token string) (models.AllowedSheet, error)
+	FindByBasicCredentials(ctx context.Context, username, password string) (models.AllowedSheet, error)
 	Delete(ctx context.Context, userID uuid.UUID, sheetID string) error
 	Publish(ctx context.Context, sheetID uuid.UUID, defaultRange string, useFirstRowAsHeader bool) (string, error)
 	Unpublish(ctx context.Context, sheetID uuid.UUID) error
 	UpdateWriteSettings(ctx context.Context, sheetID uuid.UUID, allowWrite bool) error
 	UpdateAllowedMethods(ctx context.Context, sheetID uuid.UUID, allowedMethods []string) error
+	UpdateAuth(ctx context.Context, sheetID uuid.UUID, authType string, bearerToken, basicUsername, basicPasswordHash *string) error
 }
 
 type allowedSheetRepo struct {
@@ -148,6 +155,53 @@ func (r *allowedSheetRepo) UpdateAllowedMethods(ctx context.Context, sheetID uui
 		    updated_at = NOW()
 		WHERE id = $2
 	`, pq.Array(allowedMethods), sheetID)
+	return err
+}
+
+// FindByBearerToken finds a sheet by bearer token (auth_type = 'bearer')
+// Bearer tokens are compared directly (stored as-is in the database).
+func (r *allowedSheetRepo) FindByBearerToken(ctx context.Context, token string) (models.AllowedSheet, error) {
+	var sheet models.AllowedSheet
+	err := r.db.GetContext(ctx, &sheet, `
+		SELECT * FROM allowed_sheets 
+		WHERE auth_type = 'bearer' AND auth_bearer_token = $1 AND is_public = true
+	`, token)
+	return sheet, err
+}
+
+// FindByBasicCredentials finds a sheet by basic auth credentials (auth_type = 'basic')
+func (r *allowedSheetRepo) FindByBasicCredentials(ctx context.Context, username, password string) (models.AllowedSheet, error) {
+	var sheet models.AllowedSheet
+	err := r.db.GetContext(ctx, &sheet, `
+		SELECT * FROM allowed_sheets 
+		WHERE auth_type = 'basic' AND auth_basic_username = $1 AND is_public = true
+	`, username)
+	if err != nil {
+		return sheet, err
+	}
+
+	// Verify password hash
+	if sheet.AuthBasicPasswordHash == nil {
+		return models.AllowedSheet{}, ErrUnauthorized
+	}
+	if err := bcrypt.CompareHashAndPassword([]byte(*sheet.AuthBasicPasswordHash), []byte(password)); err != nil {
+		return models.AllowedSheet{}, ErrUnauthorized
+	}
+
+	return sheet, nil
+}
+
+// UpdateAuth updates the authentication type and credentials for a sheet
+func (r *allowedSheetRepo) UpdateAuth(ctx context.Context, sheetID uuid.UUID, authType string, bearerToken, basicUsername, basicPasswordHash *string) error {
+	_, err := r.db.ExecContext(ctx, `
+		UPDATE allowed_sheets 
+		SET auth_type = $1,
+		    auth_bearer_token = $2,
+		    auth_basic_username = $3,
+		    auth_basic_password_hash = $4,
+		    updated_at = NOW()
+		WHERE id = $5
+	`, authType, bearerToken, basicUsername, basicPasswordHash, sheetID)
 	return err
 }
 

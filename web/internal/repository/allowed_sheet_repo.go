@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"gsheetbase/web/internal/models"
+
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 )
@@ -13,7 +14,9 @@ type AllowedSheetRepo interface {
 	Register(ctx context.Context, userID uuid.UUID, sheetID, sheetName, description string) (models.AllowedSheet, error)
 	IsAllowed(ctx context.Context, userID uuid.UUID, sheetID string) (bool, error)
 	FindByUserID(ctx context.Context, userID uuid.UUID) ([]models.AllowedSheet, error)
+	FindByID(ctx context.Context, id uuid.UUID) (models.AllowedSheet, error)
 	Delete(ctx context.Context, userID uuid.UUID, sheetID string) error
+	UpdateAuth(ctx context.Context, sheetID uuid.UUID, authType string, bearerToken, basicUsername, basicPasswordHash *string) error
 }
 
 type allowedSheetRepo struct {
@@ -70,9 +73,31 @@ func (r *allowedSheetRepo) FindByUserID(ctx context.Context, userID uuid.UUID) (
 	return sheets, err
 }
 
+func (r *allowedSheetRepo) FindByID(ctx context.Context, id uuid.UUID) (models.AllowedSheet, error) {
+	var sheet models.AllowedSheet
+	err := r.db.GetContext(ctx, &sheet, `
+		SELECT * FROM allowed_sheets WHERE id = $1
+	`, id)
+	return sheet, err
+}
+
 func (r *allowedSheetRepo) Delete(ctx context.Context, userID uuid.UUID, sheetID string) error {
 	_, err := r.db.ExecContext(ctx, `
 		DELETE FROM allowed_sheets WHERE user_id = $1 AND sheet_id = $2
 	`, userID, sheetID)
+	return err
+}
+
+// UpdateAuth updates the authentication type and credentials for a sheet
+func (r *allowedSheetRepo) UpdateAuth(ctx context.Context, sheetID uuid.UUID, authType string, bearerToken, basicUsername, basicPasswordHash *string) error {
+	_, err := r.db.ExecContext(ctx, `
+		UPDATE allowed_sheets 
+		SET auth_type = $1,
+			auth_bearer_token = NULLIF($2, ''),
+			auth_basic_username = NULLIF($3, ''),
+			auth_basic_password_hash = NULLIF($4, ''),
+			updated_at = NOW()
+		WHERE id = $5
+	`, authType, bearerToken, basicUsername, basicPasswordHash, sheetID)
 	return err
 }

@@ -1,12 +1,14 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 
 	"gsheetbase/shared/repository"
 	"gsheetbase/web/internal/http/middleware"
 
 	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type AllowedSheetHandler struct {
@@ -226,3 +228,321 @@ func (h *AllowedSheetHandler) UpdateWriteSettings(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "write settings updated successfully"})
 }
+
+// ============================================================================
+// Auth Management Endpoints
+// ============================================================================
+
+type setAuthTypeRequest struct {
+	AuthType string `json:"auth_type" binding:"required,oneof=none bearer basic"`
+}
+
+type authStatusResponse struct {
+	AuthType             string `json:"auth_type"`
+	AuthBearerTokenSet   bool   `json:"auth_bearer_token_set"`
+	AuthBasicUsernameSet bool   `json:"auth_basic_username_set"`
+	AuthBasicPasswordSet bool   `json:"auth_basic_password_set"`
+}
+
+// GetAuthStatus returns the current auth configuration without exposing sensitive data
+func (h *AllowedSheetHandler) GetAuthStatus(c *gin.Context) {
+	userID, ok := middleware.GetUserID(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	sheetID := c.Param("id")
+	if sheetID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "sheet id is required"})
+		return
+	}
+
+	sheet, err := h.repo.FindByID(c.Request.Context(), middleware.MustParseUUID(sheetID))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "sheet not found"})
+		return
+	}
+
+	if sheet.UserID != userID {
+		c.JSON(http.StatusForbidden, gin.H{"error": "access denied"})
+		return
+	}
+
+	status := authStatusResponse{
+		AuthType:             sheet.AuthType,
+		AuthBearerTokenSet:   sheet.AuthBearerToken != nil,
+		AuthBasicUsernameSet: sheet.AuthBasicUsername != nil,
+		AuthBasicPasswordSet: sheet.AuthBasicPasswordHash != nil,
+	}
+
+	c.JSON(http.StatusOK, gin.H{"auth": status})
+}
+
+// SetAuthType sets the authentication type (none, bearer, basic)
+// When changing type, clears old credentials
+func (h *AllowedSheetHandler) SetAuthType(c *gin.Context) {
+	userID, ok := middleware.GetUserID(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	sheetID := c.Param("id")
+	if sheetID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "sheet id is required"})
+		return
+	}
+
+	var req setAuthTypeRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "auth_type is required (none or basic). Use GenerateBearerToken for bearer auth."})
+		return
+	}
+
+	sheet, err := h.repo.FindByID(c.Request.Context(), middleware.MustParseUUID(sheetID))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "sheet not found"})
+		return
+	}
+
+	if sheet.UserID != userID {
+		c.JSON(http.StatusForbidden, gin.H{"error": "access denied"})
+		return
+	}
+
+	// Update auth type and clear old credentials
+	err = h.repo.UpdateAuth(c.Request.Context(), sheet.ID, req.AuthType, nil, nil, nil)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update auth type"})
+		fmt.Printf("%v ", err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":   "auth type updated successfully",
+		"auth_type": req.AuthType,
+	})
+}
+
+type generateBearerTokenRequest struct {
+	Description string `json:"description"` // optional description/label for the token
+}
+
+type generateBearerTokenResponse struct {
+	TokenType string `json:"token_type"` // always "Bearer"
+	Token     string `json:"token"`      // the actual token - only shown once
+	ExpiresIn int    `json:"expires_in"` // -1 for no expiry
+}
+
+// GenerateBearerToken creates a new bearer token and stores it
+func (h *AllowedSheetHandler) GenerateBearerToken(c *gin.Context) {
+	userID, ok := middleware.GetUserID(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	sheetID := c.Param("id")
+	if sheetID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "sheet id is required"})
+		return
+	}
+
+	sheet, err := h.repo.FindByID(c.Request.Context(), middleware.MustParseUUID(sheetID))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "sheet not found"})
+		return
+	}
+
+	if sheet.UserID != userID {
+		c.JSON(http.StatusForbidden, gin.H{"error": "access denied"})
+		return
+	}
+
+	// Generate a new bearer token
+	token := repository.GenerateBearerToken()
+
+	// Update sheet with new bearer token (auth_type stays unchanged or gets set to bearer)
+	authType := "bearer"
+	err = h.repo.UpdateAuth(c.Request.Context(), sheet.ID, authType, &token, nil, nil)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to generate bearer token"})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{
+		"token": generateBearerTokenResponse{
+			TokenType: "Bearer",
+			Token:     token,
+			ExpiresIn: -1, // no expiry for now
+		},
+		"message": "Bearer token generated successfully (save it securely, it won't be shown again)",
+	})
+}
+
+type setBasicAuthRequest struct {
+	Username string `json:"username" binding:"required,min=1,max=255"`
+	Password string `json:"password" binding:"required,min=1,max=255"`
+}
+
+type setBasicAuthResponse struct {
+	Username string `json:"username"`
+	Message  string `json:"message"`
+}
+
+// SetBasicAuth sets basic authentication credentials (username and password)
+func (h *AllowedSheetHandler) SetBasicAuth(c *gin.Context) {
+	userID, ok := middleware.GetUserID(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	sheetID := c.Param("id")
+	if sheetID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "sheet id is required"})
+		return
+	}
+
+	var req setBasicAuthRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "username and password are required"})
+		return
+	}
+
+	sheet, err := h.repo.FindByID(c.Request.Context(), middleware.MustParseUUID(sheetID))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "sheet not found"})
+		return
+	}
+
+	if sheet.UserID != userID {
+		c.JSON(http.StatusForbidden, gin.H{"error": "access denied"})
+		return
+	}
+
+	// Hash the password
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to process password"})
+		return
+	}
+
+	passwordHash := string(hashedPassword)
+
+	// Update sheet with basic auth credentials
+	authType := "basic"
+	err = h.repo.UpdateAuth(c.Request.Context(), sheet.ID, authType, nil, &req.Username, &passwordHash)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to set basic auth credentials"})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{
+		"auth": setBasicAuthResponse{
+			Username: req.Username,
+			Message:  "Basic auth credentials set successfully",
+		},
+	})
+}
+
+type rotateTokenRequest struct {
+	// optional: if true, keep the old token active for 24h (for graceful migration)
+	// for now, rotation is immediate
+}
+
+// RotateBearerToken generates a new bearer token and replaces the old one
+func (h *AllowedSheetHandler) RotateBearerToken(c *gin.Context) {
+	userID, ok := middleware.GetUserID(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	sheetID := c.Param("id")
+	if sheetID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "sheet id is required"})
+		return
+	}
+
+	sheet, err := h.repo.FindByID(c.Request.Context(), middleware.MustParseUUID(sheetID))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "sheet not found"})
+		return
+	}
+
+	if sheet.UserID != userID {
+		c.JSON(http.StatusForbidden, gin.H{"error": "access denied"})
+		return
+	}
+
+	// Verify current auth type is bearer
+	if sheet.AuthType != "bearer" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "current auth type is not bearer"})
+		return
+	}
+
+	// Generate a new bearer token
+	newToken := repository.GenerateBearerToken()
+
+	// Update with new token
+	authType := "bearer"
+	err = h.repo.UpdateAuth(c.Request.Context(), sheet.ID, authType, &newToken, nil, nil)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to rotate bearer token"})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{
+		"token": generateBearerTokenResponse{
+			TokenType: "Bearer",
+			Token:     newToken,
+			ExpiresIn: -1,
+		},
+		"message": "Bearer token rotated successfully (old token is now invalid)",
+	})
+}
+
+type disableAuthRequest struct{}
+
+// DisableAuth removes all authentication (sets auth_type to none)
+func (h *AllowedSheetHandler) DisableAuth(c *gin.Context) {
+	userID, ok := middleware.GetUserID(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	sheetID := c.Param("id")
+	if sheetID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "sheet id is required"})
+		return
+	}
+
+	sheet, err := h.repo.FindByID(c.Request.Context(), middleware.MustParseUUID(sheetID))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "sheet not found"})
+		return
+	}
+
+	if sheet.UserID != userID {
+		c.JSON(http.StatusForbidden, gin.H{"error": "access denied"})
+		return
+	}
+
+	// Clear all auth credentials
+	err = h.repo.UpdateAuth(c.Request.Context(), sheet.ID, "none", nil, nil, nil)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to disable auth"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "authentication disabled (sheet now requires is_public=true to access)"})
+}
+
+// ============================================================================
+// Helper Functions
+// ============================================================================
+
+// (Token generation moved to shared/repository.GenerateBearerToken)
