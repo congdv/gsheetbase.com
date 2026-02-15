@@ -75,6 +75,10 @@ func main() {
 	api.GET("/auth/me", middleware.Authenticate(cfg, authService), authHandler.Me)
 	api.POST("/auth/logout", authHandler.Logout)
 
+	// Session refresh (uses refresh_token cookie, no auth middleware needed)
+	refreshAuthHandler := handlers.NewRefreshAuthHandler(authService, cfg)
+	api.POST("/auth/refresh-session", refreshAuthHandler.RefreshSession)
+
 	// Sheet registration (must register sheets before accessing them)
 	allowedSheetHandler := handlers.NewAllowedSheetHandler(allowedSheetRepo)
 	api.POST("/sheets/register", middleware.Authenticate(cfg, authService), allowedSheetHandler.Register)

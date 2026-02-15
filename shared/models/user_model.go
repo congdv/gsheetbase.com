@@ -17,6 +17,10 @@ type User struct {
 	GoogleTokenExpiry  *time.Time     `db:"google_token_expiry" json:"google_token_expiry,omitempty"`
 	GoogleScopes       pq.StringArray `db:"google_scopes" json:"google_scopes,omitempty"`
 
+	// refresh token
+	RefreshTokenHash   *string    `db:"refresh_token_hash" json:"-"`
+	RefreshTokenExpiry *time.Time `db:"refresh_token_expiry" json:"-"`
+
 	// Subscription fields
 	SubscriptionPlan      SubscriptionPlan `db:"subscription_plan" json:"subscription_plan"`
 	BillingPeriod         *BillingPeriod   `db:"billing_period" json:"billing_period,omitempty"`

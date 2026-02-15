@@ -12,6 +12,7 @@ type Config struct {
 	DBURL               string
 	JWTAccessSecret     string
 	JWTAccessTTLMinutes int
+	JWTRefreshTTLDays   int
 	FrontendOrigin      string
 	CookieDomain        string
 	CookieSecure        bool
@@ -39,6 +40,7 @@ func Load() (*Config, error) {
 		CookieDomain:        env("COOKIE_DOMAIN", "localhost"),
 		CookieSecure:        envBool("COOKIE_SECURE", false),
 		JWTAccessTTLMinutes: envInt("JWT_ACCESS_TTL_MINUTES", 15),
+		JWTRefreshTTLDays:   envInt("JWT_REFRESH_TTL_DAYS", 7),
 
 		GoogleClientID:     env("GOOGLE_CLIENT_ID", ""),
 		GoogleClientSecret: env("GOOGLE_CLIENT_SECRET", ""),

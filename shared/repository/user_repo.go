@@ -18,6 +18,8 @@ type UserRepo interface {
 	FindByID(ctx context.Context, id uuid.UUID) (models.User, error)
 	UpdateGoogleTokens(ctx context.Context, userID uuid.UUID, accessToken, refreshToken string, expiry time.Time) error
 	UpdateGoogleScopes(ctx context.Context, userID uuid.UUID, scopes []string) error
+	SaveRefreshToken(ctx context.Context, userID uuid.UUID, tokenHash string, expiry time.Time) error
+	FindByRefreshTokenHash(ctx context.Context, tokenHash string) (models.User, error)
 }
 
 type userRepo struct {
@@ -90,4 +92,21 @@ func (r *userRepo) UpdateGoogleScopes(ctx context.Context, userID uuid.UUID, sco
 		WHERE id = $2
 	`, pq.Array(scopes), userID)
 	return err
+}
+
+func (r *userRepo) SaveRefreshToken(ctx context.Context, userID uuid.UUID, tokenHash string, expiry time.Time) error {
+	_, err := r.db.ExecContext(ctx, `
+		UPDATE users 
+		SET refresh_token_hash = $1, 
+		    refresh_token_expiry = $2,
+		    updated_at = NOW()
+		WHERE id = $3
+	`, tokenHash, expiry, userID)
+	return err
+}
+
+func (r *userRepo) FindByRefreshTokenHash(ctx context.Context, tokenHash string) (models.User, error) {
+	var u models.User
+	err := r.db.GetContext(ctx, &u, `SELECT * FROM users WHERE refresh_token_hash = $1`, tokenHash)
+	return u, err
 }

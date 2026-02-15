@@ -17,6 +17,7 @@ type AuthState = {
 type AuthContextValue = AuthState & {
   logout: () => Promise<void>
   checkSession: () => Promise<void>
+  refreshSession: () => Promise<void>
   requestScopes: (scopes: string[], awaitCompletion?: boolean) => Promise<void>
   hasScope: (scope: string) => boolean
 }
@@ -47,6 +48,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await api.post('/auth/logout')
     } catch { }
     setState({ user: null, isLoading: false })
+  }
+
+  const refreshSession = async () => {
+    try {
+      await api.post('/auth/refresh-session')
+      // After refresh, update the user state
+      await checkSession()
+    } catch (error) {
+      // Refresh failed, clear session
+      setState({ user: null, isLoading: false })
+    }
   }
 
   const hasScope = (scope: string): boolean => {
@@ -123,6 +135,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     ...state,
     logout,
     checkSession,
+    refreshSession,
     requestScopes,
     hasScope
   }), [state])

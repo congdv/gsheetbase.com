@@ -151,6 +151,16 @@ func (h *GoogleAuthHandler) Callback(c *gin.Context) {
 	c.SetSameSite(http.SameSiteLaxMode)
 	c.SetCookie("access_token", accessToken, int(time.Until(exp).Seconds()), "/", h.cfg.CookieDomain, h.cfg.CookieSecure, true)
 
+	// Generate and set refresh token cookie
+	refreshToken, err := h.auth.GenerateRefreshToken(c.Request.Context(), user.ID)
+	if err != nil {
+		// Log but don't fail - refresh token is optional for now
+		fmt.Printf("ERROR GenerateRefreshToken: %v\n", err)
+	} else {
+		refreshTokenExpiry := time.Now().AddDate(0, 0, h.cfg.JWTRefreshTTLDays)
+		c.SetCookie("refresh_token", refreshToken, int(time.Until(refreshTokenExpiry).Seconds()), "/", h.cfg.CookieDomain, h.cfg.CookieSecure, true)
+	}
+
 	// Check if this is incremental auth (from popup)
 	incrementalAuth, _ := c.Cookie("incremental_auth")
 	if incrementalAuth == "true" {
