@@ -55,13 +55,7 @@ Gsheetbase is open source but currently only accepting contributions for **bug f
 
 ## Useful Resources
 
-- [Documentation](./landing/src/pages/docs)
-- [Getting Started Guide](./landing/src/pages/docs/getting-started.astro)
-- [API Reference](./landing/src/pages/docs/api-reference.astro)
-- [Examples](./landing/src/pages/docs/examples.astro)
-- [Architecture Overview](./docs/ARCHITECTURE.md)
-- [Security Model](./docs/SECURITY.md)
-
+- [Documentation](https://www.gsheetbase.com/docs)
 ## License
 
 Gsheetbase is released under the MIT License. See [LICENSE](./LICENSE) for details.

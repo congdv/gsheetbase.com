@@ -3,60 +3,308 @@ import DocLayout from "../../layouts/DocLayout.astro";
 ---
 
 <DocLayout
-    title="Getting Started - gsheetbase"
-    description="Get started with gsheetbase in 5 minutes"
+    title="Getting Started — Gsheetbase"
+    description="Turn your Google Sheet into a REST API in under five minutes."
 >
-    <article class="prose prose-slate dark:prose-invert max-w-none">
-        <h1>Getting Started with gsheetbase</h1>
-
-        <p>
-            Welcome! This guide will help you set up gsheetbase and create your
-            first database-powered spreadsheet in just a few minutes.
+    <div class="max-w-none">
+        <h1 class="text-3xl font-bold mb-3 text-slate-900 dark:text-slate-100">
+            Getting Started
+        </h1>
+        <p
+            class="text-lg text-slate-600 dark:text-slate-400 mb-10 leading-relaxed"
+        >
+            Gsheetbase converts any Google Sheet into a live REST API. This
+            guide walks you from zero to your first API call in about five
+            minutes.
         </p>
 
-        <h2>1. Installation</h2>
-        <p>First, install the gsheetbase package:</p>
-        <pre><code class="language-bash">npm install gsheetbase</code></pre>
+        <!-- Step 1 -->
+        <div class="mb-10">
+            <h2
+                class="text-xl font-semibold text-slate-900 dark:text-slate-100 mb-3 flex items-center gap-2"
+            >
+                <span
+                    class="flex-shrink-0 w-7 h-7 rounded-full bg-primary/10 text-primary text-sm font-bold flex items-center justify-center"
+                    >1</span
+                >
+                Sign in with Google
+            </h2>
+            <p
+                class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mb-0"
+            >
+                Go to <a
+                    href="https://app.gsheetbase.com"
+                    class="text-primary underline underline-offset-2 hover:opacity-80"
+                    >app.gsheetbase.com</a
+                >
+                and click <strong
+                    class="font-semibold text-slate-800 dark:text-slate-200"
+                    >Sign in with Google</strong
+                >. Gsheetbase uses OAuth 2.0 and only requests <code
+                    class="text-xs bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-1.5 py-0.5 rounded"
+                    >spreadsheets.readonly</code
+                > scope by default. You can grant write access later from the dashboard
+                when you need it.
+            </p>
+        </div>
 
-        <h2>2. API Key Setup</h2>
-        <p>
-            Create a free account at <a href="https://gsheetbase.com"
-                >gsheetbase.com</a
-            > and get your API key from the dashboard.
-        </p>
+        <!-- Step 2 -->
+        <div class="mb-10">
+            <h2
+                class="text-xl font-semibold text-slate-900 dark:text-slate-100 mb-3 flex items-center gap-2"
+            >
+                <span
+                    class="flex-shrink-0 w-7 h-7 rounded-full bg-primary/10 text-primary text-sm font-bold flex items-center justify-center"
+                    >2</span
+                >
+                Find your Spreadsheet ID
+            </h2>
+            <p
+                class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mb-3"
+            >
+                Open any Google Sheet. The Spreadsheet ID is the long string in
+                the URL between <code
+                    class="text-xs bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-1.5 py-0.5 rounded"
+                    >/d/</code
+                > and <code
+                    class="text-xs bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-1.5 py-0.5 rounded"
+                    >/edit</code
+                >:
+            </p>
+            <pre
+                class="bg-slate-900 text-green-400 text-xs rounded-lg p-4 overflow-x-auto leading-relaxed"><code>{`https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms/edit
+                                       └─────────── Spreadsheet ID ───────────────┘`}</code></pre>
+        </div>
 
-        <h2>3. First Query</h2>
-        <p>Here's a simple example to fetch data from your spreadsheet:</p>
-        <pre><code class="language-javascript">{`const gsheetbase = require('gsheetbase');
+        <!-- Step 3 -->
+        <div class="mb-10">
+            <h2
+                class="text-xl font-semibold text-slate-900 dark:text-slate-100 mb-3 flex items-center gap-2"
+            >
+                <span
+                    class="flex-shrink-0 w-7 h-7 rounded-full bg-primary/10 text-primary text-sm font-bold flex items-center justify-center"
+                    >3</span
+                >
+                Register the sheet
+            </h2>
+            <p
+                class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mb-3"
+            >
+                In the Gsheetbase dashboard click <strong
+                    class="font-semibold text-slate-800 dark:text-slate-200"
+                    >Add Sheet</strong
+                >, paste your Spreadsheet ID, give it a name, and save. This
+                registers the sheet in your account without copying any data.
+            </p>
+            <p
+                class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mb-3"
+            >
+                You can also register programmatically once you have a session
+                JWT:
+            </p>
+            <pre
+                class="bg-slate-900 text-green-400 text-xs rounded-lg p-4 overflow-x-auto leading-relaxed"><code>{`curl -X POST https://api.gsheetbase.com/api/sheets/register \\
+  -H "Authorization: Bearer YOUR_JWT" \\
+  -H "Content-Type: application/json" \\
+  -d '{ "sheet_id": "1BxiMVs0XRA5nFM...", "sheet_name": "Products" }'`}</code></pre>
+        </div>
 
-const db = new gsheetbase({
-  apiKey: 'your-api-key-here',
-  spreadsheetId: 'your-spreadsheet-id'
-});
+        <!-- Step 4 -->
+        <div class="mb-10">
+            <h2
+                class="text-xl font-semibold text-slate-900 dark:text-slate-100 mb-3 flex items-center gap-2"
+            >
+                <span
+                    class="flex-shrink-0 w-7 h-7 rounded-full bg-primary/10 text-primary text-sm font-bold flex items-center justify-center"
+                    >4</span
+                >
+                Publish &amp; get your API key
+            </h2>
+            <p
+                class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mb-3"
+            >
+                Select the registered sheet in the dashboard and click
+                <strong class="font-semibold text-slate-800 dark:text-slate-200"
+                    >Publish</strong
+                >. Gsheetbase generates a unique API key and immediately exposes
+                the sheet as a REST endpoint. Copy the key — you will use it in
+                every request.
+            </p>
+            <p
+                class="text-slate-500 dark:text-slate-500 text-xs mb-2 font-medium uppercase tracking-wide"
+            >
+                Via the management API
+            </p>
+            <pre
+                class="bg-slate-900 text-green-400 text-xs rounded-lg p-4 overflow-x-auto leading-relaxed"><code>{`curl -X POST https://api.gsheetbase.com/api/sheets/{id}/publish \\
+  -H "Authorization: Bearer YOUR_JWT" \\
+  -H "Content-Type: application/json" \\
+  -d '{ "default_range": "Sheet1", "use_first_row_as_header": true }'
 
-// Fetch all data
-const data = await db.query().select('*').get();
-console.log(data);`}</code></pre>
+# Response
+{
+  "message": "sheet published successfully",
+  "api_key": "gsb_live_xxxxxxxxxxxxxxxx"
+}`}</code></pre>
+        </div>
 
-        <h2>4. Next Steps</h2>
-        <ul>
-            <li>
-                Read the <a href="/docs/api-reference">API Reference</a> for detailed
-                documentation
-            </li>
-            <li>
-                Check out <a href="/docs/examples">Examples</a> for common use cases
-            </li>
-            <li>
-                Browse the <a href="/docs/faq">FAQ</a> for answers to common questions
-            </li>
-        </ul>
+        <!-- Step 5 -->
+        <div class="mb-10">
+            <h2
+                class="text-xl font-semibold text-slate-900 dark:text-slate-100 mb-3 flex items-center gap-2"
+            >
+                <span
+                    class="flex-shrink-0 w-7 h-7 rounded-full bg-primary/10 text-primary text-sm font-bold flex items-center justify-center"
+                    >5</span
+                >
+                Fetch your data
+            </h2>
+            <p
+                class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mb-3"
+            >
+                Use the API key in the URL path on the worker endpoint. By
+                default the first row of your sheet is treated as column
+                headers.
+            </p>
+            <pre
+                class="bg-slate-900 text-green-400 text-xs rounded-lg p-4 overflow-x-auto leading-relaxed mb-4"><code>{`curl "https://worker.gsheetbase.com/v1/gsb_live_xxxxxxxxxxxxxxxx"
+# Returns all rows from the default sheet tab
 
-        <h2>Need Help?</h2>
-        <p>
-            If you get stuck, head over to our <a href="/contact"
-                >contact page</a
-            > or check the <a href="/docs/faq">FAQ</a>.
-        </p>
-    </article>
+curl "https://worker.gsheetbase.com/v1/gsb_live_xxxxxxxxxxxxxxxx?collection=Sheet2&limit=10"
+# Returns first 10 rows from the Sheet2 tab`}</code></pre>
+            <p
+                class="text-slate-500 dark:text-slate-500 text-xs mb-2 font-medium uppercase tracking-wide"
+            >
+                Example JSON response
+            </p>
+            <pre
+                class="bg-slate-900 text-green-400 text-xs rounded-lg p-4 overflow-x-auto leading-relaxed"><code>{`{
+  "data": [
+    { "name": "Apple", "price": "1.20", "in_stock": "true" },
+    { "name": "Banana", "price": "0.80", "in_stock": "true" }
+  ]
+}`}</code></pre>
+        </div>
+
+        <!-- Step 6 -->
+        <div class="mb-10">
+            <h2
+                class="text-xl font-semibold text-slate-900 dark:text-slate-100 mb-3 flex items-center gap-2"
+            >
+                <span
+                    class="flex-shrink-0 w-7 h-7 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 text-sm font-bold flex items-center justify-center"
+                    >6</span
+                >
+                Enable write access <span
+                    class="text-sm font-normal text-slate-400">(optional)</span
+                >
+            </h2>
+            <p
+                class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed"
+            >
+                By default the API is read-only. To allow
+                <code
+                    class="text-xs bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-1.5 py-0.5 rounded"
+                    >POST</code
+                >,
+                <code
+                    class="text-xs bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-1.5 py-0.5 rounded"
+                    >PUT</code
+                >,
+                <code
+                    class="text-xs bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-1.5 py-0.5 rounded"
+                    >PATCH</code
+                >, or
+                <code
+                    class="text-xs bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-1.5 py-0.5 rounded"
+                    >DELETE</code
+                >, open the sheet's <strong
+                    class="font-semibold text-slate-800 dark:text-slate-200"
+                    >Write Settings</strong
+                > in the dashboard and toggle the methods you need. Gsheetbase will
+                prompt you to grant write scope to your Google account if you haven't
+                already.
+            </p>
+        </div>
+
+        <!-- Next steps -->
+        <div class="border-t border-slate-200 dark:border-slate-700 pt-8 mt-8">
+            <h2
+                class="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4"
+            >
+                Next steps
+            </h2>
+            <ul class="space-y-2">
+                <li
+                    class="flex items-start gap-2 text-sm text-slate-600 dark:text-slate-400"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="w-4 h-4 mt-0.5 text-primary flex-shrink-0"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        ><path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M9 5l7 7-7 7"></path></svg
+                    >
+                    <span
+                        >Read the <a
+                            href="/docs/api-reference"
+                            class="text-primary underline underline-offset-2 hover:opacity-80"
+                            >API Reference</a
+                        > for all query parameters and HTTP methods.</span
+                    >
+                </li>
+                <li
+                    class="flex items-start gap-2 text-sm text-slate-600 dark:text-slate-400"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="w-4 h-4 mt-0.5 text-primary flex-shrink-0"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        ><path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M9 5l7 7-7 7"></path></svg
+                    >
+                    <span
+                        >Browse <a
+                            href="/docs/examples"
+                            class="text-primary underline underline-offset-2 hover:opacity-80"
+                            >Examples</a
+                        > for copy-paste curl and JavaScript snippets.</span
+                    >
+                </li>
+                <li
+                    class="flex items-start gap-2 text-sm text-slate-600 dark:text-slate-400"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="w-4 h-4 mt-0.5 text-primary flex-shrink-0"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        ><path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M9 5l7 7-7 7"></path></svg
+                    >
+                    <span
+                        >Check the <a
+                            href="/docs/faq"
+                            class="text-primary underline underline-offset-2 hover:opacity-80"
+                            >FAQ</a
+                        > for questions about authentication, rate limits, and security.</span
+                    >
+                </li>
+            </ul>
+        </div>
+    </div>
 </DocLayout>

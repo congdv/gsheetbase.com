@@ -3,93 +3,161 @@ import DocLayout from "../../layouts/DocLayout.astro";
 ---
 
 <DocLayout
-    title="FAQ - gsheetbase"
-    description="Frequently asked questions about gsheetbase"
+    title="FAQ — Gsheetbase"
+    description="Frequently asked questions about Gsheetbase — authentication, write access, rate limits, security, and more."
 >
-    <article class="prose prose-slate dark:prose-invert max-w-none">
+    <div class="doc-content">
         <h1>Frequently Asked Questions</h1>
 
+        <!-- ─── General ─── -->
         <h2>General</h2>
 
-        <h3>What is gsheetbase?</h3>
+        <h3>What is Gsheetbase?</h3>
         <p>
-            gsheetbase is a service that turns your Google Sheets into a
-            powerful database. Use standard SQL-like queries to read, write, and
-            update data directly from your spreadsheets.
+            Gsheetbase is a SaaS platform that turns any Google Sheet into a
+            live REST API. Sign in with Google, register a spreadsheet, publish
+            it, and immediately start reading or writing rows over HTTP — no
+            server or code required.
         </p>
 
-        <h3>Is gsheetbase free?</h3>
+        <h3>Does Gsheetbase access all my Google Drive files?</h3>
         <p>
-            Yes! gsheetbase has a free tier with up to 1,000 requests per month.
-            We also offer paid plans for higher usage.
+            No. Gsheetbase uses OAuth 2.0 with the minimal
+            <code>spreadsheets.readonly</code> scope by default. You explicitly choose
+            which spreadsheet to connect — Gsheetbase cannot see or access any other
+            files on your Drive.
         </p>
 
-        <h3>What spreadsheets does gsheetbase work with?</h3>
+        <h3>Does Gsheetbase copy or store my spreadsheet data?</h3>
         <p>
-            gsheetbase works with Google Sheets. Just share your spreadsheet
-            with the gsheetbase service account, and you're ready to go.
+            No. Gsheetbase stores only the <em>reference</em> to your spreadsheet
+            (the Spreadsheet ID) and your OAuth tokens. Every API request fetches
+            the latest data live from Google Sheets.
         </p>
 
-        <h2>Usage & Integration</h2>
-
-        <h3>How do I authenticate?</h3>
-        <p>Use your API key when initializing the client:</p>
-        <pre><code class="language-javascript">{`const db = new gsheetbase({ apiKey: 'your-key' });`}</code></pre>
-
-        <h3>Can I use gsheetbase with Node.js?</h3>
+        <h3>Is there a free plan?</h3>
         <p>
-            Yes, gsheetbase has SDKs for Node.js, Python, and JavaScript
-            (browser). Check the documentation for your language.
+            Yes. Gsheetbase offers a free tier so you can get started without a
+            credit card. Paid plans are available for higher request volumes and
+            additional features. Check the
+            <a href="/#pricing">pricing page</a> for current limits.
         </p>
+
+        <!-- ─── Authentication & Access ─── -->
+        <h2>Authentication &amp; Access</h2>
+
+        <h3>How does authentication work for public API endpoints?</h3>
+        <p>
+            Gsheetbase supports three methods — choose one per sheet from the
+            dashboard's <strong>Auth Settings</strong>:
+        </p>
+        <ul>
+            <li>
+                <strong>API key in URL path</strong> (default) —
+                <code>GET /v1/gsb_live_xxx</code>
+            </li>
+            <li>
+                <strong>Bearer token</strong> —
+                <code>Authorization: Bearer &lt;token&gt;</code>
+            </li>
+            <li>
+                <strong>Basic auth</strong> —
+                <code>Authorization: Basic &lt;base64(user:pass)&gt;</code>
+            </li>
+        </ul>
+
+        <h3>How do I regenerate or rotate my API key?</h3>
+        <p>
+            Open the sheet in the Gsheetbase dashboard, go to <strong
+                >Auth Settings → Rotate Key</strong
+            >. The old key is immediately revoked and a new one is issued.
+        </p>
+
+        <h3>Can I make a sheet private (require authentication)?</h3>
+        <p>
+            Yes. Switch the auth type to <strong>Bearer token</strong> or
+            <strong>Basic auth</strong> in the dashboard. Requests without valid credentials
+            will receive a <code>401 Unauthorized</code> response.
+        </p>
+
+        <!-- ─── Writing Data ─── -->
+        <h2>Writing Data</h2>
+
+        <h3>Can I write data back to my sheet?</h3>
+        <p>
+            Yes. By default a published sheet is read-only. In the dashboard
+            open <strong>Write Settings</strong> and enable the HTTP methods you need
+            (<code>POST</code>, <code>PUT</code>, <code>PATCH</code>,
+            <code>DELETE</code>). Gsheetbase will ask you to grant write
+            permission to your Google account the first time.
+        </p>
+
+        <h3>What does POST vs PUT vs PATCH do?</h3>
+        <ul>
+            <li><strong>POST</strong> — appends a new row.</li>
+            <li>
+                <strong>PUT</strong> — replaces all columns in matched rows.
+            </li>
+            <li><strong>PATCH</strong> — updates only the provided fields.</li>
+            <li><strong>DELETE</strong> — removes matched rows.</li>
+        </ul>
+
+        <!-- ─── Rate Limits & Performance ─── -->
+        <h2>Rate Limits &amp; Performance</h2>
 
         <h3>What are the rate limits?</h3>
         <p>
-            Free tier: 1,000 requests/month. Pro tier: 100,000 requests/month.
-            Enterprise: Custom limits. Each request counts as one query
-            operation.
+            Rate limits and daily/monthly quotas depend on your plan. Exceeding
+            a limit returns a <code>429 Too Many Requests</code> response. See the
+            <a href="/#pricing">pricing page</a> for current numbers.
         </p>
 
-        <h2>Data & Performance</h2>
-
-        <h3>How fast is gsheetbase?</h3>
+        <h3>How fast are responses?</h3>
         <p>
-            Most queries complete in under 100ms. Performance depends on
-            spreadsheet size and query complexity. Larger datasets may take
-            longer.
+            Response time depends on Google Sheets API latency and the size of
+            your sheet. Typical requests complete in 200–600 ms. Use the
+            <code>fields</code>, <code>where</code>, and <code>limit</code>
+            query parameters to minimize the amount of data transferred.
         </p>
 
-        <h3>Can I query large spreadsheets?</h3>
+        <h3>Is there caching?</h3>
         <p>
-            Yes, gsheetbase can handle spreadsheets with tens of thousands of
-            rows. For very large datasets, we recommend using filters and limits
-            to improve performance.
+            Gsheetbase can cache responses in Redis when available. This reduces
+            latency for frequently accessed sheets, while writes automatically
+            invalidate the relevant cache entries.
         </p>
 
-        <h3>Is my data secure?</h3>
-        <p>
-            Yes. All data is encrypted in transit using HTTPS. We use OAuth 2.0
-            for authentication and never store your spreadsheet contents on our
-            servers.
-        </p>
-
+        <!-- ─── Troubleshooting ─── -->
         <h2>Troubleshooting</h2>
 
-        <h3>I'm getting an authentication error</h3>
+        <h3>I get "sheet owner needs to reconnect Google account"</h3>
         <p>
-            Make sure you've shared your spreadsheet with the gsheetbase service
-            account. Check your API key is correct and hasn't expired.
+            Your OAuth access token has expired or been revoked. Sign in to the
+            Gsheetbase dashboard and click <strong
+                >Reconnect Google Account</strong
+            > to refresh your credentials.
         </p>
 
-        <h3>Queries are slow</h3>
+        <h3>I get "POST method not enabled for this sheet"</h3>
         <p>
-            Try adding filters with <code>where()</code> clauses and limits. Large
-            spreadsheets benefit from narrowing down results.
+            Write methods are disabled by default. Open the sheet in the
+            dashboard, go to <strong>Write Settings</strong>, and toggle the
+            methods you need.
+        </p>
+
+        <h3>My data has the wrong column names</h3>
+        <p>
+            Gsheetbase uses the <em>first row</em> of each sheet tab as headers. Make
+            sure the first row contains your column names and that
+            <strong>Use first row as header</strong> is enabled (it is by default
+            at publish time).
         </p>
 
         <h3>I need more help</h3>
         <p>
-            Check the <a href="/docs/getting-started">Getting Started</a> guide or
+            Check the <a href="/docs/getting-started">Getting Started</a> guide, read
+            the <a href="/docs/api-reference">API Reference</a>, or
             <a href="/contact">contact us</a> for support.
         </p>
-    </article>
+    </div>
 </DocLayout>
