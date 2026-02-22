@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { Typography, Button, Spin, Result, Tabs } from 'antd'
-import { ArrowLeftOutlined, InfoCircleOutlined, ApiOutlined, TableOutlined, BarChartOutlined } from '@ant-design/icons'
+import { ArrowLeftOutlined, InfoCircleOutlined, ApiOutlined, TableOutlined, BarChartOutlined, DashboardOutlined } from '@ant-design/icons'
 import { useQuery } from '@tanstack/react-query'
 import { useState, useEffect } from 'react'
 import styled from 'styled-components'
@@ -11,6 +11,7 @@ import { useSheets } from '../../hooks/useSheets'
 import { OverviewTab } from './OverviewTab'
 import { ApiSettingsTab } from './ApiSettingsTab'
 import { AnalyticsTab } from './AnalyticsTab'
+import { UsageTab } from './UsageTab'
 
 const { Title, Paragraph } = Typography
 
@@ -50,7 +51,7 @@ export default function SheetDetailPage() {
   // Sync tab with URL hash
   useEffect(() => {
     const hash = window.location.hash.slice(1) // Remove '#'
-    if (hash && ['overview', 'api-settings', 'data-preview', 'analytics'].includes(hash)) {
+    if (hash && ['overview', 'api-settings', 'data-preview', 'analytics', 'usage'].includes(hash)) {
       setActiveTab(hash)
     }
   }, [])
@@ -168,6 +169,16 @@ export default function SheetDetailPage() {
               </span>
             ),
             children: <AnalyticsTab />,
+          },
+          {
+            key: 'usage',
+            label: (
+              <span>
+                <DashboardOutlined />
+                Usage
+              </span>
+            ),
+            children: <UsageTab sheetId={id!} />,
           },
         ]}
       />

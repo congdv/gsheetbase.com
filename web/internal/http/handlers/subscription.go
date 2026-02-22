@@ -191,7 +191,7 @@ func convertPlanToInfo(plan models.SubscriptionPlan) PlanInfo {
 
 // getUserIDFromContext extracts user ID from gin context
 func getUserIDFromContext(c *gin.Context) (uuid.UUID, error) {
-	userIDRaw, exists := c.Get("user_id")
+	userIDRaw, exists := c.Get("userId")
 	if !exists {
 		return uuid.Nil, http.ErrNoCookie
 	}

@@ -38,7 +38,7 @@ api.interceptors.response.use(
         try {
           // Attempt to refresh session
           const response = await axios.post(
-            `${api.defaults.baseURL || ''}/api/auth/refresh-session`,
+            `${api.defaults.baseURL || ''}/auth/refresh-session`,
             {},
             { withCredentials: true }
           )
