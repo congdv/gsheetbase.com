@@ -15,6 +15,9 @@ help: ## Show this help message
 run: ## Run the application
 	go run web/cmd/api/main.go
 
+debug-run: 
+	dlv debug ./web/cmd/api/main.go --headless --listen=:2345 --api-version=2 --accept-multiclient
+
 run-worker: ## Run the worker service
 	go run worker/cmd/api/main.go
 
