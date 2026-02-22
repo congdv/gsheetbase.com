@@ -3,74 +3,519 @@ import DocLayout from "../../layouts/DocLayout.astro";
 ---
 
 <DocLayout
-    title="API Reference - gsheetbase"
-    description="Complete API reference for gsheetbase"
+    title="API Reference — Gsheetbase"
+    description="Complete REST API reference for Gsheetbase — endpoints, query parameters, request bodies, and response shapes."
 >
-    <article class="prose prose-slate dark:prose-invert max-w-none">
+    <div class="doc-content">
         <h1>API Reference</h1>
 
         <p>
-            This is the complete reference for the gsheetbase API. All methods
-            are async and return promises.
+            All public data endpoints are served by the worker service at
+            <code>https://worker.gsheetbase.com</code>. They are versioned under <code
+                >/v1</code
+            > and return JSON.
         </p>
 
-        <h2>Core Methods</h2>
+        <!-- Base URL -->
+        <div
+            class="not-prose bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 my-6 text-sm font-mono text-slate-700 dark:text-slate-300"
+        >
+            Base URL: <span class="text-primary font-semibold"
+                >https://worker.gsheetbase.com/v1</span
+            >
+        </div>
 
-        <h3>query()</h3>
-        <p>Create a new query to fetch data from your spreadsheet.</p>
-        <pre><code class="language-javascript">{`const result = await db.query()
-  .select('name', 'email')
-  .where('status', '=', 'active')
-  .get();`}</code></pre>
-
-        <h3>insert(data)</h3>
-        <p>Insert new rows into your spreadsheet.</p>
-        <pre><code class="language-javascript">{`await db.insert([
-  { name: 'John', email: 'john@example.com' },
-  { name: 'Jane', email: 'jane@example.com' }
-]);`}</code></pre>
-
-        <h3>update(id, data)</h3>
-        <p>Update an existing row by ID.</p>
-        <pre><code class="language-javascript">{`await db.update('row-id', {
-  name: 'Updated Name',
-  email: 'new@example.com'
-});`}</code></pre>
-
-        <h3>delete(id)</h3>
-        <p>Delete a row by ID.</p>
-        <pre><code class="language-javascript">{`await db.delete('row-id');`}</code></pre>
-
-        <h2>Query Methods</h2>
-
-        <h3>select(...columns)</h3>
-        <p>Select specific columns to return.</p>
-        <pre><code class="language-javascript">{`.select('name', 'email')`}</code></pre>
-
-        <h3>where(column, operator, value)</h3>
+        <!-- Authentication -->
+        <h2>Authentication</h2>
         <p>
-            Filter results. Operators: =, !=, &gt;, &lt;, &gt;=, &lt;=, IN, LIKE
+            Gsheetbase supports three authentication methods for public
+            endpoints. Choose one per sheet in the dashboard under <strong
+                >Auth Settings</strong
+            >.
         </p>
-        <pre><code class="language-javascript">{`.where('age', '>', 18)`}</code></pre>
 
-        <h3>orderBy(column, direction)</h3>
-        <p>Sort results. Direction: ASC, DESC</p>
-        <pre><code class="language-javascript">{`.orderBy('created_at', 'DESC')`}</code></pre>
+        <div class="not-prose overflow-x-auto my-4">
+            <table class="w-full text-sm border-collapse">
+                <thead>
+                    <tr class="bg-slate-50 dark:bg-slate-800">
+                        <th
+                            class="text-left px-4 py-2 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300"
+                            >Method</th
+                        >
+                        <th
+                            class="text-left px-4 py-2 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300"
+                            >How to send</th
+                        >
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td
+                            class="px-4 py-2 border border-slate-200 dark:border-slate-700 font-mono text-xs font-semibold"
+                            >API key (default)</td
+                        >
+                        <td
+                            class="px-4 py-2 border border-slate-200 dark:border-slate-700 font-mono text-xs text-slate-600 dark:text-slate-400"
+                            >Embed in URL path: <code>/v1/gsb_live_xxx</code
+                            ></td
+                        >
+                    </tr>
+                    <tr class="bg-slate-50/50 dark:bg-slate-800/30">
+                        <td
+                            class="px-4 py-2 border border-slate-200 dark:border-slate-700 font-mono text-xs font-semibold"
+                            >Bearer token</td
+                        >
+                        <td
+                            class="px-4 py-2 border border-slate-200 dark:border-slate-700 font-mono text-xs text-slate-600 dark:text-slate-400"
+                            ><code>Authorization: Bearer &lt;token&gt;</code
+                            ></td
+                        >
+                    </tr>
+                    <tr>
+                        <td
+                            class="px-4 py-2 border border-slate-200 dark:border-slate-700 font-mono text-xs font-semibold"
+                            >Basic auth</td
+                        >
+                        <td
+                            class="px-4 py-2 border border-slate-200 dark:border-slate-700 font-mono text-xs text-slate-600 dark:text-slate-400"
+                            ><code
+                                >Authorization: Basic &lt;base64(user:pass)&gt;</code
+                            ></td
+                        >
+                    </tr>
+                </tbody>
+            </table>
+        </div>
 
-        <h3>limit(n)</h3>
-        <p>Limit the number of results.</p>
-        <pre><code class="language-javascript">{`.limit(10)`}</code></pre>
+        <!-- GET -->
+        <h2>GET /v1/:api_key — Read rows</h2>
+        <p>
+            Returns rows from the sheet as a JSON array. The first row of each
+            tab is used as field names by default.
+        </p>
 
-        <h2>Response Format</h2>
-        <p>All queries return data in the following format:</p>
-        <pre><code class="language-javascript">{`{
-  success: true,
-  data: [
-    { id: '1', name: 'John', email: 'john@example.com' },
-    ...
-  ],
-  count: 1,
-  error: null
+        <h3>Query parameters</h3>
+
+        <div class="not-prose overflow-x-auto my-4">
+            <table class="w-full text-sm border-collapse">
+                <thead>
+                    <tr class="bg-slate-50 dark:bg-slate-800">
+                        <th
+                            class="text-left px-4 py-2 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300"
+                            >Parameter</th
+                        >
+                        <th
+                            class="text-left px-4 py-2 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300"
+                            >Type</th
+                        >
+                        <th
+                            class="text-left px-4 py-2 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300"
+                            >Description</th
+                        >
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td
+                            class="px-4 py-2 border border-slate-200 dark:border-slate-700 font-mono text-xs"
+                            >collection</td
+                        >
+                        <td
+                            class="px-4 py-2 border border-slate-200 dark:border-slate-700 text-xs text-slate-500"
+                            >string</td
+                        >
+                        <td
+                            class="px-4 py-2 border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-400"
+                            >Sheet tab name (default: value set at publish time,
+                            e.g. <code>Sheet1</code>)</td
+                        >
+                    </tr>
+                    <tr class="bg-slate-50/50 dark:bg-slate-800/30">
+                        <td
+                            class="px-4 py-2 border border-slate-200 dark:border-slate-700 font-mono text-xs"
+                            >fields</td
+                        >
+                        <td
+                            class="px-4 py-2 border border-slate-200 dark:border-slate-700 text-xs text-slate-500"
+                            >string</td
+                        >
+                        <td
+                            class="px-4 py-2 border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-400"
+                            >Comma-separated list of columns to return, e.g. <code
+                                >name,price</code
+                            ></td
+                        >
+                    </tr>
+                    <tr>
+                        <td
+                            class="px-4 py-2 border border-slate-200 dark:border-slate-700 font-mono text-xs"
+                            >where</td
+                        >
+                        <td
+                            class="px-4 py-2 border border-slate-200 dark:border-slate-700 text-xs text-slate-500"
+                            >JSON string</td
+                        >
+                        <td
+                            class="px-4 py-2 border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-400"
+                            >Equality filter as URL-encoded JSON, e.g. <code
+                                >{`{"status":"active"}`}</code
+                            ></td
+                        >
+                    </tr>
+                    <tr class="bg-slate-50/50 dark:bg-slate-800/30">
+                        <td
+                            class="px-4 py-2 border border-slate-200 dark:border-slate-700 font-mono text-xs"
+                            >orderBy</td
+                        >
+                        <td
+                            class="px-4 py-2 border border-slate-200 dark:border-slate-700 text-xs text-slate-500"
+                            >string</td
+                        >
+                        <td
+                            class="px-4 py-2 border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-400"
+                            >Column name to sort by, e.g. <code>price</code></td
+                        >
+                    </tr>
+                    <tr>
+                        <td
+                            class="px-4 py-2 border border-slate-200 dark:border-slate-700 font-mono text-xs"
+                            >limit</td
+                        >
+                        <td
+                            class="px-4 py-2 border border-slate-200 dark:border-slate-700 text-xs text-slate-500"
+                            >integer</td
+                        >
+                        <td
+                            class="px-4 py-2 border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-400"
+                            >Max rows to return (default: <code>100</code>).
+                            Enables pagination metadata when set.</td
+                        >
+                    </tr>
+                    <tr class="bg-slate-50/50 dark:bg-slate-800/30">
+                        <td
+                            class="px-4 py-2 border border-slate-200 dark:border-slate-700 font-mono text-xs"
+                            >offset</td
+                        >
+                        <td
+                            class="px-4 py-2 border border-slate-200 dark:border-slate-700 text-xs text-slate-500"
+                            >integer</td
+                        >
+                        <td
+                            class="px-4 py-2 border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-400"
+                            >Number of rows to skip (default: <code>0</code
+                            >)</td
+                        >
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <pre><code class="language-bash">{`# All rows from the default tab
+curl "https://worker.gsheetbase.com/v1/gsb_live_xxx"
+
+# Filter, select fields, paginate
+curl "https://worker.gsheetbase.com/v1/gsb_live_xxx?collection=Products&fields=name,price&where=%7B%22in_stock%22%3A%22true%22%7D&orderBy=price&limit=10&offset=0"`}</code></pre>
+
+        <h3>Response</h3>
+        <pre><code class="language-json">{`// Without explicit pagination params
+{ "data": [ { "name": "Apple", "price": "1.20" }, ... ] }
+
+// With limit / offset params
+{
+  "data": [ { "name": "Apple", "price": "1.20" }, ... ],
+  "pagination": { "total": 42, "limit": 10, "offset": 0 }
 }`}</code></pre>
-    </article>
+
+        <!-- POST -->
+        <h2>POST /v1/:api_key — Append a row</h2>
+        <p>
+            Appends a new row to the sheet. Write access must be enabled for
+            this sheet in the dashboard.
+        </p>
+        <pre><code class="language-bash">{`curl -X POST "https://worker.gsheetbase.com/v1/gsb_live_xxx" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "collection": "Sheet1",
+    "data": { "name": "Mango", "price": "2.50", "in_stock": "true" }
+  }'`}</code></pre>
+
+        <h3>Request body</h3>
+        <div class="not-prose overflow-x-auto my-4">
+            <table class="w-full text-sm border-collapse">
+                <thead>
+                    <tr class="bg-slate-50 dark:bg-slate-800">
+                        <th
+                            class="text-left px-4 py-2 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300"
+                            >Field</th
+                        >
+                        <th
+                            class="text-left px-4 py-2 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300"
+                            >Required</th
+                        >
+                        <th
+                            class="text-left px-4 py-2 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300"
+                            >Description</th
+                        >
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td
+                            class="px-4 py-2 border border-slate-200 dark:border-slate-700 font-mono text-xs"
+                            >collection</td
+                        >
+                        <td
+                            class="px-4 py-2 border border-slate-200 dark:border-slate-700 text-xs text-slate-500"
+                            >no</td
+                        >
+                        <td
+                            class="px-4 py-2 border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-400"
+                            >Sheet tab name. Defaults to the sheet's default
+                            range.</td
+                        >
+                    </tr>
+                    <tr class="bg-slate-50/50 dark:bg-slate-800/30">
+                        <td
+                            class="px-4 py-2 border border-slate-200 dark:border-slate-700 font-mono text-xs"
+                            >data</td
+                        >
+                        <td
+                            class="px-4 py-2 border border-slate-200 dark:border-slate-700 text-xs text-slate-500 font-semibold"
+                            >yes</td
+                        >
+                        <td
+                            class="px-4 py-2 border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-400"
+                            >Key-value pairs matching the header row of the
+                            sheet.</td
+                        >
+                    </tr>
+                    <tr>
+                        <td
+                            class="px-4 py-2 border border-slate-200 dark:border-slate-700 font-mono text-xs"
+                            >returning</td
+                        >
+                        <td
+                            class="px-4 py-2 border border-slate-200 dark:border-slate-700 text-xs text-slate-500"
+                            >no</td
+                        >
+                        <td
+                            class="px-4 py-2 border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-400"
+                            >Array of field names to include in the response.</td
+                        >
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- PUT / PATCH -->
+        <h2>PUT /v1/:api_key — Replace rows</h2>
+        <h2>PATCH /v1/:api_key — Update fields on rows</h2>
+        <p>
+            Both methods find rows matching the <code>where</code> filter and update
+            them. <strong>PUT</strong> replaces every column in the matched rows.
+            <strong>PATCH</strong> only overwrites the fields present in <code
+                >data</code
+            >.
+        </p>
+        <pre><code class="language-bash">{`# Update the price for all rows where name = "Apple"
+curl -X PATCH "https://worker.gsheetbase.com/v1/gsb_live_xxx" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "collection": "Sheet1",
+    "where": { "name": "Apple" },
+    "data":  { "price": "1.50" }
+  }'`}</code></pre>
+
+        <h3>Request body</h3>
+        <div class="not-prose overflow-x-auto my-4">
+            <table class="w-full text-sm border-collapse">
+                <thead>
+                    <tr class="bg-slate-50 dark:bg-slate-800">
+                        <th
+                            class="text-left px-4 py-2 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300"
+                            >Field</th
+                        >
+                        <th
+                            class="text-left px-4 py-2 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300"
+                            >Required</th
+                        >
+                        <th
+                            class="text-left px-4 py-2 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300"
+                            >Description</th
+                        >
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td
+                            class="px-4 py-2 border border-slate-200 dark:border-slate-700 font-mono text-xs"
+                            >collection</td
+                        >
+                        <td
+                            class="px-4 py-2 border border-slate-200 dark:border-slate-700 text-xs text-slate-500"
+                            >no</td
+                        >
+                        <td
+                            class="px-4 py-2 border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-400"
+                            >Sheet tab name.</td
+                        >
+                    </tr>
+                    <tr class="bg-slate-50/50 dark:bg-slate-800/30">
+                        <td
+                            class="px-4 py-2 border border-slate-200 dark:border-slate-700 font-mono text-xs"
+                            >where</td
+                        >
+                        <td
+                            class="px-4 py-2 border border-slate-200 dark:border-slate-700 text-xs text-slate-500"
+                            >no</td
+                        >
+                        <td
+                            class="px-4 py-2 border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-400"
+                            >Equality filter. Omit to update all rows.</td
+                        >
+                    </tr>
+                    <tr>
+                        <td
+                            class="px-4 py-2 border border-slate-200 dark:border-slate-700 font-mono text-xs"
+                            >data</td
+                        >
+                        <td
+                            class="px-4 py-2 border border-slate-200 dark:border-slate-700 text-xs text-slate-500 font-semibold"
+                            >yes</td
+                        >
+                        <td
+                            class="px-4 py-2 border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-400"
+                            >Fields to write.</td
+                        >
+                    </tr>
+                    <tr class="bg-slate-50/50 dark:bg-slate-800/30">
+                        <td
+                            class="px-4 py-2 border border-slate-200 dark:border-slate-700 font-mono text-xs"
+                            >returning</td
+                        >
+                        <td
+                            class="px-4 py-2 border border-slate-200 dark:border-slate-700 text-xs text-slate-500"
+                            >no</td
+                        >
+                        <td
+                            class="px-4 py-2 border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-400"
+                            >Fields to include in the response.</td
+                        >
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- DELETE -->
+        <h2>DELETE /v1/:api_key — Delete rows</h2>
+        <p>
+            Deletes rows that match the <code>where</code> filter. Returns the number
+            of rows removed.
+        </p>
+        <pre><code class="language-bash">{`curl -X DELETE "https://worker.gsheetbase.com/v1/gsb_live_xxx" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "collection": "Sheet1",
+    "where": { "name": "Mango" }
+  }'`}</code></pre>
+
+        <!-- Error responses -->
+        <h2>Error responses</h2>
+        <p>All errors return a JSON object with an <code>error</code> field:</p>
+        <pre><code class="language-json">{`{ "error": "invalid api key or sheet not found" }
+{ "error": "POST method not enabled for this sheet" }
+{ "error": "sheet owner needs to reconnect Google account" }`}</code></pre>
+
+        <!-- Status codes table -->
+        <div class="not-prose overflow-x-auto my-4">
+            <table class="w-full text-sm border-collapse">
+                <thead>
+                    <tr class="bg-slate-50 dark:bg-slate-800">
+                        <th
+                            class="text-left px-4 py-2 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300"
+                            >Status</th
+                        >
+                        <th
+                            class="text-left px-4 py-2 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300"
+                            >Meaning</th
+                        >
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr
+                        ><td
+                            class="px-4 py-2 border border-slate-200 dark:border-slate-700 font-mono text-xs"
+                            >200</td
+                        ><td
+                            class="px-4 py-2 border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-400"
+                            >Success</td
+                        ></tr
+                    >
+                    <tr class="bg-slate-50/50 dark:bg-slate-800/30"
+                        ><td
+                            class="px-4 py-2 border border-slate-200 dark:border-slate-700 font-mono text-xs"
+                            >201</td
+                        ><td
+                            class="px-4 py-2 border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-400"
+                            >Row created</td
+                        ></tr
+                    >
+                    <tr
+                        ><td
+                            class="px-4 py-2 border border-slate-200 dark:border-slate-700 font-mono text-xs"
+                            >400</td
+                        ><td
+                            class="px-4 py-2 border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-400"
+                            >Bad request — missing or invalid parameter</td
+                        ></tr
+                    >
+                    <tr class="bg-slate-50/50 dark:bg-slate-800/30"
+                        ><td
+                            class="px-4 py-2 border border-slate-200 dark:border-slate-700 font-mono text-xs"
+                            >401</td
+                        ><td
+                            class="px-4 py-2 border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-400"
+                            >Unauthorized — bad or missing credentials</td
+                        ></tr
+                    >
+                    <tr
+                        ><td
+                            class="px-4 py-2 border border-slate-200 dark:border-slate-700 font-mono text-xs"
+                            >403</td
+                        ><td
+                            class="px-4 py-2 border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-400"
+                            >Forbidden — HTTP method not enabled for this sheet</td
+                        ></tr
+                    >
+                    <tr class="bg-slate-50/50 dark:bg-slate-800/30"
+                        ><td
+                            class="px-4 py-2 border border-slate-200 dark:border-slate-700 font-mono text-xs"
+                            >404</td
+                        ><td
+                            class="px-4 py-2 border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-400"
+                            >API key not found</td
+                        ></tr
+                    >
+                    <tr
+                        ><td
+                            class="px-4 py-2 border border-slate-200 dark:border-slate-700 font-mono text-xs"
+                            >429</td
+                        ><td
+                            class="px-4 py-2 border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-400"
+                            >Rate limit or quota exceeded</td
+                        ></tr
+                    >
+                    <tr class="bg-slate-50/50 dark:bg-slate-800/30"
+                        ><td
+                            class="px-4 py-2 border border-slate-200 dark:border-slate-700 font-mono text-xs"
+                            >500</td
+                        ><td
+                            class="px-4 py-2 border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-400"
+                            >Internal error — check Google token is still valid</td
+                        ></tr
+                    >
+                </tbody>
+            </table>
+        </div>
+    </div>
 </DocLayout>

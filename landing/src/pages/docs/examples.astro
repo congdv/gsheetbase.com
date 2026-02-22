@@ -3,97 +3,167 @@ import DocLayout from "../../layouts/DocLayout.astro";
 ---
 
 <DocLayout
-  title="Examples - gsheetbase"
-  description="Real-world examples using gsheetbase"
+  title="Examples — Gsheetbase"
+  description="curl and JavaScript examples for reading and writing Google Sheets data via Gsheetbase REST API."
 >
-  <article class="prose prose-slate dark:prose-invert max-w-none">
+  <div class="doc-content">
     <h1>Examples</h1>
 
     <p>
-      Here are some real-world examples to help you get started with gsheetbase.
+      Practical copy-paste examples for common Gsheetbase use-cases. Replace <code
+        >gsb_live_xxx</code
+      > with your own API key.
     </p>
 
-    <h2>Example 1: Todo List Manager</h2>
-    <p>Create a simple todo app backed by Google Sheets:</p>
-    <pre><code class="language-javascript">{`// Fetch all pending todos
-const todos = await db.query()
-  .select('id', 'title', 'due_date')
-  .where('status', '=', 'pending')
-  .orderBy('due_date', 'ASC')
-  .get();
-
-// Mark a todo as complete
-await db.update(todoId, { status: 'complete' });
-
-// Add a new todo
-await db.insert({
-  title: 'My new task',
-  status: 'pending',
-  created_at: new Date()
-});`}</code></pre>
-
-    <h2>Example 2: User Directory</h2>
-    <p>Query and manage a user directory:</p>
-    <pre><code class="language-javascript">{`// Search for users by name
-const users = await db.query()
-  .select('name', 'email', 'department')
-  .where('name', 'LIKE', '%John%')
-  .get();
-
-// Get users from a specific department
-const salesTeam = await db.query()
-  .where('department', '=', 'Sales')
-  .orderBy('name', 'ASC')
-  .get();
-
-// Update user info
-await db.update(userId, {
-  department: 'Marketing',
-  updated_at: new Date()
-});`}</code></pre>
-
-    <h2>Example 3: Inventory Management</h2>
-    <p>Track inventory levels across locations:</p>
-    <pre><code class="language-javascript">{`// Find low-stock items
-const lowStock = await db.query()
-  .where('quantity', '<', 10)
-  .where('location', '=', 'Warehouse A')
-  .get();
-
-// Update inventory after a sale
-await db.update(itemId, {
-  quantity: currentQuantity - soldAmount,
-  last_sale: new Date()
-});
-
-// Batch insert new inventory items
-await db.insert([
-  { sku: 'PROD001', name: 'Widget', quantity: 100 },
-  { sku: 'PROD002', name: 'Gadget', quantity: 50 }
-]);`}</code></pre>
-
-    <h2>Example 4: Event Tracking</h2>
-    <p>Track events and analytics in a spreadsheet:</p>
-    <pre><code class="language-javascript">{`// Log an event
-await db.insert({
-  event_type: 'page_view',
-  user_id: userId,
-  url: '/pricing',
-  timestamp: new Date()
-});
-
-// Get event stats
-const pageViews = await db.query()
-  .where('event_type', '=', 'page_view')
-  .where('url', '=', '/pricing')
-  .get();
-
-console.log(\`Total page views: \${pageViews.count}\`);`}</code></pre>
-
-    <h2>Ready to Build?</h2>
+    <!-- ─── Example 1: Product catalog ─── -->
+    <h2>Example 1 — Product catalog (read-only)</h2>
     <p>
-      Check out the <a href="/docs/api-reference">API Reference</a> for all available
-      methods, or <a href="/docs/getting-started">get started</a> in 5 minutes.
+      Your sheet has columns: <code>name</code>, <code>price</code>,
+      <code>category</code>, <code>in_stock</code>.
     </p>
-  </article>
+
+    <h3>Fetch all products</h3>
+    <pre><code class="language-bash">{`curl "https://worker.gsheetbase.com/v1/gsb_live_xxx?collection=Products"`}</code></pre>
+
+    <h3>Filter by category, return specific fields</h3>
+    <pre><code class="language-bash">{`curl "https://worker.gsheetbase.com/v1/gsb_live_xxx?collection=Products&fields=name,price&where=%7B%22category%22%3A%22Fruit%22%7D&orderBy=price"`}</code></pre>
+    <p>
+      URL-decoded <code>where</code> value: <code
+        >{`{"category":"Fruit"}`}</code>
+    </p>
+
+    <h3>Same request in JavaScript (fetch)</h3>
+    <pre><code class="language-javascript">{`const params = new URLSearchParams({
+  collection: "Products",
+  fields: "name,price",
+  where: JSON.stringify({ category: "Fruit" }),
+  orderBy: "price",
+  limit: "20",
+});
+
+const res = await fetch(
+  \`https://worker.gsheetbase.com/v1/gsb_live_xxx?\${params}\`
+);
+const { data } = await res.json();
+console.log(data);
+// [{ name: "Apple", price: "1.20" }, { name: "Banana", price: "0.80" }]`}</code></pre>
+
+    <!-- ─── Example 2: Contact form submissions ─── -->
+    <h2>Example 2 — Contact form submissions (write)</h2>
+    <p>
+      Append a new row every time someone submits a form. Your sheet has
+      columns: <code>name</code>, <code>email</code>, <code>message</code>,
+      <code>submitted_at</code>.
+    </p>
+    <p>
+      Make sure <strong>POST</strong> is enabled in the sheet's Write Settings.
+    </p>
+
+    <pre><code class="language-javascript">{`async function submitContact(name, email, message) {
+  const res = await fetch("https://worker.gsheetbase.com/v1/gsb_live_xxx", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      collection: "Contacts",
+      data: {
+        name,
+        email,
+        message,
+        submitted_at: new Date().toISOString(),
+      },
+    }),
+  });
+
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}`}</code></pre>
+
+    <!-- ─── Example 3: Feature flags ─── -->
+    <h2>Example 3 — Feature flags</h2>
+    <p>
+      Manage feature flags in a sheet with columns <code>flag</code>,
+      <code>enabled</code>, <code>description</code>. No redeploy needed — just
+      edit the sheet.
+    </p>
+
+    <pre><code class="language-javascript">{`async function getFlags() {
+  const params = new URLSearchParams({
+    collection: "Flags",
+    fields: "flag,enabled",
+    where: JSON.stringify({ enabled: "true" }),
+  });
+  const res = await fetch(
+    \`https://worker.gsheetbase.com/v1/gsb_live_xxx?\${params}\`
+  );
+  const { data } = await res.json();
+  // Convert array to a simple map: { dark_mode: true, beta_ui: true }
+  return Object.fromEntries(data.map((r) => [r.flag, r.enabled === "true"]));
+}
+
+const flags = await getFlags();
+if (flags.dark_mode) applyDarkTheme();`}</code></pre>
+
+    <!-- ─── Example 4: Update a record ─── -->
+    <h2>Example 4 — Update a record (PATCH)</h2>
+    <p>
+      Mark a support ticket as resolved. Sheet columns: <code>ticket_id</code>,
+      <code>subject</code>, <code>status</code>, <code>resolved_at</code>.
+    </p>
+    <p>Enable <strong>PATCH</strong> in Write Settings first.</p>
+
+    <pre><code class="language-bash">{`curl -X PATCH "https://worker.gsheetbase.com/v1/gsb_live_xxx" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "collection": "Tickets",
+    "where":  { "ticket_id": "TKT-042" },
+    "data":   { "status": "resolved", "resolved_at": "2026-02-22T10:00:00Z" }
+  }'`}</code></pre>
+
+    <!-- ─── Example 5: Pagination ─── -->
+    <h2>Example 5 — Pagination</h2>
+    <p>
+      Fetch large datasets page by page using <code>limit</code> and
+      <code>offset</code>.
+    </p>
+
+    <pre><code class="language-javascript">{`async function fetchPage(page, pageSize = 50) {
+  const params = new URLSearchParams({
+    collection: "Orders",
+    limit: String(pageSize),
+    offset: String(page * pageSize),
+  });
+  const res = await fetch(
+    \`https://worker.gsheetbase.com/v1/gsb_live_xxx?\${params}\`
+  );
+  const json = await res.json();
+  // json.pagination: { total, limit, offset }
+  return json;
+}
+
+const { data, pagination } = await fetchPage(0);
+console.log(\`Page 1 of \${Math.ceil(pagination.total / 50)}\`);`}</code></pre>
+
+    <!-- ─── Example 6: Bearer auth ─── -->
+    <h2>Example 6 — Using Bearer token auth</h2>
+    <p>
+      If you configured Bearer token auth for a sheet in the dashboard, pass the
+      token in the <code>Authorization</code> header instead of embedding an API key
+      in the URL.
+    </p>
+
+    <pre><code class="language-bash">{`curl "https://worker.gsheetbase.com/v1/_?collection=Sheet1" \\
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIs..."`}</code></pre>
+
+    <p>
+      See the <a href="/docs/api-reference">API Reference</a> for the full list of
+      authentication options.
+    </p>
+
+    <h2>More resources</h2>
+    <ul>
+      <li><a href="/docs/getting-started">Getting Started guide</a></li>
+      <li><a href="/docs/api-reference">Full API Reference</a></li>
+      <li><a href="/docs/faq">FAQ</a></li>
+    </ul>
+  </div>
 </DocLayout>

@@ -3,83 +3,294 @@ import DocLayout from "../../layouts/DocLayout.astro";
 ---
 
 <DocLayout
-    title="Documentation"
-    description="gsheetbase documentation and guides"
+    title="Documentation — Gsheetbase"
+    description="Gsheetbase documentation: turn your Google Sheets into REST APIs in minutes."
     image="/og-image.svg"
-    imageAlt="gsheetbase docs"
+    imageAlt="Gsheetbase docs"
 >
     <div>
-        <h1 class="text-3xl font-bold mb-6 text-slate-900 dark:text-slate-100">
-            Documentation
+        <h1 class="text-3xl font-bold mb-3 text-slate-900 dark:text-slate-100">
+            Gsheetbase Documentation
         </h1>
 
-        <p class="text-lg text-slate-600 dark:text-slate-400 mb-8">
-            Welcome to gsheetbase documentation. Here you'll find guides, API
-            reference, and examples to help you get started.
+        <p
+            class="text-lg text-slate-600 dark:text-slate-400 mb-8 leading-relaxed"
+        >
+            Gsheetbase turns any Google Sheet into a live REST API — no server
+            required. Sign in with Google, register a spreadsheet, publish it,
+            and start reading or writing data over HTTP in under five minutes.
         </p>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Getting Started Card -->
+        <!-- Quick-start strip -->
+        <div
+            class="bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl p-5 mb-10"
+        >
+            <p
+                class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-3"
+            >
+                Quick start
+            </p>
+            <pre
+                class="bg-slate-900 text-green-400 text-sm rounded-lg p-4 overflow-x-auto"><code>{`curl "https://worker.gsheetbase.com/v1/YOUR_API_KEY?collection=Sheet1&limit=5"`}</code></pre>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-3">
+                Replace <code class="text-slate-700 dark:text-slate-300"
+                    >YOUR_API_KEY</code
+                > with the key generated after you
+                <a
+                    href="/docs/getting-started"
+                    class="text-primary underline underline-offset-2"
+                    >publish a sheet</a
+                >.
+            </p>
+        </div>
+
+        <!-- Nav cards grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <!-- Getting Started -->
             <a
                 href="/docs/getting-started"
-                class="block p-6 border border-subtle rounded-lg hover:border-primary hover:shadow-md transition-all"
+                class="group flex gap-4 p-5 border border-slate-200 dark:border-slate-700 rounded-xl hover:border-primary hover:shadow-md transition-all bg-white dark:bg-slate-800/40"
             >
-                <h2
-                    class="text-xl font-semibold mb-2 text-slate-900 dark:text-slate-100"
+                <div
+                    class="flex-shrink-0 w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center"
                 >
-                    Getting Started
-                </h2>
-                <p class="text-slate-600 dark:text-slate-400 text-sm">
-                    Learn the basics and set up your first gsheetbase project in
-                    minutes.
-                </p>
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="w-5 h-5 text-blue-600 dark:text-blue-400"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        stroke-width="2"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h2
+                        class="text-base font-semibold mb-1 text-slate-900 dark:text-slate-100 group-hover:text-primary transition-colors"
+                    >
+                        Getting Started
+                    </h2>
+                    <p
+                        class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed"
+                    >
+                        Sign in with Google, register a sheet, publish it, and
+                        make your first API call — in minutes.
+                    </p>
+                </div>
             </a>
 
-            <!-- API Reference Card -->
+            <!-- API Reference -->
             <a
                 href="/docs/api-reference"
-                class="block p-6 border border-subtle rounded-lg hover:border-primary hover:shadow-md transition-all"
+                class="group flex gap-4 p-5 border border-slate-200 dark:border-slate-700 rounded-xl hover:border-primary hover:shadow-md transition-all bg-white dark:bg-slate-800/40"
             >
-                <h2
-                    class="text-xl font-semibold mb-2 text-slate-900 dark:text-slate-100"
+                <div
+                    class="flex-shrink-0 w-10 h-10 rounded-lg bg-violet-100 dark:bg-violet-900/40 flex items-center justify-center"
                 >
-                    API Reference
-                </h2>
-                <p class="text-slate-600 dark:text-slate-400 text-sm">
-                    Complete API documentation for all gsheetbase endpoints and
-                    methods.
-                </p>
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="w-5 h-5 text-violet-600 dark:text-violet-400"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        stroke-width="2"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h2
+                        class="text-base font-semibold mb-1 text-slate-900 dark:text-slate-100 group-hover:text-primary transition-colors"
+                    >
+                        API Reference
+                    </h2>
+                    <p
+                        class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed"
+                    >
+                        Full reference for GET, POST, PUT, PATCH, and DELETE
+                        endpoints, query parameters, and response shapes.
+                    </p>
+                </div>
             </a>
 
-            <!-- FAQ Card -->
-            <a
-                href="/docs/faq"
-                class="block p-6 border border-subtle rounded-lg hover:border-primary hover:shadow-md transition-all"
-            >
-                <h2
-                    class="text-xl font-semibold mb-2 text-slate-900 dark:text-slate-100"
-                >
-                    FAQ
-                </h2>
-                <p class="text-slate-600 dark:text-slate-400 text-sm">
-                    Frequently asked questions and troubleshooting tips.
-                </p>
-            </a>
-
-            <!-- Examples Card -->
+            <!-- Examples -->
             <a
                 href="/docs/examples"
-                class="block p-6 border border-subtle rounded-lg hover:border-primary hover:shadow-md transition-all"
+                class="group flex gap-4 p-5 border border-slate-200 dark:border-slate-700 rounded-xl hover:border-primary hover:shadow-md transition-all bg-white dark:bg-slate-800/40"
             >
-                <h2
-                    class="text-xl font-semibold mb-2 text-slate-900 dark:text-slate-100"
+                <div
+                    class="flex-shrink-0 w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center"
                 >
-                    Examples
-                </h2>
-                <p class="text-slate-600 dark:text-slate-400 text-sm">
-                    Real-world examples and use cases to inspire your projects.
-                </p>
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="w-5 h-5 text-emerald-600 dark:text-emerald-400"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        stroke-width="2"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                        ></path>
+                    </svg>
+                </div>
+                <div>
+                    <h2
+                        class="text-base font-semibold mb-1 text-slate-900 dark:text-slate-100 group-hover:text-primary transition-colors"
+                    >
+                        Examples
+                    </h2>
+                    <p
+                        class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed"
+                    >
+                        Real-world curl and JavaScript snippets: product
+                        catalogs, contact lists, event logs, and more.
+                    </p>
+                </div>
             </a>
+
+            <!-- FAQ -->
+            <a
+                href="/docs/faq"
+                class="group flex gap-4 p-5 border border-slate-200 dark:border-slate-700 rounded-xl hover:border-primary hover:shadow-md transition-all bg-white dark:bg-slate-800/40"
+            >
+                <div
+                    class="flex-shrink-0 w-10 h-10 rounded-lg bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="w-5 h-5 text-amber-600 dark:text-amber-400"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        stroke-width="2"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                        ></path>
+                    </svg>
+                </div>
+                <div>
+                    <h2
+                        class="text-base font-semibold mb-1 text-slate-900 dark:text-slate-100 group-hover:text-primary transition-colors"
+                    >
+                        FAQ
+                    </h2>
+                    <p
+                        class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed"
+                    >
+                        Answers to common questions about authentication, rate
+                        limits, write access, and data security.
+                    </p>
+                </div>
+            </a>
+        </div>
+
+        <!-- How it works strip -->
+        <div
+            class="mt-12 border-t border-slate-200 dark:border-slate-700 pt-10"
+        >
+            <h2
+                class="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-6"
+            >
+                How it works
+            </h2>
+            <ol class="space-y-4">
+                <li class="flex gap-4 items-start">
+                    <span
+                        class="flex-shrink-0 w-7 h-7 rounded-full bg-primary/10 text-primary text-sm font-bold flex items-center justify-center"
+                        >1</span
+                    >
+                    <div>
+                        <p
+                            class="font-medium text-slate-800 dark:text-slate-200 text-sm"
+                        >
+                            Sign in with Google
+                        </p>
+                        <p class="text-slate-500 dark:text-slate-400 text-sm">
+                            Authenticate via OAuth 2.0. Gsheetbase requests
+                            read-only access to the specific spreadsheets you
+                            choose.
+                        </p>
+                    </div>
+                </li>
+                <li class="flex gap-4 items-start">
+                    <span
+                        class="flex-shrink-0 w-7 h-7 rounded-full bg-primary/10 text-primary text-sm font-bold flex items-center justify-center"
+                        >2</span
+                    >
+                    <div>
+                        <p
+                            class="font-medium text-slate-800 dark:text-slate-200 text-sm"
+                        >
+                            Register a sheet
+                        </p>
+                        <p class="text-slate-500 dark:text-slate-400 text-sm">
+                            Paste your Google Spreadsheet ID. Gsheetbase stores
+                            the reference — it never copies your data.
+                        </p>
+                    </div>
+                </li>
+                <li class="flex gap-4 items-start">
+                    <span
+                        class="flex-shrink-0 w-7 h-7 rounded-full bg-primary/10 text-primary text-sm font-bold flex items-center justify-center"
+                        >3</span
+                    >
+                    <div>
+                        <p
+                            class="font-medium text-slate-800 dark:text-slate-200 text-sm"
+                        >
+                            Publish to get an API key
+                        </p>
+                        <p class="text-slate-500 dark:text-slate-400 text-sm">
+                            One click generates a unique API key and exposes
+                            your sheet as a REST endpoint.
+                        </p>
+                    </div>
+                </li>
+                <li class="flex gap-4 items-start">
+                    <span
+                        class="flex-shrink-0 w-7 h-7 rounded-full bg-primary/10 text-primary text-sm font-bold flex items-center justify-center"
+                        >4</span
+                    >
+                    <div>
+                        <p
+                            class="font-medium text-slate-800 dark:text-slate-200 text-sm"
+                        >
+                            Query via HTTP
+                        </p>
+                        <p class="text-slate-500 dark:text-slate-400 text-sm">
+                            Use <code
+                                class="text-xs bg-slate-100 dark:bg-slate-700 px-1 py-0.5 rounded"
+                                >GET</code
+                            >, <code
+                                class="text-xs bg-slate-100 dark:bg-slate-700 px-1 py-0.5 rounded"
+                                >POST</code
+                            >, <code
+                                class="text-xs bg-slate-100 dark:bg-slate-700 px-1 py-0.5 rounded"
+                                >PUT</code
+                            >, <code
+                                class="text-xs bg-slate-100 dark:bg-slate-700 px-1 py-0.5 rounded"
+                                >PATCH</code
+                            >, or <code
+                                class="text-xs bg-slate-100 dark:bg-slate-700 px-1 py-0.5 rounded"
+                                >DELETE</code
+                            > from any language, tool, or no-code platform.
+                        </p>
+                    </div>
+                </li>
+            </ol>
         </div>
     </div>
 </DocLayout>
