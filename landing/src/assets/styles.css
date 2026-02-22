@@ -4,9 +4,9 @@
   --color-primary: #10B981;
   --color-background-light: #f6f8f5;
   --color-background-dark: #12230f;
-  
+
   --font-family-display: 'Manrope', sans-serif;
-  
+
   --radius: 0.25rem;
   --radius-lg: 0.5rem;
   --radius-xl: 0.75rem;
@@ -20,7 +20,9 @@
 }
 
 @layer base {
-  html, body {
+
+  html,
+  body {
     margin: 0;
     width: 100%;
     height: 100%;
@@ -30,12 +32,14 @@
     font-family: 'Manrope', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
     -webkit-font-smoothing: antialiased;
     background-color: var(--bg-light);
-    color: #0f1724; /* fallback for slate-900 */
+    color: #0f1724;
+    /* fallback for slate-900 */
   }
 
   .dark body {
     background-color: var(--bg-dark);
-    color: #f1f5f9; /* fallback for slate-100 */
+    color: #f1f5f9;
+    /* fallback for slate-100 */
   }
 
   .code-container {

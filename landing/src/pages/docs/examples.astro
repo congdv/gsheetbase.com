@@ -28,8 +28,8 @@ import DocLayout from "../../layouts/DocLayout.astro";
     <h3>Filter by category, return specific fields</h3>
     <pre><code class="language-bash">{`curl "https://worker.gsheetbase.com/v1/gsb_live_xxx?collection=Products&fields=name,price&where=%7B%22category%22%3A%22Fruit%22%7D&orderBy=price"`}</code></pre>
     <p>
-      URL-decoded <code>where</code> value: <code
-        >{`{"category":"Fruit"}`}</code>
+      URL-decoded <code>where</code> value: <code>{`{"category":"Fruit"}`}</code
+      >
     </p>
 
     <h3>Same request in JavaScript (fetch)</h3>
