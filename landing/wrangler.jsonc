@@ -17,6 +17,10 @@
         {
             "pattern": "gsheetbase.com",
             "custom_domain": true
+        },
+        {
+            "pattern": "www.gsheetbase.com",
+            "custom_domain": true
         }
     ]
 }
