@@ -12,5 +12,11 @@
     },
     "observability": {
         "enabled": true
-    }
+    },
+    "routes": [
+        {
+            "pattern": "gsheetbase.com/*",
+            "custom_domain": true
+        }
+    ]
 }
