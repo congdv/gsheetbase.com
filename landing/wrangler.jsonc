@@ -15,7 +15,7 @@
     },
     "routes": [
         {
-            "pattern": "gsheetbase.com/*",
+            "pattern": "gsheetbase.com",
             "custom_domain": true
         }
     ]
