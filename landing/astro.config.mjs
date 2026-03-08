@@ -1,23 +1,14 @@
-// @ts-check
 import { defineConfig } from 'astro/config';
 import tailwindcss from '@tailwindcss/vite';
+import cloudflare from '@astrojs/cloudflare';
 
-import node from '@astrojs/node';
-
-// https://astro.build/config
 export default defineConfig({
   site: 'https://gsheetbase.com',
-  output: 'server',
+  output: 'server',   // or 'hybrid' if most pages are static
 
   vite: {
     plugins: [tailwindcss()],
   },
 
-  adapter: node({
-    mode: 'standalone',
-  }),
-
-  server: {
-    host: '0.0.0.0'
-  }
+  adapter: cloudflare(),
 });
